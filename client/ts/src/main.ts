@@ -13,6 +13,7 @@ import configureCheckboxWithHiddenButton from "./ui/configureCheckboxWithHiddenB
 import UIElements from "./ui/UIElements";
 import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
+import { teal0Init } from  "./model/teal0"
 
 window.clearUserSettings = () => {
   settings.set({});

@@ -406,84 +406,85 @@ define("model/syntaxHighlighting", ["require", "exports"], function (require, ex
     exports.getAvailableLanguages = exports.getAppropriateFileSuffix = void 0;
     const langstoSuffixes = {
         plaintext: ['txt', 'Plain Text'],
-        abap: ['abap', 'abap'],
-        apex: ['cls', 'Apex'],
-        azcli: ['azcli', 'Azure CLI'],
-        bat: ['bat', 'Batch'],
-        bicep: ['bicep', 'Bicep'],
-        cameligo: ['mligo', 'Cameligo'],
-        clojure: ['clj', 'clojure'],
-        coffeescript: ['coffee', 'CoffeeScript'],
-        c: ['c', 'C'],
-        cpp: ['cpp', 'C++'],
-        csharp: ['cs', 'C#'],
-        csp: ['csp', 'CSP'],
-        css: ['css', 'CSS'],
-        dart: ['dart', 'Dart'],
-        dockerfile: ['dockerfile', 'Dockerfile'],
-        ecl: ['ecl', 'ECL'],
-        elixir: ['ex', 'Elixir'],
-        flow9: ['flow', 'Flow9'],
-        fsharp: ['fs', 'F#'],
-        go: ['go', 'Go'],
-        graphql: ['graphql', 'GraphQL'],
-        handlebars: ['handlebars', 'Handlebars'],
-        hcl: ['tf', 'Terraform'],
-        html: ['html', 'HTML'],
-        ini: ['ini', 'Ini'],
+        // abap: [ 'abap', 'abap' ],
+        // apex: [ 'cls', 'Apex' ],
+        // azcli: [ 'azcli', 'Azure CLI' ],
+        // bat: [ 'bat', 'Batch' ],
+        // bicep: [ 'bicep', 'Bicep' ],
+        // cameligo: [ 'mligo', 'Cameligo' ],
+        // clojure: [ 'clj', 'clojure' ],
+        // coffeescript: [ 'coffee', 'CoffeeScript' ],
+        // c: [ 'c', 'C' ],
+        // cpp: [ 'cpp', 'C++' ],
+        // csharp: [ 'cs', 'C#' ],
+        // csp: [ 'csp', 'CSP' ],
+        // css: [ 'css', 'CSS' ],
+        // dart: [ 'dart', 'Dart' ],
+        // dockerfile: [ 'dockerfile', 'Dockerfile' ],
+        // ecl: [ 'ecl', 'ECL' ],
+        // elixir: [ 'ex', 'Elixir' ],
+        // flow9: [ 'flow', 'Flow9' ],
+        // fsharp: [ 'fs', 'F#' ],
+        // go: [ 'go', 'Go' ],
+        // graphql: [ 'graphql', 'GraphQL' ],
+        // handlebars: [ 'handlebars', 'Handlebars' ],
+        // hcl: [ 'tf', 'Terraform' ],
+        // html: [ 'html', 'HTML' ],
+        // ini: [ 'ini', 'Ini' ],
         java: ['java', 'Java'],
-        javascript: ['js', 'JavaScript'],
-        julia: ['jl', 'Julia'],
-        kotlin: ['kt', 'Kotlin'],
-        less: ['less', 'Less'],
-        lexon: ['lex', 'Lexon'],
-        lua: ['lua', 'Lua'],
-        liquid: ['liquid', 'Liquid'],
-        m3: ['m3', 'Modula-3'],
-        markdown: ['md', 'Markdown'],
-        mips: ['s', 'MIPS'],
-        msdax: ['dax', 'DAX'],
-        mysql: ['mysql', 'MySQL'],
-        'objective-c': ['m', 'Objective-C'],
-        pascal: ['pas', 'Pascal'],
-        pascaligo: ['ligo', 'Pascaligo'],
-        perl: ['pl', 'Perl'],
-        pgsql: ['pgsql', 'PostgreSQL'],
-        php: ['php', 'PHP'],
-        postiats: ['dats', 'ATS'],
-        powerquery: ['pq', 'PQ'],
-        powershell: ['ps1', 'PowerShell'],
-        proto: ['proto', 'protobuf'],
-        pug: ['jade', 'Pug'],
-        python: ['py', 'Python'],
-        qsharp: ['qs', 'Q#'],
-        r: ['r', 'R'],
-        razor: ['cshtml', 'Razor'],
-        redis: ['redis', 'redis'],
-        redshift: ['redshift', 'Redshift'],
-        restructuredtext: ['rst', 'reStructuredText'],
-        ruby: ['rb', 'Ruby'],
-        rust: ['rs', 'Rust'],
-        sb: ['sb', 'Small Basic'],
-        scala: ['scala', 'Scala'],
-        scheme: ['scm', 'scheme'],
-        scss: ['scss', 'Sass'],
-        shell: ['sh', 'Shell'],
-        sol: ['sol', 'sol'],
-        aes: ['aes', 'aes'],
-        sparql: ['rq', 'sparql'],
-        sql: ['sql', 'SQL'],
-        st: ['st', 'StructuredText'],
-        swift: ['swift', 'Swift'],
-        systemverilog: ['sv', 'SV'],
-        verilog: ['v', 'V'],
-        tcl: ['tcl', 'tcl'],
-        twig: ['twig', 'Twig'],
-        typescript: ['ts', 'TypeScript'],
-        vb: ['vb', 'Visual Basic'],
-        xml: ['xml', 'XML'],
-        yaml: ['yaml', 'YAML'],
-        json: ['json', 'JSON']
+        // javascript: [ 'js', 'JavaScript' ],
+        // julia: [ 'jl', 'Julia' ],
+        // kotlin: [ 'kt', 'Kotlin' ],
+        // less: [ 'less', 'Less' ],
+        // lexon: [ 'lex', 'Lexon' ],
+        // lua: [ 'lua', 'Lua' ],
+        // liquid: [ 'liquid', 'Liquid' ],
+        // m3: [ 'm3', 'Modula-3' ],
+        // markdown: [ 'md', 'Markdown' ],
+        // mips: [ 's', 'MIPS' ],
+        // msdax: [ 'dax', 'DAX' ],
+        // mysql: [ 'mysql', 'MySQL' ],
+        // 'objective-c': [ 'm', 'Objective-C' ],
+        // pascal: [ 'pas', 'Pascal' ],
+        // pascaligo: [ 'ligo', 'Pascaligo' ],
+        // // perl: [ 'pl', 'Perl' ],
+        // pgsql: [ 'pgsql', 'PostgreSQL' ],
+        // php: [ 'php', 'PHP' ],
+        // postiats: [ 'dats', 'ATS' ],
+        // powerquery: [ 'pq', 'PQ' ],
+        // powershell: [ 'ps1', 'PowerShell' ],
+        // proto: [ 'proto', 'protobuf' ],
+        // pug: [ 'jade', 'Pug' ],
+        // python: [ 'py', 'Python' ],
+        // qsharp: [ 'qs', 'Q#' ],
+        // r: [ 'r', 'R' ],
+        // razor: [ 'cshtml', 'Razor' ],
+        // redis: [ 'redis', 'redis' ],
+        // redshift: [ 'redshift', 'Redshift' ],
+        // restructuredtext: [ 'rst', 'reStructuredText' ],
+        // ruby: [ 'rb', 'Ruby' ],
+        // rust: [ 'rs', 'Rust' ],
+        // sb: [ 'sb', 'Small Basic' ],
+        // scala: [ 'scala', 'Scala' ],
+        // scheme: [ 'scm', 'scheme' ],
+        // scss: [ 'scss', 'Sass' ],
+        // shell: [ 'sh', 'Shell' ],
+        // sol: [ 'sol', 'sol' ],
+        // aes: [ 'aes', 'aes' ],
+        // sparql: [ 'rq', 'sparql' ],
+        // sql: [ 'sql', 'SQL' ],
+        // st: [ 'st', 'StructuredText' ],
+        // swift: [ 'swift', 'Swift' ],
+        // systemverilog: [ 'sv', 'SV' ],
+        // verilog: [ 'v', 'V' ],
+        // tcl: [ 'tcl', 'tcl' ],
+        'teal-0': ['teal0', 'teal-0'],
+        // twig: [ 'twig', 'Twig' ],
+        // typescript: [ 'ts', 'TypeScript' ],
+        // vb: [ 'vb', 'Visual Basic' ],
+        // xml: [ 'xml', 'XML' ],
+        // yaml: [ 'yaml', 'YAML' ],
+        // json: [ 'json', 'JSON' ]
     };
     const getAppropriateFileSuffix = (lang) => {
         var _a, _b;
@@ -3287,6 +3288,347 @@ define("ui/showVersionInfo", ["require", "exports", "model/repositoryUrl"], func
     };
     exports.default = showVersionInfo;
 });
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation, Christoph Reichenbach.  All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+define("model/teal0", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.teal0Init = exports.teal0 = void 0;
+    exports.teal0 = {
+        keywords: [
+            'abstract', 'for', 'new', 'switch', 'assert', 'goto', 'do',
+            'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
+            'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
+            'finally', 'const', 'super', 'while', 'true', 'false'
+        ],
+        typeKeywords: [
+            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+        ],
+        operators: [
+            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
+            '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
+            '%=', '<<=', '>>=', '>>>='
+        ],
+        // we include these common regular expressions
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        // C# style strings
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        // The main tokenizer for our languages
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [/[a-z_$][\w$]*/, { cases: { '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier' } }],
+                [/[A-Z][\w\$]*/, 'type.identifier'],
+                // whitespace
+                { include: '@whitespace' },
+                // delimiters and operators
+                [/[{}()\[\]]/, '@brackets'],
+                [/[<>](?!@symbols)/, '@brackets'],
+                [/@symbols/, { cases: { '@operators': 'operator',
+                            '@default': '' } }],
+                // @ annotations.
+                // As an example, we emit a debugging log message on these tokens.
+                // Note: message are supressed during the first load -- change some lines to see them.
+                [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+                // numbers
+                [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                [/\d+/, 'number'],
+                // delimiter: after number because of .\d floats
+                [/[;,.]/, 'delimiter'],
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                // characters
+                [/'[^\\']'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid']
+            ],
+            comment: [
+                [/[^\/*]+/, 'comment'],
+                [/\/\*/, 'comment', '@push'],
+                ["\\*/", 'comment', '@pop'],
+                [/[\/*]/, 'comment']
+            ],
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+            ],
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
+            ],
+        },
+    };
+    const teal0Init = () => {
+        var languages = window.monaco.languages;
+        languages.register({ id: 'teal-0' });
+        languages.setMonarchTokensProvider('teal-0', exports.teal0);
+    };
+    exports.teal0Init = teal0Init;
+    (0, exports.teal0Init)();
+});
+// import { languages } from '../../fillers/monaco-editor-core';
+// export const conf = { //: languages.LanguageConfiguration = {
+// 	comments: {
+// 		lineComment: '#',
+// 		blockComment: ["'''", "'''"]
+// 	},
+// 	brackets: [
+// 		['{', '}'],
+// 		['[', ']'],
+// 		['(', ')']
+// 	],
+// 	autoClosingPairs: [
+// 		{ open: '{', close: '}' },
+// 		{ open: '[', close: ']' },
+// 		{ open: '(', close: ')' },
+// 		{ open: '"', close: '"', notIn: ['string'] },
+// 		{ open: "'", close: "'", notIn: ['string', 'comment'] }
+// 	],
+// 	surroundingPairs: [
+// 		{ open: '{', close: '}' },
+// 		{ open: '[', close: ']' },
+// 		{ open: '(', close: ')' },
+// 		{ open: '"', close: '"' },
+// 		{ open: "'", close: "'" }
+// 	],
+// 	onEnterRules: [
+// 		{
+// 			beforeText: new RegExp(
+// 				'^\\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|async|match|case).*?:\\s*$'
+// 			),
+// 			action: { indentAction: languages.IndentAction.Indent }
+// 		}
+// 	],
+// 	folding: {
+// 		offSide: true,
+// 		markers: {
+// 			start: new RegExp('^\\s*#region\\b'),
+// 			end: new RegExp('^\\s*#endregion\\b')
+// 		}
+// 	}
+// };
+// export const language = <languages.IMonarchLanguage>{
+// 	defaultToken: '',
+// 	tokenPostfix: '.teal',
+// 	keywords: [
+// 		// This section is the result of running
+// 		// `import keyword; for k in sorted(keyword.kwlist + keyword.softkwlist): print("  '" + k + "',")`
+// 		// in a Python REPL,
+// 		// though note that the output from Python 3 is not a strict superset of the
+// 		// output from Python 2.
+// 		'False', // promoted to keyword.kwlist in Python 3
+// 		'None', // promoted to keyword.kwlist in Python 3
+// 		'True', // promoted to keyword.kwlist in Python 3
+// 		'_', // new in Python 3.10
+// 		'and',
+// 		'as',
+// 		'assert',
+// 		'async', // new in Python 3
+// 		'await', // new in Python 3
+// 		'break',
+// 		'case', // new in Python 3.10
+// 		'class',
+// 		'continue',
+// 		'def',
+// 		'del',
+// 		'elif',
+// 		'else',
+// 		'except',
+// 		'exec', // Python 2, but not 3.
+// 		'finally',
+// 		'for',
+// 		'from',
+// 		'global',
+// 		'if',
+// 		'import',
+// 		'in',
+// 		'is',
+// 		'lambda',
+// 		'match', // new in Python 3.10
+// 		'nonlocal', // new in Python 3
+// 		'not',
+// 		'or',
+// 		'pass',
+// 		'print', // Python 2, but not 3.
+// 		'raise',
+// 		'return',
+// 		'try',
+// 		'while',
+// 		'with',
+// 		'yield',
+// 		'int',
+// 		'float',
+// 		'long',
+// 		'complex',
+// 		'hex',
+// 		'abs',
+// 		'all',
+// 		'any',
+// 		'apply',
+// 		'basestring',
+// 		'bin',
+// 		'bool',
+// 		'buffer',
+// 		'bytearray',
+// 		'callable',
+// 		'chr',
+// 		'classmethod',
+// 		'cmp',
+// 		'coerce',
+// 		'compile',
+// 		'complex',
+// 		'delattr',
+// 		'dict',
+// 		'dir',
+// 		'divmod',
+// 		'enumerate',
+// 		'eval',
+// 		'execfile',
+// 		'file',
+// 		'filter',
+// 		'format',
+// 		'frozenset',
+// 		'getattr',
+// 		'globals',
+// 		'hasattr',
+// 		'hash',
+// 		'help',
+// 		'id',
+// 		'input',
+// 		'intern',
+// 		'isinstance',
+// 		'issubclass',
+// 		'iter',
+// 		'len',
+// 		'locals',
+// 		'list',
+// 		'map',
+// 		'max',
+// 		'memoryview',
+// 		'min',
+// 		'next',
+// 		'object',
+// 		'oct',
+// 		'open',
+// 		'ord',
+// 		'pow',
+// 		'print',
+// 		'property',
+// 		'reversed',
+// 		'range',
+// 		'raw_input',
+// 		'reduce',
+// 		'reload',
+// 		'repr',
+// 		'reversed',
+// 		'round',
+// 		'self',
+// 		'set',
+// 		'setattr',
+// 		'slice',
+// 		'sorted',
+// 		'staticmethod',
+// 		'str',
+// 		'sum',
+// 		'super',
+// 		'tuple',
+// 		'type',
+// 		'unichr',
+// 		'unicode',
+// 		'vars',
+// 		'xrange',
+// 		'zip',
+// 		'__dict__',
+// 		'__methods__',
+// 		'__members__',
+// 		'__class__',
+// 		'__bases__',
+// 		'__name__',
+// 		'__mro__',
+// 		'__subclasses__',
+// 		'__init__',
+// 		'__import__'
+// 	],
+// 	brackets: [
+// 		{ open: '{', close: '}', token: 'delimiter.curly' },
+// 		{ open: '[', close: ']', token: 'delimiter.bracket' },
+// 		{ open: '(', close: ')', token: 'delimiter.parenthesis' }
+// 	],
+// 	tokenizer: {
+// 		root: [
+// 			{ include: '@whitespace' },
+// 			{ include: '@numbers' },
+// 			{ include: '@strings' },
+// 			[/[,:;]/, 'delimiter'],
+// 			[/[{}\[\]()]/, '@brackets'],
+// 			[/@[a-zA-Z_]\w*/, 'tag'],
+// 			[
+// 				/[a-zA-Z_]\w*/,
+// 				{
+// 					cases: {
+// 						'@keywords': 'keyword',
+// 						'@default': 'identifier'
+// 					}
+// 				}
+// 			]
+// 		],
+// 		// Deal with white space, including single and multi-line comments
+// 		whitespace: [
+// 			[/\s+/, 'white'],
+// 			[/(^#.*$)/, 'comment'],
+// 			[/'''/, 'string', '@endDocString'],
+// 			[/"""/, 'string', '@endDblDocString']
+// 		],
+// 		endDocString: [
+// 			[/[^']+/, 'string'],
+// 			[/\\'/, 'string'],
+// 			[/'''/, 'string', '@popall'],
+// 			[/'/, 'string']
+// 		],
+// 		endDblDocString: [
+// 			[/[^"]+/, 'string'],
+// 			[/\\"/, 'string'],
+// 			[/"""/, 'string', '@popall'],
+// 			[/"/, 'string']
+// 		],
+// 		// Recognize hex, negatives, decimals, imaginaries, longs, and scientific notation
+// 		numbers: [
+// 			[/-?0x([abcdef]|[ABCDEF]|\d)+[lL]?/, 'number.hex'],
+// 			[/-?(\d*\.)?\d+([eE][+\-]?\d+)?[jJ]?[lL]?/, 'number']
+// 		],
+// 		// Recognize strings, including those broken across lines with \ (but not without)
+// 		strings: [
+// 			[/'$/, 'string.escape', '@popall'],
+// 			[/'/, 'string.escape', '@stringBody'],
+// 			[/"$/, 'string.escape', '@popall'],
+// 			[/"/, 'string.escape', '@dblStringBody']
+// 		],
+// 		stringBody: [
+// 			[/[^\\']+$/, 'string', '@popall'],
+// 			[/[^\\']+/, 'string'],
+// 			[/\\./, 'string'],
+// 			[/'/, 'string.escape', '@popall'],
+// 			[/\\$/, 'string']
+// 		],
+// 		dblStringBody: [
+// 			[/[^\\"]+$/, 'string', '@popall'],
+// 			[/[^\\"]+/, 'string'],
+// 			[/\\./, 'string'],
+// 			[/"/, 'string.escape', '@popall'],
+// 			[/\\$/, 'string']
+// 		]
+// 	}
+// };
 define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
