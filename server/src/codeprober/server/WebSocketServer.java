@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -24,7 +25,6 @@ import org.json.JSONObject;
 import codeprober.util.VersionInfo;
 
 public class WebSocketServer {
-
 	private static void readFully(InputStream src, byte[] dst) throws IOException {
 		int readPos = 0;
 		int read;
@@ -108,7 +108,8 @@ public class WebSocketServer {
 		}
 	}
 
-	private static void handleRequest(Socket socket, List<Runnable> onJarChangeListeners,
+	private static void handleRequest(Map<String, String> client_config,
+					  Socket socket, List<Runnable> onJarChangeListeners,
 			Function<JSONObject, String> onQuery) throws IOException, NoSuchAlgorithmException {
 		InputStream in = socket.getInputStream();
 		OutputStream out = socket.getOutputStream();
@@ -150,6 +151,13 @@ public class WebSocketServer {
 				final VersionInfo vinfo = VersionInfo.getInstance();
 				versionMsg.put("hash", vinfo.revision);
 				versionMsg.put("clean", vinfo.clean);
+
+				final JSONObject configMsg = new JSONObject();
+				for (String k : client_config.keySet()) {
+					configMsg.put(k, client_config.get(k));
+				}
+				initMsg.put("config", configMsg);
+
 				final Integer buildTimeSeconds = vinfo.buildTimeSeconds;
 				if (buildTimeSeconds != null) {
 					versionMsg.put("buildTimeSeconds", buildTimeSeconds.intValue());
@@ -279,7 +287,8 @@ public class WebSocketServer {
 		return 8080;
 	}
 
-	public static void start(List<Runnable> onJarChangeListeners, Function<JSONObject, String> onQuery) {
+	public static void start(Map<String, String> client_config,
+				 List<Runnable> onJarChangeListeners, Function<JSONObject, String> onQuery) {
 		final int port = getPort();
 		try (ServerSocket server = new ServerSocket(port, 0, createServerFilter())) {
 			System.out.println("Started WebSocket server on port " + port);
@@ -288,7 +297,7 @@ public class WebSocketServer {
 				System.out.println("New WS connection from " + s.getRemoteSocketAddress());
 				new Thread(() -> {
 					try {
-						handleRequest(s, onJarChangeListeners, onQuery);
+						handleRequest(client_config, s, onJarChangeListeners, onQuery);
 					} catch (IOException | NoSuchAlgorithmException e) {
 						System.out.println("Error while handling request");
 						e.printStackTrace();

@@ -55,7 +55,7 @@ public class ASTProvider {
 		}
 		lastJar = null;
 	}
-	
+
 	private static LoadedJar lastJar = null;
 
 	private static LoadedJar loadJar(String jarPath)
@@ -76,18 +76,19 @@ public class ASTProvider {
 		Class<?> klass = Class.forName(mainClassName, true, urlClassLoader);
 		Method mainMethod = klass.getMethod("main", String[].class);
 		Field rootField = klass.getField("DrAST_root_node");
+		System.err.println("rootField = " + rootField);
 		rootField.setAccessible(true);
 
 		lastJar = new LoadedJar(jarPath, jarLastMod, urlClassLoader, klass, jar, mainMethod, rootField);
 		return lastJar;
 	}
-	
+
 	public static boolean hasUnchangedJar(String jarPath) {
 		File jarFile = new File(jarPath);
 		final long jarLastMod = jarFile.lastModified();
 		return lastJar != null && lastJar.jarPath.equals(jarPath) && lastJar.jarLastModified == jarLastMod;
 	}
-	
+
 	public static class ParseResult {
 		public final boolean success;
 		public final JSONArray captures;
@@ -126,7 +127,7 @@ public class ASTProvider {
 						});
 						return new ParseResult(false, captures);
 					}
-					
+
 					final AtomicReference<Exception> innerError = new AtomicReference<>();
 					captures = StdIoInterceptor.performDefaultCapture(() -> {
 						try {
