@@ -58,7 +58,7 @@ const displayRagModal = (env: ModalEnv, line: number, col: number) => {
           steps: []
         },
       })
-        .then((parsed: RpcResponse) => {
+          .then((parsed: RpcResponse) => {
           if (cancelToken.cancelled) { return; }
           while (root.firstChild) root.removeChild(root.firstChild);
           root.style.minHeight = '4rem';

@@ -2473,6 +2473,8 @@ define("ui/popup/displayRagModal", ["require", "exports", "ui/create/createLoadi
                 })
                     .then((parsed) => {
                     var _a;
+                    console.log("Done parsed");
+                    console.log(parsed);
                     if (cancelToken.cancelled) {
                         return;
                     }
@@ -3869,6 +3871,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     }
                 }, 300); // JUUUUUUUST in case the stored window state causes issues, this 300ms timeout allows people to click the 'clear state' button
                 window.RagQuery = (line, col, autoSelectRoot) => {
+                    console.log("Selecting line ", line, " col ", col, " autoroot is ", autoSelectRoot);
                     if (autoSelectRoot) {
                         const node = { type: '<ROOT>', start: (line << 12) + col - 1, end: (line << 12) + col + 1, depth: 0 };
                         (0, displayAttributeModal_5.default)(modalEnv, null, { result: node, steps: [] });
