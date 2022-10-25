@@ -1,7 +1,6 @@
 import { getAppropriateFileSuffix } from "./model/syntaxHighlighting";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 
-
 interface Settings {
   editorContents?: string;
   lightTheme?: boolean;

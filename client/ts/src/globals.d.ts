@@ -26,7 +26,7 @@ type TextMarkFn = (mark: Span & { severity: MarkerSeverity; message: string }) =
 
 type LocationAdjuster = (line: number, col: number) => [number, number];
 
-type SyntaxHighlightingLanguageId = 'plaintext' | 'java' | 'teal-0';
+type SyntaxHighlightingLanguageId = 'plaintext' | 'java' | 'teal';
 
 type EditorInitializer = (initialValue: string, onChange: (newValue: string, adjusters?: LocationAdjuster[] ) => void, initialSyntaxHIghlight: SyntaxHighlightingLanguageId) => {
   setLocalState?: (newValue: string) => void;

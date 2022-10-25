@@ -478,7 +478,7 @@ define("model/syntaxHighlighting", ["require", "exports"], function (require, ex
         // systemverilog: [ 'sv', 'SV' ],
         // verilog: [ 'v', 'V' ],
         // tcl: [ 'tcl', 'tcl' ],
-        'teal-0': ['teal0', 'teal-0'],
+        'teal': ['teal', 'teal'],
         // twig: [ 'twig', 'Twig' ],
         // typescript: [ 'ts', 'TypeScript' ],
         // vb: [ 'vb', 'Visual Basic' ],
@@ -3295,49 +3295,49 @@ define("ui/showVersionInfo", ["require", "exports", "model/repositoryUrl"], func
 define("model/teal0", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.teal0Init = exports.teal0 = void 0;
-    exports.teal0 = {
+    exports.teal0Init = void 0;
+    const tealTokens = {
         keywords: [
-            'abstract', 'for', 'new', 'switch', 'assert', 'goto', 'do',
-            'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
-            'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
-            'finally', 'const', 'super', 'while', 'true', 'false'
+            'fun', 'var', 'while', 'if', 'else', 'return',
+            'not', 'and', 'or', 'null', 'new',
+            'for', 'in', 'qualifier', 'type',
+            'assert',
+            'class', 'self'
         ],
         typeKeywords: [
-            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+            'int', 'string', 'array', 'any', 'nonnull'
         ],
         operators: [
-            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
-            '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-            '%=', '<<=', '>>=', '>>>='
+            '+', '-', '*', '/', '%',
+            ':=',
+            '>', '<', '==', '<=', '>=', '!=', '=',
+            ':', '<:'
         ],
+        brackets: [['{', '}', 'delimiter.curly'],
+            ['[', ']', 'delimiter.square'],
+            ['(', ')', 'delimiter.parenthesis']],
         // we include these common regular expressions
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
-        // C# style strings
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:[\\"])/,
         // The main tokenizer for our languages
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, { cases: { '@typeKeywords': 'keyword',
+                [/[a-zA-Z_][a-zA-Z_0-9]*/, { cases: { '@typeKeywords': 'keyword',
                             '@keywords': 'keyword',
                             '@default': 'identifier' } }],
-                [/[A-Z][\w\$]*/, 'type.identifier'],
+                [/[A-Z][a-zA-Z_0-9]*/, 'type.identifier'],
                 // whitespace
                 { include: '@whitespace' },
                 // delimiters and operators
                 [/[{}()\[\]]/, '@brackets'],
-                [/[<>](?!@symbols)/, '@brackets'],
                 [/@symbols/, { cases: { '@operators': 'operator',
                             '@default': '' } }],
-                // @ annotations.
-                // As an example, we emit a debugging log message on these tokens.
-                // Note: message are supressed during the first load -- change some lines to see them.
-                [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+                // // @ annotations.
+                // // As an example, we emit a debugging log message on these tokens.
+                // // Note: message are supressed during the first load -- change some lines to see them.
+                // [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
                 // numbers
-                [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
                 [/\d+/, 'number'],
                 // delimiter: after number because of .\d floats
                 [/[;,.]/, 'delimiter'],
@@ -3351,8 +3351,7 @@ define("model/teal0", ["require", "exports"], function (require, exports) {
             ],
             comment: [
                 [/[^\/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],
-                ["\\*/", 'comment', '@pop'],
+                [/\*\//, 'comment', '@pop'],
                 [/[\/*]/, 'comment']
             ],
             string: [
@@ -3362,19 +3361,32 @@ define("model/teal0", ["require", "exports"], function (require, exports) {
                 [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
             ],
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[ \t\r\n]+/, ''],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
+                [/\/\/.*$/, 'comment']
             ],
         },
     };
-    const teal0Init = () => {
-        var languages = window.monaco.languages;
-        languages.register({ id: 'teal-0' });
-        languages.setMonarchTokensProvider('teal-0', exports.teal0);
+    const tealConf = {
+        comments: {
+            lineComment: '//',
+            blockComment: ['/*', '*/']
+        },
+        brackets: [
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')']
+        ],
+    };
+    const teal0Init = (editorType) => {
+        if (editorType == 'Monaco') {
+            var languages = window.monaco.languages;
+            languages.register({ id: 'teal' });
+            languages.setMonarchTokensProvider('teal', tealTokens);
+            languages.setLanguageConfiguration('teal', tealConf);
+        }
     };
     exports.teal0Init = teal0Init;
-    (0, exports.teal0Init)();
 });
 // import { languages } from '../../fillers/monaco-editor-core';
 // export const conf = { //: languages.LanguageConfiguration = {
@@ -3629,7 +3641,7 @@ define("model/teal0", ["require", "exports"], function (require, exports) {
 // 		]
 // 	}
 // };
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal0"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal0_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3713,6 +3725,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     const { preload, init, } = window.definedEditors[editorType];
                     window.loadPreload(preload, () => {
                         var _a;
+                        (0, teal0_1.teal0Init)(editorType);
                         const res = init((_a = settings_4.default.getEditorContents()) !== null && _a !== void 0 ? _a : `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings_4.default.getSyntaxHighlighting());
                         setLocalState = res.setLocalState || setLocalState;
                         getLocalState = res.getLocalState || getLocalState;

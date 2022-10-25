@@ -36,29 +36,29 @@ const doMain = (wsPort: number) => {
     tmpSuffix: settings.getCurrentFileSuffix(),
   });
 
-    const onChangeListeners: ModalEnv['onChangeListeners'] = {};
+  const onChangeListeners: ModalEnv['onChangeListeners'] = {};
 
-    const probeWindowStateSavers: { [key: string]: (target: ProbeWindowState[]) => void } = {};
-    const triggerWindowSave = () => {
-      const states: ProbeWindowState[] = [];
-      Object.values(probeWindowStateSavers).forEach(v => v(states));
-      settings.setProbeWindowStates(states);
-    };
+  const probeWindowStateSavers: { [key: string]: (target: ProbeWindowState[]) => void } = {};
+  const triggerWindowSave = () => {
+    const states: ProbeWindowState[] = [];
+    Object.values(probeWindowStateSavers).forEach(v => v(states));
+    settings.setProbeWindowStates(states);
+  };
 
-    const notifyLocalChangeListeners = (adjusters?: LocationAdjuster[]) => {
-      // Short timeout to easier see changes happening. Remove in prod
-      // setTimeout(() => {
-        Object.values(onChangeListeners).forEach(l => l(adjusters));
-        triggerWindowSave();
-      // }, 500);
+  const notifyLocalChangeListeners = (adjusters?: LocationAdjuster[]) => {
+    // Short timeout to easier see changes happening. Remove in prod
+    // setTimeout(() => {
+    Object.values(onChangeListeners).forEach(l => l(adjusters));
+    triggerWindowSave();
+    // }, 500);
+  }
+
+  function initEditor(editorType: string) {
+    if (!location.search) {
+      location.search = "editor=" + editorType;
+      return;
     }
-
-    function initEditor(editorType: string) {
-      if (!location.search) {
-        location.search = "editor=" + editorType;
-        return;
-      }
-      document.body.setAttribute('data-theme-light', `${settings.isLightTheme()}`);
+    document.body.setAttribute('data-theme-light', `${settings.isLightTheme()}`);
 
     const wsHandler = createWebsocketHandler(
       new WebSocket(`ws://${location.hostname}:${wsPort}`),
@@ -99,6 +99,7 @@ const doMain = (wsPort: number) => {
       if (window.definedEditors[editorType]) {
         const { preload, init, } = window.definedEditors[editorType];
         window.loadPreload(preload, () => {
+	  teal0Init(editorType);
           const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
           getLocalState = res.getLocalState || getLocalState;
