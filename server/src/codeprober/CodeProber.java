@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import codeprober.ast.AstNode;
 import codeprober.rpc.JsonRequestHandler;
 import codeprober.server.WebServer;
 import codeprober.server.WebSocketServer;
@@ -38,12 +39,16 @@ public class CodeProber {
 			printUsage();
 			System.exit(1);
 		}
+
+		// Configuration with Teal specifics
 		Map<String, String> client_config = new HashMap<>();
 		client_config.put("language", "teal");
 		String src = loadTextFile(mainArgs[mainArgs.length - 1]);
 		if (src != null) {
 			src = client_config.put("source", src);
 		}
+		AstNode.setBeaverLeftmostColumn(0);
+		// ----------------------------------------
 
 		final String jarPath = mainArgs[0];
 		final JsonRequestHandler handler = new DefaultRequestHandler(jarPath,

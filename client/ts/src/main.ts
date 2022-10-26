@@ -271,8 +271,8 @@ const doMain = (wsPort: number) => {
               }
 	  }, 300); // JUUUUUUUST in case the stored window state causes issues, this 300ms timeout allows people to click the 'clear state' button
 	  window.RagQuery = (line, col, autoSelectRoot) => {
-	      console.log("Selecting line ", line, " col ", col, " autoroot is ", autoSelectRoot);
               if (autoSelectRoot) {
+		  //const node: TypeAtLocStep = { type: '<ROOT>', start: (line << 12) + col, end: (line << 12) + col, depth: 0 };
 		  const node: TypeAtLocStep = { type: '<ROOT>', start: (line << 12) + col - 1, end: (line << 12) + col + 1, depth: 0 };
 		  displayAttributeModal(modalEnv, null, { result: node, steps: [] });
               } else {

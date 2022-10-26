@@ -29,6 +29,13 @@ public class AstNode {
 
 	private Boolean isNonOverlappingSibling = null;
 
+	private static int BEAVER_LEFTMOST_COLUMN = 1;
+
+	public static void
+	setBeaverLeftmostColumn(int c) {
+		BEAVER_LEFTMOST_COLUMN = c;
+	}
+
 	public AstNode(Object underlyingAstNode) {
 		if (underlyingAstNode == null) {
 			throw new NullPointerException("Missing underlying node");
@@ -103,12 +110,20 @@ public class AstNode {
 		return getRawSpan(info.astApiStyle);
 	}
 
+	public static int updateBeaverOffset(int offset) {
+		if (offset > 0) {
+			return offset + 1 - BEAVER_LEFTMOST_COLUMN;
+		}
+		return offset;
+	}
+
 	public Span getRawSpan(AstNodeApiStyle positionRepresentation) throws InvokeProblem {
 		if (this.rawSpan == null) {
 			switch (positionRepresentation) {
 			case BEAVER_PACKED_BITS: {
-				this.rawSpan = new Span((Integer) Reflect.invoke0(underlyingAstNode, "getStart"),
-						(Integer) Reflect.invoke0(underlyingAstNode, "getEnd"));
+				this.rawSpan = new Span(
+					updateBeaverOffset((Integer) Reflect.invoke0(underlyingAstNode, "getStart")),
+					updateBeaverOffset((Integer) Reflect.invoke0(underlyingAstNode, "getEnd")));
 				break;
 			}
 			case JASTADD_SEPARATE_LINE_COLUMN: {
