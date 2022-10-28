@@ -3295,49 +3295,49 @@ define("ui/showVersionInfo", ["require", "exports", "model/repositoryUrl"], func
 define("model/teal", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.tealInit = exports.teal0 = void 0;
-    exports.teal0 = {
+    exports.tealInit = exports.tealTokens = void 0;
+    exports.tealTokens = {
         keywords: [
-            'abstract', 'for', 'new', 'switch', 'assert', 'goto', 'do',
-            'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
-            'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
-            'finally', 'const', 'super', 'while', 'true', 'false'
+            'fun', 'var', 'while', 'if', 'else', 'return',
+            'not', 'and', 'or', 'null', 'new',
+            'for', 'in', 'qualifier', 'type',
+            'assert',
+            'class', 'self'
         ],
         typeKeywords: [
-            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+            'int', 'string', 'array', 'any', 'nonnull'
         ],
         operators: [
-            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
-            '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-            '%=', '<<=', '>>=', '>>>='
+            '+', '-', '*', '/', '%',
+            ':=',
+            '>', '<', '==', '<=', '>=', '!=', '=',
+            ':', '<:'
         ],
+        brackets: [['{', '}', 'delimiter.curly'],
+            ['[', ']', 'delimiter.square'],
+            ['(', ')', 'delimiter.parenthesis']],
         // we include these common regular expressions
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
-        // C# style strings
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:[\\"])/,
         // The main tokenizer for our languages
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, { cases: { '@typeKeywords': 'keyword',
+                [/[a-zA-Z_][a-zA-Z_0-9]*/, { cases: { '@typeKeywords': 'keyword',
                             '@keywords': 'keyword',
                             '@default': 'identifier' } }],
-                [/[A-Z][\w\$]*/, 'type.identifier'],
+                [/[A-Z][a-zA-Z_0-9]*/, 'type.identifier'],
                 // whitespace
                 { include: '@whitespace' },
                 // delimiters and operators
                 [/[{}()\[\]]/, '@brackets'],
-                [/[<>](?!@symbols)/, '@brackets'],
                 [/@symbols/, { cases: { '@operators': 'operator',
                             '@default': '' } }],
-                // @ annotations.
-                // As an example, we emit a debugging log message on these tokens.
-                // Note: message are supressed during the first load -- change some lines to see them.
-                [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+                // // @ annotations.
+                // // As an example, we emit a debugging log message on these tokens.
+                // // Note: message are supressed during the first load -- change some lines to see them.
+                // [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
                 // numbers
-                [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
                 [/\d+/, 'number'],
                 // delimiter: after number because of .\d floats
                 [/[;,.]/, 'delimiter'],
@@ -3351,8 +3351,7 @@ define("model/teal", ["require", "exports"], function (require, exports) {
             ],
             comment: [
                 [/[^\/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],
-                ["\\*/", 'comment', '@pop'],
+                [/\*\//, 'comment', '@pop'],
                 [/[\/*]/, 'comment']
             ],
             string: [
@@ -3362,16 +3361,30 @@ define("model/teal", ["require", "exports"], function (require, exports) {
                 [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
             ],
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[ \t\r\n]+/, ''],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
+                [/\/\/.*$/, 'comment']
             ],
         },
     };
-    const tealInit = () => {
-        var languages = window.monaco.languages;
-        languages.register({ id: 'teal' });
-        languages.setMonarchTokensProvider('teal', exports.teal0);
+    const tealConf = {
+        comments: {
+            lineComment: '//',
+            blockComment: ['/*', '*/']
+        },
+        brackets: [
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')']
+        ],
+    };
+    const tealInit = (editorType) => {
+        if (editorType == 'Monaco') {
+            var languages = window.monaco.languages;
+            languages.register({ id: 'teal' });
+            languages.setMonarchTokensProvider('teal', exports.tealTokens);
+            languages.setLanguageConfiguration('teal', tealConf);
+        }
     };
     exports.tealInit = tealInit;
 });
@@ -3459,7 +3472,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     const { preload, init, } = window.definedEditors[editorType];
                     window.loadPreload(preload, () => {
                         var _a;
-                        (0, teal_1.tealInit)();
+                        (0, teal_1.tealInit)(editorType);
                         const res = init((_a = settings_4.default.getEditorContents()) !== null && _a !== void 0 ? _a : `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings_4.default.getSyntaxHighlighting());
                         setLocalState = res.setLocalState || setLocalState;
                         // Allow server to override source code

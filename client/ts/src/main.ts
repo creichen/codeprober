@@ -99,7 +99,7 @@ const doMain = (wsPort: number) => {
       if (window.definedEditors[editorType]) {
         const { preload, init, } = window.definedEditors[editorType];
         window.loadPreload(preload, () => {
-          tealInit();
+          tealInit(editorType);
           const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
           // Allow server to override source code
