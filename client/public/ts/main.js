@@ -3431,7 +3431,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             document.body.setAttribute('data-theme-light', `${settings_4.default.isLightTheme()}`);
             const wsHandler = (0, createWebsocketHandler_1.default)(new WebSocket(`ws://${location.hostname}:${wsPort}`), addConnectionCloseNotice_1.default);
             const rootElem = document.getElementById('root');
-            wsHandler.on('init', ({ version: { clean, hash, buildTimeSeconds } }) => {
+            wsHandler.on('init', ({ version: { clean, hash, buildTimeSeconds }, config }) => {
                 rootElem.style.display = "grid";
                 const onChange = (newValue, adjusters) => {
                     settings_4.default.setEditorContents(newValue);
@@ -3462,6 +3462,10 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         (0, teal_1.tealInit)();
                         const res = init((_a = settings_4.default.getEditorContents()) !== null && _a !== void 0 ? _a : `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings_4.default.getSyntaxHighlighting());
                         setLocalState = res.setLocalState || setLocalState;
+                        // Allow server to override source code
+                        if (config.source) {
+                            setLocalState(config.source);
+                        }
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;
@@ -3519,7 +3523,13 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     option.innerText = alias;
                     syntaxHighlightingSelector.appendChild(option);
                 });
-                setupSimpleSelector(syntaxHighlightingSelector, settings_4.default.getSyntaxHighlighting(), cb => {
+                var syntaxHighlightingDefaultLanguage = settings_4.default.getSyntaxHighlighting();
+                // Allow server to override syntax highlighting
+                if (config.syntax) {
+                    syntaxHighlightingDefaultLanguage = config.syntax;
+                    settings_4.default.setSyntaxHighlighting(config.syntax);
+                }
+                setupSimpleSelector(syntaxHighlightingSelector, syntaxHighlightingDefaultLanguage, cb => {
                     settings_4.default.setSyntaxHighlighting(syntaxHighlightingSelector.value);
                     syntaxHighlightingToggler === null || syntaxHighlightingToggler === void 0 ? void 0 : syntaxHighlightingToggler(settings_4.default.getSyntaxHighlighting());
                 });

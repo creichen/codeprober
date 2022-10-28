@@ -25,6 +25,16 @@ import codeprober.util.VersionInfo;
 
 public class WebSocketServer {
 
+	private JSONObject clientConfig;
+	private List<Runnable> onJarChangeListeners;
+	private Function<JSONObject, String> onQuery;
+
+	private WebSocketServer(JSONObject clientConfig, List<Runnable> onJarChangeListeners, Function<JSONObject, String> onQueryProcessor) {
+		this.onJarChangeListeners = onJarChangeListeners;
+		this.clientConfig = clientConfig;
+		this.onQuery = onQueryProcessor;
+	}
+
 	private static void readFully(InputStream src, byte[] dst) throws IOException {
 		int readPos = 0;
 		int read;
@@ -108,8 +118,7 @@ public class WebSocketServer {
 		}
 	}
 
-	private static void handleRequest(Socket socket, List<Runnable> onJarChangeListeners,
-			Function<JSONObject, String> onQuery) throws IOException, NoSuchAlgorithmException {
+	private void handleRequest(Socket socket) throws IOException, NoSuchAlgorithmException {
 		InputStream in = socket.getInputStream();
 		OutputStream out = socket.getOutputStream();
 		@SuppressWarnings("resource")
@@ -155,6 +164,7 @@ public class WebSocketServer {
 					versionMsg.put("buildTimeSeconds", buildTimeSeconds.intValue());
 				}
 				initMsg.put("version", versionMsg);
+				initMsg.put("config", this.clientConfig);
 
 				writeWsMessage(out, initMsg.toString());
 				while (true) {
@@ -279,8 +289,9 @@ public class WebSocketServer {
 		return 8080;
 	}
 
-	public static void start(List<Runnable> onJarChangeListeners, Function<JSONObject, String> onQuery) {
+	private final void runServer() {
 		final int port = getPort();
+
 		try (ServerSocket server = new ServerSocket(port, 0, createServerFilter())) {
 			System.out.println("Started WebSocket server on port " + port);
 			while (true) {
@@ -288,7 +299,7 @@ public class WebSocketServer {
 				System.out.println("New WS connection from " + s.getRemoteSocketAddress());
 				new Thread(() -> {
 					try {
-						handleRequest(s, onJarChangeListeners, onQuery);
+						this.handleRequest(s);
 					} catch (IOException | NoSuchAlgorithmException e) {
 						System.out.println("Error while handling request");
 						e.printStackTrace();
@@ -306,6 +317,12 @@ public class WebSocketServer {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void start(JSONObject clientConfig,
+				 List<Runnable> onJarChangeListeners, Function<JSONObject, String> onQuery) {
+		final WebSocketServer srv = new WebSocketServer(clientConfig, onJarChangeListeners, onQuery);
+		srv.runServer();
 	}
 
 }

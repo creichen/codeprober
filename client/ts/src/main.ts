@@ -66,7 +66,7 @@ const doMain = (wsPort: number) => {
     );
 
     const rootElem = document.getElementById('root') as HTMLElement;
-    wsHandler.on('init', ({ version: { clean, hash, buildTimeSeconds } }) => {
+    wsHandler.on('init', ({ version: { clean, hash, buildTimeSeconds }, config }) => {
       rootElem.style.display = "grid";
 
       const onChange = (newValue: string, adjusters?: LocationAdjuster[]) => {
@@ -102,6 +102,10 @@ const doMain = (wsPort: number) => {
           tealInit();
           const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
+          // Allow server to override source code
+          if (config.source) {
+            setLocalState(config.source);
+          }
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
           registerStickyMarker = res.registerStickyMarker || registerStickyMarker;
@@ -165,7 +169,13 @@ const doMain = (wsPort: number) => {
         option.innerText = alias;
         syntaxHighlightingSelector.appendChild(option);
       })
-      setupSimpleSelector(syntaxHighlightingSelector, settings.getSyntaxHighlighting(), cb => {
+      var syntaxHighlightingDefaultLanguage = settings.getSyntaxHighlighting();
+      // Allow server to override syntax highlighting
+      if (config.syntax) {
+        syntaxHighlightingDefaultLanguage = config.syntax;
+        settings.setSyntaxHighlighting(config.syntax);
+      }
+      setupSimpleSelector(syntaxHighlightingSelector, syntaxHighlightingDefaultLanguage, cb => {
         settings.setSyntaxHighlighting(syntaxHighlightingSelector.value as SyntaxHighlightingLanguageId);
         syntaxHighlightingToggler?.(settings.getSyntaxHighlighting());
       });
