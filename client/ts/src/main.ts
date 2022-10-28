@@ -14,7 +14,7 @@ import UIElements from "./ui/UIElements";
 import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import { tealInit } from  "./model/teal"
-import runInvisibleProbe from "./ui/runInvisibleProbe";
+import runBgProbe from "./model/runBgProbe";
 
 window.clearUserSettings = () => {
   settings.set({});
@@ -25,7 +25,9 @@ const uiElements = new UIElements();
 
 const doMain = (wsPort: number) => {
   let getLocalState = () => settings.getEditorContents() ?? '';
-  let updateSpanHighlight = (span: Span | null) => {};
+  let basicHighlight: Span | null = null;
+  const stickyHighlights: { [probeId: string]: StickyHighlight } = {};
+  let updateSpanHighlight = (span: Span | null, stickies: StickyHighlight[]) => {};
   const performRpcQuery = (handler: WebsocketHandler, props: { [key: string]: any }) => handler.sendRpc({
     posRecovery: uiElements.positionRecoverySelector.value,
     cache: uiElements.astCacheStrategySelector.value,
@@ -110,7 +112,7 @@ const doMain = (wsPort: number) => {
 
           // Run invisible probes on all collections selected by the server
           config.autoprobes.forEach((attributeName : string) =>
-            runInvisibleProbe(
+            runBgProbe(
               modalEnv,
               { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] },
               { name: attributeName, },
@@ -124,6 +126,17 @@ const doMain = (wsPort: number) => {
             defineThemeToggler(res.themeToggler);
           }
           syntaxHighlightingToggler = res.syntaxHighlightingToggler;
+
+          location.search.split(/\?|&/g).forEach((kv) => {
+            const needle = `bgProbe=`;
+            if (kv.startsWith(needle)) {
+              runBgProbe(
+                modalEnv,
+                { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] },
+                { name: kv.slice(needle.length), },
+              );
+            }
+          });
         })
 
       } else {
@@ -240,8 +253,19 @@ const doMain = (wsPort: number) => {
         captureStdout: () => uiElements.captureStdoutCheckbox.checked,
         duplicateOnAttr: () => uiElements.duplicateProbeCheckbox.checked,
         registerStickyMarker: (...args) => registerStickyMarker(...args),
-        updateSpanHighlight: (hl) => updateSpanHighlight(hl),
+        updateSpanHighlight: (hl) => {
+          basicHighlight = hl;
+          updateSpanHighlight(basicHighlight, Object.values(stickyHighlights));
+        },
         probeWindowStateSavers,
+        setStickyHighlight: (pi, hl) => {
+          stickyHighlights[pi] = hl;
+          updateSpanHighlight(basicHighlight, Object.values(stickyHighlights));
+        },
+        clearStickyHighlight: (pi) => {
+          delete stickyHighlights[pi];
+          updateSpanHighlight(basicHighlight, Object.values(stickyHighlights));
+        },
         triggerWindowSave,
         statisticsCollector: statCollectorImpl,
         currentlyLoadingModals: new Set<string>(),

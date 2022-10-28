@@ -1,3 +1,4 @@
+
 const runInvisibleProbe = (env: ModalEnv, locator: NodeLocator, attr: AstAttrWithValue) => {
   const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
   const localErrors: ProbeMarker[] = [];
@@ -21,8 +22,8 @@ const runInvisibleProbe = (env: ModalEnv, locator: NodeLocator, attr: AstAttrWit
       .then((res: RpcResponse) => {
         const prevLen = localErrors.length;
         localErrors.length = 0;
-        (res.errors as { severity: ('error' | 'warning' | 'info' | 'hint') ; start: number; end: number; msg: string }[]).forEach(({severity, start: errStart, end: errEnd, msg }) => {
-          localErrors.push({ severity, errStart, errEnd, msg });
+        res.errors.forEach(({severity, start: errStart, end: errEnd, msg }) => {
+          localErrors.push({ severity, errStart, errEnd, msg });
         })
         if (prevLen !== 0 || localErrors.length !== 0) {
           env.updateMarkers();
