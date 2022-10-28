@@ -13,6 +13,7 @@ import configureCheckboxWithHiddenButton from "./ui/configureCheckboxWithHiddenB
 import UIElements from "./ui/UIElements";
 import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
+import { tealInit } from  "./model/teal"
 
 window.clearUserSettings = () => {
   settings.set({});
@@ -98,6 +99,7 @@ const doMain = (wsPort: number) => {
       if (window.definedEditors[editorType]) {
         const { preload, init, } = window.definedEditors[editorType];
         window.loadPreload(preload, () => {
+          tealInit();
           const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
           getLocalState = res.getLocalState || getLocalState;
