@@ -48,7 +48,6 @@ public class ASTProvider {
 			try {
 				lastJar.jar.close();
 			} catch (IOException e) {
-				System.out.println("Error when closing jar file");
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -76,7 +75,6 @@ public class ASTProvider {
 		Class<?> klass = Class.forName(mainClassName, true, urlClassLoader);
 		Method mainMethod = klass.getMethod("main", String[].class);
 		Field rootField = klass.getField("DrAST_root_node");
-		System.err.println("rootField = " + rootField);
 		rootField.setAccessible(true);
 
 		lastJar = new LoadedJar(jarPath, jarLastMod, urlClassLoader, klass, jar, mainMethod, rootField);

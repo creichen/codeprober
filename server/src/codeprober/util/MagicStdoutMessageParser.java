@@ -8,14 +8,25 @@ import org.json.JSONObject;
 
 public class MagicStdoutMessageParser {
 
+	static final Pattern PATTERN = Pattern.compile("(ERR|WARN|INFO|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)");
+	static java.io.PrintWriter dstream = null;
+	static	{
+			try {
+				MagicStdoutMessageParser.dstream = new java.io.PrintWriter(new java.io.BufferedWriter(new java.io.FileWriter("/tmp/flog")));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 	public static JSONObject parse(boolean stdout, String line) {
 		// Ignore whether the message is stdout or stderr, capture everything!
-		
-		final Matcher matcher = Pattern.compile("(ERR|WARN|INFO|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)")
-				.matcher(line);
+
+		final Matcher matcher = PATTERN.matcher(line);
 		if (!matcher.matches()) {
 			return null;
 		}
+		dstream.println(">> >> ++ Matched '"+line+"'");
+		dstream.flush();
 		final int start = Integer.parseInt(matcher.group(2));
 		final int end = Integer.parseInt(matcher.group(3));
 		final String msg = matcher.group(4);
