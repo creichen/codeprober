@@ -15,12 +15,10 @@ import codeprober.server.WebSocketServer;
 import codeprober.util.FileMonitor;
 import codeprober.util.VersionInfo;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class CodeProber {
-	enum ArgOptionKind {
-		STRING_ARG, FILE_ARG
-	}
 	/**
 	 * Command line option.  Currently only supports options with paramters, not toggles.
 	 */
@@ -47,7 +45,7 @@ public class CodeProber {
 		 * Pass argument as literal string
 		 */
 		public static class StringArg extends ArgOption {
-			public StringArg (String name, String descr) { super(name, descr); }
+			public StringArg(String name, String descr) { super(name, descr); }
 			public void
 			apply(JSONObject target, String arg) {
 				target.put(this.getName(), arg);
@@ -58,7 +56,7 @@ public class CodeProber {
 		 * Pass argument as literal string
 		 */
 		public static class FileArg extends ArgOption {
-			public FileArg (String name, String descr) { super(name, descr); }
+			public FileArg(String name, String descr) { super(name, descr); }
 			public void
 			apply(JSONObject target, String arg) {
 				try {
@@ -70,11 +68,24 @@ public class CodeProber {
 				}
 			}
 		}
+
+		/**
+		 * Pass argument as comma-separated list
+		 */
+		public static class ListArg extends ArgOption {
+			public ListArg(String name, String descr) { super(name, descr); }
+			public void
+			apply(JSONObject target, String arg) {
+				JSONArray list = new JSONArray(arg.split(","));
+				target.put(this.getName(), list);
+			}
+		}
 	}
 
 	static final ArgOption[] ARG_OPTIONS = new ArgOption[] {
 		new ArgOption.StringArg("syntax", "Force specific syntax highlighting"),
-		new ArgOption.FileArg("source", "Load specific file, overriding browser-local storage")
+		new ArgOption.FileArg("source", "Load specific file, overriding browser-local storage"),
+		new ArgOption.ListArg("autoprobes", "Comma-separated list of attributes on the root node to automatically extract and highlight")
 	};
 
 	/**

@@ -14,6 +14,7 @@ import UIElements from "./ui/UIElements";
 import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import { tealInit } from  "./model/teal"
+import runInvisibleProbe from "./ui/runInvisibleProbe";
 
 window.clearUserSettings = () => {
   settings.set({});
@@ -106,6 +107,15 @@ const doMain = (wsPort: number) => {
           if (config.source) {
             setLocalState(config.source);
           }
+
+          // Run invisible probes on all collections selected by the server
+          config.autoprobes.forEach((attributeName : string) =>
+            runInvisibleProbe(
+              modalEnv,
+              { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] },
+              { name: attributeName, },
+            ));
+
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
           registerStickyMarker = res.registerStickyMarker || registerStickyMarker;

@@ -3388,7 +3388,58 @@ define("model/teal", ["require", "exports"], function (require, exports) {
     };
     exports.tealInit = tealInit;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1) {
+define("ui/runInvisibleProbe", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const runInvisibleProbe = (env, locator, attr) => {
+        const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
+        const localErrors = [];
+        env.probeMarkers[id] = localErrors;
+        let state = 'idle';
+        let reloadOnDone = false;
+        const onRpcDone = () => {
+            state = 'idle';
+            if (reloadOnDone) {
+                reloadOnDone = false;
+                performRpc();
+            }
+        };
+        const performRpc = () => {
+            state = 'loading';
+            env.performRpcQuery({
+                attr,
+                locator,
+            })
+                .then((res) => {
+                const prevLen = localErrors.length;
+                localErrors.length = 0;
+                res.errors.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
+                    localErrors.push({ severity, errStart, errEnd, msg });
+                });
+                if (prevLen !== 0 || localErrors.length !== 0) {
+                    env.updateMarkers();
+                }
+                onRpcDone();
+            })
+                .catch((err) => {
+                console.warn('Failed refreshing invisible probe', err);
+                onRpcDone();
+            });
+        };
+        const refresh = () => {
+            if (state === 'loading') {
+                reloadOnDone = true;
+            }
+            else {
+                performRpc();
+            }
+        };
+        env.onChangeListeners[id] = refresh;
+        refresh();
+    };
+    exports.default = runInvisibleProbe;
+});
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "ui/runInvisibleProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runInvisibleProbe_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3404,6 +3455,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
     configureCheckboxWithHiddenButton_1 = __importDefault(configureCheckboxWithHiddenButton_1);
     UIElements_1 = __importDefault(UIElements_1);
     showVersionInfo_1 = __importDefault(showVersionInfo_1);
+    runInvisibleProbe_1 = __importDefault(runInvisibleProbe_1);
     window.clearUserSettings = () => {
         settings_4.default.set({});
         location.reload();
@@ -3479,6 +3531,8 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         if (config.source) {
                             setLocalState(config.source);
                         }
+                        // Run invisible probes on all collections selected by the server
+                        config.autoprobes.forEach((attributeName) => (0, runInvisibleProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] }, { name: attributeName, }));
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;
