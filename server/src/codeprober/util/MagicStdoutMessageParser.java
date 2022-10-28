@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 public class MagicStdoutMessageParser {
 
-	public static final Pattern MESSAGE_PATTERN = Pattern.compile("(ERR|WARN|INFO|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)");
+	public static final Pattern MESSAGE_PATTERN = Pattern.compile("(ERR|WARN|INFO|HINT|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)");
 
 	public static JSONObject parse(boolean stdout, String line) {
 		// Ignore whether the message is stdout or stderr, capture everything!

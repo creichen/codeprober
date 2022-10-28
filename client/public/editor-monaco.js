@@ -489,6 +489,7 @@ window.defineEditor(
               endColumn: colEnd + 1,
               message,
               severity: ({
+                'hint': 1,
                 'info': 2,
                 'warning': 4
               })[severity] ?? 8, // default to 'error' (8)

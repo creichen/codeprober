@@ -38,7 +38,7 @@ type EditorInitializer = (initialValue: string, onChange: (newValue: string, adj
   syntaxHighlightingToggler: (langId: SyntaxHighlightingLanguageId) => void;
 };
 
-type MarkerSeverity = 'error' | 'warning' | 'info' | 'line-pa';
+type MarkerSeverity = 'error' | 'warning' | 'info' | 'hint' | 'line-pa';
 interface ProbeMarker {
   severity: MarkerSeverity;
   errStart: number;
