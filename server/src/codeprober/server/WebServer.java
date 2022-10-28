@@ -59,7 +59,7 @@ public class WebServer {
 				if (path.endsWith("/")) {
 					path += "index.html";
 				}
-				
+
 				System.out.println("get " + path);
 				if (path.equals("/WS_PORT")) {
 					// Special magical resource, don't actually read from classPath/file system
@@ -101,7 +101,7 @@ public class WebServer {
 //				if (sizeHint != null) {
 //					out.write(("Content-Length: " + sizeHint + "\r\n").getBytes("UTF-8"));
 //				}
-				
+
 				out.write("\r\n".getBytes("UTF-8"));
 
 				final byte[] buf = new byte[512];

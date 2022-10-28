@@ -6,7 +6,7 @@ public enum ParameterTypeDetail {
 	NORMAL,
 	AST_NODE,
 	OUTPUTSTREAM;
-	
+
 	public static ParameterTypeDetail decode(String s) {
 		try {
 			return ParameterTypeDetail.valueOf(s.toUpperCase(Locale.ENGLISH));
