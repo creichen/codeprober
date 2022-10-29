@@ -40,15 +40,20 @@ import codeprober.rpc.JsonRequestHandler;
 import codeprober.util.ASTProvider;
 import codeprober.util.BenchmarkTimer;
 import codeprober.util.MagicStdoutMessageParser;
+import java.util.Collection;
+import java.lang.reflect.Method;
 
 public class DefaultRequestHandler implements JsonRequestHandler {
-
+	public static final String CODE_PROBER_REPORT_METHOD = "getCodeProberReportString";
 	private final String underlyingCompilerJar;
 	private final String[] defaultForwardArgs;
 
 	private AstInfo lastInfo = null;
 	private String lastParsedInput = null;
 	private String[] lastForwardArgs;
+	private JSONArray reportCollector = null; // nonnull if report extraction requested
+
+	private StringBuffer log = new StringBuffer();
 
 	public DefaultRequestHandler(String underlyingJarFile, String[] forwardArgs) {
 		this.underlyingCompilerJar = underlyingJarFile;
@@ -56,8 +61,57 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 		this.lastForwardArgs = this.defaultForwardArgs;
 	}
 
+	/**
+	 * Extract reports for background probes
+	 */
+	void extractReports(Object value) {
+		if (reportCollector  == null) {
+			return;
+		}
+
+		if (value instanceof java.util.Collection) {
+			Collection coll = (Collection) value;
+			Method extractor = null;
+
+			for (Object o : coll) {
+				try {
+					extractor = o.getClass().getMethod(CODE_PROBER_REPORT_METHOD);
+				} catch (Throwable __) {
+					// No extractor function
+				}
+				break;
+			}
+
+			if (extractor == null) {
+				// Either empty, or at least one element doesn't support getCodeProberReportString
+				return;
+			}
+
+			for (Object o : coll) {
+				try {
+					Object obj = extractor.invoke(o);
+					if (obj == null) {
+						continue;
+					}
+
+					String msg = (obj instanceof String)
+						? (String) obj
+						: obj.toString();
+
+					JSONObject decoded = MagicStdoutMessageParser.parse(true, msg);
+					if (decoded != null) {
+						reportCollector.put(decoded);
+					}
+				} catch (Throwable exn) {
+					// Mixed data?  Warn user
+					log.append(exn.toString());
+				}
+			}
+		}
+	}
+
 	void handleParsedAst(Object ast, Function<String, Class<?>> loadAstClass, JSONObject queryObj,
-			JSONObject retBuilder, JSONArray bodyBuilder) {
+			     JSONObject retBuilder, JSONArray bodyBuilder) {
 		if (ast == null) {
 			lastInfo = null;
 			bodyBuilder.put("Compiler exited, but no 'DrAST_root_node' found.");
@@ -124,6 +178,14 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 		final JSONObject queryAttr = queryBody.getJSONObject("attr");
 		final String queryAttrName = queryAttr.getString("name");
+		// Should we extract error reports from java.util.Collection values?
+		final boolean extractReports = queryAttr.has("extract-reports") && queryAttr.getBoolean("extract-reports");
+		if (extractReports) {
+			if (reportCollector == null) {
+				reportCollector = new JSONArray();
+			}
+		}
+
 		// First check for 'magic' methods
 		switch (queryAttrName) {
 		case "meta:listNodes": {
@@ -156,7 +218,6 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 		final boolean captureStdio = queryObj.optBoolean("stdout", false);
 		final Runnable evaluateAttr = () -> {
-
 			try {
 				final JSONArray args = queryAttr.optJSONArray("args");
 				final Object value;
@@ -214,6 +275,9 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 				if (value != Reflect.VOID_RETURN_VALUE) {
 					CreateLocator.setBuildFastButFragileLocator(true);
+					if (extractReports) {
+						this.extractReports(value);
+					}
 					try {
 						EncodeResponseValue.encode(info, bodyBuilder, value, new HashSet<>());
 					} finally {
@@ -454,12 +518,17 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 		// Somehow extract syntax errors from stdout?
 		retBuilder.put("body", bodyBuilder);
 		retBuilder.put("errors", errors != null ? errors : new JSONArray());
+		retBuilder.put("reports", reportCollector != null ? reportCollector : new JSONArray());
 		retBuilder.put("totalTime", (System.nanoTime() - requestStart));
 		retBuilder.put("createLocatorTime", BenchmarkTimer.CREATE_LOCATOR.getAccumulatedNano());
 		retBuilder.put("applyLocatorTime", BenchmarkTimer.APPLY_LOCATOR.getAccumulatedNano());
 		retBuilder.put("attrEvalTime", BenchmarkTimer.EVALUATE_ATTR.getAccumulatedNano());
 		retBuilder.put("nodesAtPositionTime", BenchmarkTimer.LIST_NODES.getAccumulatedNano());
 		retBuilder.put("pastaAttrsTime", BenchmarkTimer.LIST_PROPERTIES.getAccumulatedNano());
+		if (!log.isEmpty()) {
+			System.err.println("Errors during request processing for " + queryObj + ":");
+			System.err.println(log);
+		}
 
 		System.out.println("Request done");
 		return retBuilder;

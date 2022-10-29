@@ -114,8 +114,8 @@ const doMain = (wsPort: number) => {
           config.autoprobes.forEach((attributeName : string) =>
             runBgProbe(
               modalEnv,
-              { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] },
-              { name: attributeName, },
+              { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [],},
+              { name: attributeName,  'extract-reports': true, },
             ));
 
           getLocalState = res.getLocalState || getLocalState;

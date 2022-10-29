@@ -118,6 +118,7 @@ type ArgValue = string | number | boolean | null | NodeLocator;
 interface AstAttrWithValue {
   name: string;
   args?: (AstAttrArg & { value: ArgValue })[];
+  'extract-reports'?: bool;
 }
 
 type NodeLocatorStep =
@@ -143,12 +144,20 @@ interface NodeLocator {
   steps: NodeLocatorStep[];
 }
 
+interface IssueReport {
+  severity: ('error' | 'warning' | 'info' | 'hint');
+  start: number; end: number; msg: string;
+}
+
 interface RpcResponse {
   body: RpcBodyLine[];
   args?: (Omit<AstAttrArg, 'name'> & { value: ArgValue })[];
   // args?: AstAttrWithValue['args'],
   locator: NodeLocator;
-  errors: { severity: ('error' | 'warning' | 'info'); start: number; end: number; msg: string; }[];
+  // reports are extracted from node attributes
+  reports: IssueReport[];
+  // errors are extracted from stdio/stderr
+  errors: IssueReport[];
 
   // Expected for request meta:listNodes
   nodes?: NodeLocator[];

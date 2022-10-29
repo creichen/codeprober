@@ -3422,7 +3422,7 @@ define("model/teal", ["require", "exports"], function (require, exports) {
 define("model/runBgProbe", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const runInvisibleProbe = (env, locator, attr) => {
+    const runBgProbe = (env, locator, attr) => {
         const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
         const localErrors = [];
         env.probeMarkers[id] = localErrors;
@@ -3444,9 +3444,9 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
                 .then((res) => {
                 const prevLen = localErrors.length;
                 localErrors.length = 0;
-                res.errors.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
+                [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
                     localErrors.push({ severity, errStart, errEnd, msg });
-                });
+                }));
                 if (prevLen !== 0 || localErrors.length !== 0) {
                     env.updateMarkers();
                 }
@@ -3468,7 +3468,7 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
         env.onChangeListeners[id] = refresh;
         refresh();
     };
-    exports.default = runInvisibleProbe;
+    exports.default = runBgProbe;
 });
 define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1) {
     "use strict";
@@ -3565,7 +3565,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                             setLocalState(config.source);
                         }
                         // Run invisible probes on all collections selected by the server
-                        config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] }, { name: attributeName, }));
+                        config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: attributeName, 'extract-reports': true, }));
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;
@@ -3763,57 +3763,6 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
 //   document.body.setAttribute('data-theme-light', `${light}`);
 // }
 // export { isLightTheme, setIsLightTheme };
-define("ui/runInvisibleProbe", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const runInvisibleProbe = (env, locator, attr) => {
-        const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
-        const localErrors = [];
-        env.probeMarkers[id] = localErrors;
-        let state = 'idle';
-        let reloadOnDone = false;
-        const onRpcDone = () => {
-            state = 'idle';
-            if (reloadOnDone) {
-                reloadOnDone = false;
-                performRpc();
-            }
-        };
-        const performRpc = () => {
-            state = 'loading';
-            env.performRpcQuery({
-                attr,
-                locator,
-            })
-                .then((res) => {
-                const prevLen = localErrors.length;
-                localErrors.length = 0;
-                res.errors.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
-                    localErrors.push({ severity, errStart, errEnd, msg });
-                });
-                if (prevLen !== 0 || localErrors.length !== 0) {
-                    env.updateMarkers();
-                }
-                onRpcDone();
-            })
-                .catch((err) => {
-                console.warn('Failed refreshing invisible probe', err);
-                onRpcDone();
-            });
-        };
-        const refresh = () => {
-            if (state === 'loading') {
-                reloadOnDone = true;
-            }
-            else {
-                performRpc();
-            }
-        };
-        env.onChangeListeners[id] = refresh;
-        refresh();
-    };
-    exports.default = runInvisibleProbe;
-});
 const startEndToSpan = (start, end) => ({
     lineStart: (start >>> 12),
     colStart: start & 0xFFF,
