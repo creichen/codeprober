@@ -1,6 +1,3 @@
-import toSpan from "./locations";
-
-
 class BgProbe {
   static probeCounter = 0;
 
@@ -47,7 +44,7 @@ class BgProbe {
 	if (highlightClasses) {
 	  // Sticky marker: no label text
 	  this.addStickyMarker({ classNames: highlightClasses,
-				 span: toSpan({ start: errStart, end: errEnd }) });
+				 span: startEndToSpan(errStart, errEnd )});
 	}
       }))
     if (prevLen !== 0 || this.localProbeMarkers.length !== 0) {

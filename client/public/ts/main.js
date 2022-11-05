@@ -3421,23 +3421,9 @@ define("model/teal", ["require", "exports"], function (require, exports) {
     };
     exports.tealInit = tealInit;
 });
-define("model/locations", ["require", "exports"], function (require, exports) {
+define("model/runBgProbe", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function toSpan({ start, end }) {
-        return {
-            lineStart: (start >>> 12),
-            colStart: start & 0xFFF,
-            lineEnd: (end >>> 12),
-            colEnd: end & 0xFFF,
-        };
-    }
-    exports.default = toSpan;
-});
-define("model/runBgProbe", ["require", "exports", "model/locations"], function (require, exports, locations_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    locations_1 = __importDefault(locations_1);
     class BgProbe {
         constructor(env) {
             this.localProbeMarkers = []; // "regular" markers (flexible hover text, must be error|warning|hint|info)
@@ -3471,7 +3457,7 @@ define("model/runBgProbe", ["require", "exports", "model/locations"], function (
                 if (highlightClasses) {
                     // Sticky marker: no label text
                     this.addStickyMarker({ classNames: highlightClasses,
-                        span: (0, locations_1.default)({ start: errStart, end: errEnd }) });
+                        span: startEndToSpan(errStart, errEnd) });
                 }
             }));
             if (prevLen !== 0 || this.localProbeMarkers.length !== 0) {
@@ -3520,7 +3506,7 @@ define("model/runBgProbe", ["require", "exports", "model/locations"], function (
     };
     exports.default = runBgProbe;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe", "model/locations"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1, locations_2) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3537,7 +3523,6 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
     UIElements_1 = __importDefault(UIElements_1);
     showVersionInfo_1 = __importDefault(showVersionInfo_1);
     runBgProbe_1 = __importDefault(runBgProbe_1);
-    locations_2 = __importDefault(locations_2);
     window.clearUserSettings = () => {
         settings_4.default.set({});
         location.reload();
@@ -3650,7 +3635,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                             return;
                         }
                         deduplicator.add(uniqId);
-                        const span = (0, locations_2.default)({ start: start, end: end });
+                        const span = startEndToSpan(start, end);
                         activeMarkers.push(markText({ severity, message: msg, ...span }));
                     };
                     Object.values(probeMarkers).forEach(arr => arr.forEach(({ severity, errStart, errEnd, msg }) => filteredAddMarker(severity, errStart, errEnd, msg)));

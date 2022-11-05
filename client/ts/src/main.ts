@@ -15,7 +15,6 @@ import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import { tealInit } from  "./model/teal"
 import runBgProbe from "./model/runBgProbe";
-import toSpan from "./model/locations";
 
 window.clearUserSettings = () => {
   settings.set({});
@@ -158,7 +157,7 @@ const doMain = (wsPort: number) => {
             return;
           }
           deduplicator.add(uniqId);
-	  const span = toSpan({ start: start, end: end });
+	  const span = startEndToSpan(start, end);
 
           activeMarkers.push(markText({ severity, message: msg, ...span }));
         }
