@@ -292,7 +292,9 @@ const displayProbeModal = (env: ModalEnv, modalPos: ModalPosition, locator: Node
           localErrors.length = 0;
 
           parsed.errors.forEach(({severity, start: errStart, end: errEnd, msg }) => {
-            localErrors.push({ severity, errStart, errEnd, msg });
+	    if (severity) {
+              localErrors.push({ severity, errStart, errEnd, msg });
+	    }
           })
           const updatedArgs = parsed.args;
           if (updatedArgs) {

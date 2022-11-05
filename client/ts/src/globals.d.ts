@@ -5,6 +5,10 @@ type HelpType = 'general' | 'recovery-strategy' | 'probe-window' | 'magic-stdout
   | 'location-style'
   ;
 
+interface PackedLoc {
+  start: number;
+  end: number;
+}
 
 interface Span {
   lineStart: number;
@@ -127,11 +131,9 @@ type NodeLocatorStep =
   | { type: 'tal', value: TypeAtLocStep }
   ;
 
-interface TypeAtLoc {
+interface TypeAtLoc extends PackedLoc {
   type: string;
   label?: string;
-  start: number;
-  end: number;
 }
 
 interface TypeAtLocStep extends TypeAtLoc {
@@ -144,9 +146,10 @@ interface NodeLocator {
   steps: NodeLocatorStep[];
 }
 
-interface IssueReport {
-  severity: ('error' | 'warning' | 'info' | 'hint');
-  start: number; end: number; msg: string;
+interface IssueReport extends PackedLoc {
+  severity: MarkerSeverity?;
+  highlightClasses: string[]?; // CSS classes for "sticky" highlighting
+  msg: string;
 }
 
 interface RpcResponse {

@@ -2373,7 +2373,9 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                     let refreshMarkers = localErrors.length > 0;
                     localErrors.length = 0;
                     parsed.errors.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
-                        localErrors.push({ severity, errStart, errEnd, msg });
+                        if (severity) {
+                            localErrors.push({ severity, errStart, errEnd, msg });
+                        }
                     });
                     const updatedArgs = parsed.args;
                     if (updatedArgs) {
@@ -3419,13 +3421,68 @@ define("model/teal", ["require", "exports"], function (require, exports) {
     };
     exports.tealInit = tealInit;
 });
-define("model/runBgProbe", ["require", "exports"], function (require, exports) {
+define("model/locations", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    function toSpan({ start, end }) {
+        return {
+            lineStart: (start >>> 12),
+            colStart: start & 0xFFF,
+            lineEnd: (end >>> 12),
+            colEnd: end & 0xFFF,
+        };
+    }
+    exports.default = toSpan;
+});
+define("model/runBgProbe", ["require", "exports", "model/locations"], function (require, exports, locations_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    locations_1 = __importDefault(locations_1);
+    class BgProbe {
+        constructor(env) {
+            this.localProbeMarkers = []; // "regular" markers (flexible hover text, must be error|warning|hint|info)
+            this.localStickies = []; // "sticky" markers (css styling)
+            this.env = env;
+            this.id = `invisible-probe-${BgProbe.probeCounter++}`;
+            env.probeMarkers[this.id] = this.localProbeMarkers;
+        }
+        // Remove all sticky markers
+        clearStickyMarkers() {
+            this.localStickies.forEach(this.env.clearStickyHighlight);
+            this.localStickies.length = 0;
+        }
+        // Add and track "sticky" marker
+        addStickyMarker(highlight) {
+            const sticky_id = this.id + '.' + this.localStickies.length.toString();
+            this.localStickies.push(sticky_id);
+            this.env.setStickyHighlight(sticky_id, highlight);
+        }
+        // Process Rpc update: refresh all markers
+        update(res) {
+            const prevLen = this.localProbeMarkers.length;
+            // drop probe markers, but do not refresh yet
+            this.localProbeMarkers.length = 0;
+            this.clearStickyMarkers();
+            [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
+                if (severity) {
+                    // Regular issue report
+                    this.localProbeMarkers.push({ severity, errStart, errEnd, msg });
+                }
+                if (highlightClasses) {
+                    // Sticky marker: no label text
+                    this.addStickyMarker({ classNames: highlightClasses,
+                        span: (0, locations_1.default)({ start: errStart, end: errEnd }) });
+                }
+            }));
+            if (prevLen !== 0 || this.localProbeMarkers.length !== 0) {
+                // refresh env markers, if needed-- this will refresh markers from all probes
+                this.env.updateMarkers();
+            }
+        }
+    }
+    BgProbe.probeCounter = 0;
     const runBgProbe = (env, locator, attr) => {
-        const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
-        const localErrors = [];
-        env.probeMarkers[id] = localErrors;
+        const bgProbe = new BgProbe(env);
         let state = 'idle';
         let reloadOnDone = false;
         const onRpcDone = () => {
@@ -3442,14 +3499,7 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
                 locator,
             })
                 .then((res) => {
-                const prevLen = localErrors.length;
-                localErrors.length = 0;
-                [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
-                    localErrors.push({ severity, errStart, errEnd, msg });
-                }));
-                if (prevLen !== 0 || localErrors.length !== 0) {
-                    env.updateMarkers();
-                }
+                bgProbe.update(res);
                 onRpcDone();
             })
                 .catch((err) => {
@@ -3465,12 +3515,12 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
                 performRpc();
             }
         };
-        env.onChangeListeners[id] = refresh;
+        env.onChangeListeners[bgProbe.id] = refresh;
         refresh();
     };
     exports.default = runBgProbe;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe", "model/locations"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1, locations_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3487,6 +3537,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
     UIElements_1 = __importDefault(UIElements_1);
     showVersionInfo_1 = __importDefault(showVersionInfo_1);
     runBgProbe_1 = __importDefault(runBgProbe_1);
+    locations_2 = __importDefault(locations_2);
     window.clearUserSettings = () => {
         settings_4.default.set({});
         location.reload();
@@ -3599,11 +3650,8 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                             return;
                         }
                         deduplicator.add(uniqId);
-                        const lineStart = (start >>> 12);
-                        const colStart = start & 0xFFF;
-                        const lineEnd = (end >>> 12);
-                        const colEnd = end & 0xFFF;
-                        activeMarkers.push(markText({ severity, lineStart, colStart, lineEnd, colEnd, message: msg }));
+                        const span = (0, locations_2.default)({ start: start, end: end });
+                        activeMarkers.push(markText({ severity, message: msg, ...span }));
                     };
                     Object.values(probeMarkers).forEach(arr => arr.forEach(({ severity, errStart, errEnd, msg }) => filteredAddMarker(severity, errStart, errEnd, msg)));
                 };
