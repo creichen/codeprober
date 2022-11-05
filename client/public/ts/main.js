@@ -3421,7 +3421,71 @@ define("model/teal", ["require", "exports"], function (require, exports) {
     };
     exports.tealInit = tealInit;
 });
-define("model/runBgProbe", ["require", "exports"], function (require, exports) {
+define("ui/CustomCSS", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.customCSSName = exports.setCustomCSS = void 0;
+    const customCSSPrefix = 'code-prober-client-custom-';
+    // Represents a custom CSS definition attached to the document root
+    // Not optimised for performance: assumes that we do not update very often
+    class CustomCSSElement {
+        constructor(config) {
+            this.config = config;
+            let style = document.createElement('style');
+            this.cssElement = style;
+            style.type = 'text/css';
+            let globalID = this.cssName();
+            let styleBody = `.${globalID} ${config.darkCSS}\n`;
+            if (config.lightCSS) {
+                styleBody += `.${globalID} data-theme-light ${config.lightCSS}\n`;
+            }
+            style.innerHTML = styleBody;
+            document.getElementsByTagName('head')[0].appendChild(style);
+        }
+        // Does the CSS setup match?
+        cssMatches(config) {
+            return (config.darkCSS == this.config.darkCSS
+                && config.lightCSS == this.config.lightCSS);
+        }
+        // Gets the name that is used in the actual stylesheet
+        cssName() {
+            return customCSSName(this.config.clientID);
+        }
+        remove() {
+            var _a;
+            if (this.cssElement) {
+                (_a = this.cssElement.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.cssElement);
+                this.config.clientID = '<deleted>';
+                this.cssElement = null;
+            }
+        }
+    }
+    let registeredCSSElements = new Map(); // : { [key: string]: CustomCSSElement } = {};
+    // Sets the current list of custom CSS styles
+    function setCustomCSS(styles) {
+        let observedElements = [];
+        styles.forEach(style => {
+            let oldCSSElement = registeredCSSElements.get(style.clientID);
+            if (oldCSSElement && !oldCSSElement.cssMatches(style)) {
+                oldCSSElement.remove();
+            }
+            registeredCSSElements.set(style.clientID, new CustomCSSElement(style));
+            observedElements.push(style.clientID);
+        });
+        const observedCSSElements = new Set(observedElements);
+        registeredCSSElements.forEach((elt, clientID) => {
+            if (!observedCSSElements.has(clientID)) {
+                elt.remove();
+            }
+        });
+    }
+    exports.setCustomCSS = setCustomCSS;
+    function customCSSName(clientID) {
+        return customCSSPrefix + clientID;
+    }
+    exports.customCSSName = customCSSName;
+});
+define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (require, exports, CustomCSS_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class BgProbe {
@@ -3441,6 +3505,13 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
         addStickyMarker(highlight) {
             const sticky_id = this.id + '.' + this.localStickies.length.toString();
             this.localStickies.push(sticky_id);
+            var localizedClasses = [];
+            // translate local CSS names to global names
+            highlight.classNames.forEach((clientCSSID) => {
+                localizedClasses.push((0, CustomCSS_1.customCSSName)(clientCSSID));
+            });
+            highlight.classNames = localizedClasses;
+            console.log(`Highlighting: ${highlight}`);
             this.env.setStickyHighlight(sticky_id, highlight);
         }
         // Process Rpc update: refresh all markers
@@ -3450,6 +3521,7 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
             this.localProbeMarkers.length = 0;
             this.clearStickyMarkers();
             [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
+                highlightClasses = ['my-red-bg'];
                 if (severity) {
                     // Regular issue report
                     this.localProbeMarkers.push({ severity, errStart, errEnd, msg });
@@ -3506,7 +3578,7 @@ define("model/runBgProbe", ["require", "exports"], function (require, exports) {
     };
     exports.default = runBgProbe;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe", "ui/CustomCSS"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1, CustomCSS_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3602,6 +3674,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         }
                         // Run invisible probes on all collections selected by the server
                         config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: attributeName, 'extract-reports': true, }));
+                        (0, CustomCSS_2.setCustomCSS)(config.customCSS);
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;

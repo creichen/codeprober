@@ -1,3 +1,5 @@
+import { customCSSName } from "../ui/CustomCSS";
+
 class BgProbe {
   static probeCounter = 0;
 
@@ -23,6 +25,16 @@ class BgProbe {
   addStickyMarker(highlight: StickyHighlight) {
     const sticky_id = this.id + '.' + this.localStickies.length.toString();
     this.localStickies.push(sticky_id);
+
+    var localizedClasses : string[] = [];
+
+    // translate local CSS names to global names
+    highlight.classNames.forEach((clientCSSID) => {
+      localizedClasses.push(customCSSName(clientCSSID));
+    });
+    highlight.classNames = localizedClasses;
+
+    console.log(`Highlighting: ${highlight}`);
     this.env.setStickyHighlight(sticky_id, highlight);
   }
 
@@ -37,6 +49,7 @@ class BgProbe {
 
     [res.errors, res.reports].forEach((reportlist : IssueReport[]) =>
       reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
+	highlightClasses = ['my-red-bg'];
 	if (severity) {
 	  // Regular issue report
           this.localProbeMarkers.push({ severity, errStart, errEnd, msg });

@@ -152,6 +152,12 @@ interface IssueReport extends PackedLoc {
   msg: string;
 }
 
+interface CustomCSS {
+  clientID: string; // client-side string used to identify the CSS element
+  darkCSS: string; // string-serialised CSS describing the element (e.g., "{ background-color:red; }")
+  lightCSS: string?; // analogous for darkBody, for "light mode"
+}
+
 interface RpcResponse {
   body: RpcBodyLine[];
   args?: (Omit<AstAttrArg, 'name'> & { value: ArgValue })[];
