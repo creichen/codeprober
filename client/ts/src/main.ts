@@ -15,7 +15,6 @@ import showVersionInfo from "./ui/showVersionInfo";
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import { tealInit } from  "./model/teal"
 import runBgProbe from "./model/runBgProbe";
-import { setCustomCSS } from "./ui/CustomCSS";
 
 window.clearUserSettings = () => {
   settings.set({});
@@ -118,8 +117,6 @@ const doMain = (wsPort: number) => {
               { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [],},
               { name: attributeName,  'extract-reports': true, },
             ));
-
-	  setCustomCSS(config.customCSS);
 
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;

@@ -3437,7 +3437,7 @@ define("ui/CustomCSS", ["require", "exports"], function (require, exports) {
             let globalID = this.cssName();
             let styleBody = `.${globalID} ${config.darkCSS}\n`;
             if (config.lightCSS) {
-                styleBody += `.${globalID} data-theme-light ${config.lightCSS}\n`;
+                styleBody += `body[data-theme-light='true'] .${globalID} ${config.lightCSS}\n`;
             }
             style.innerHTML = styleBody;
             document.getElementsByTagName('head')[0].appendChild(style);
@@ -3511,7 +3511,6 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
                 localizedClasses.push((0, CustomCSS_1.customCSSName)(clientCSSID));
             });
             highlight.classNames = localizedClasses;
-            console.log(`Highlighting: ${highlight}`);
             this.env.setStickyHighlight(sticky_id, highlight);
         }
         // Process Rpc update: refresh all markers
@@ -3520,8 +3519,11 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
             // drop probe markers, but do not refresh yet
             this.localProbeMarkers.length = 0;
             this.clearStickyMarkers();
+            // Update to stylesheets
+            if (res.clientStyles) {
+                (0, CustomCSS_1.setCustomCSS)(res.clientStyles);
+            }
             [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
-                highlightClasses = ['my-red-bg'];
                 if (severity) {
                     // Regular issue report
                     this.localProbeMarkers.push({ severity, errStart, errEnd, msg });
@@ -3578,7 +3580,7 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
     };
     exports.default = runBgProbe;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe", "ui/CustomCSS"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1, CustomCSS_2) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/teal", "model/runBgProbe"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_3, displayRagModal_1, displayHelp_3, displayAttributeModal_5, settings_4, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_1, showVersionInfo_1, teal_1, runBgProbe_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -3674,7 +3676,6 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         }
                         // Run invisible probes on all collections selected by the server
                         config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: attributeName, 'extract-reports': true, }));
-                        (0, CustomCSS_2.setCustomCSS)(config.customCSS);
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,9 +40,11 @@ import codeprober.protocol.decode.DecodeValue;
 import codeprober.rpc.JsonRequestHandler;
 import codeprober.util.ASTProvider;
 import codeprober.util.BenchmarkTimer;
+import codeprober.util.ClientStyles;
 import codeprober.util.MagicStdoutMessageParser;
 import java.util.Collection;
 import java.lang.reflect.Method;
+
 
 public class DefaultRequestHandler implements JsonRequestHandler {
 	public static final String CODE_PROBER_REPORT_METHOD = "getCodeProberReportString";
@@ -51,6 +54,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 	private AstInfo lastInfo = null;
 	private String lastParsedInput = null;
 	private String[] lastForwardArgs;
+	private ClientStyles lastClientStyles = new ClientStyles(null);
 
 	private StringBuffer log = new StringBuffer();
 
@@ -411,6 +415,10 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 					throw new RuntimeException(e);
 				}
 			};
+
+			// Hack around use of directly-evaluated closure
+			Supplier<ClientStyles>[] stylesProvider = new Supplier[] { null };
+
 			try {
 				errors = StdIoInterceptor.performCaptured(MagicStdoutMessageParser::parse, () -> {
 						final String inputText = queryObj.getString("text");
@@ -499,6 +507,8 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 														    retBuilder.put("parseTime", (System.nanoTime() - parseStart));
 														    handleParsedAst(ast, loadCls, retBuilder, bodyBuilder);
 													    });
+						stylesProvider[0] = parsed.stylesClosure;
+
 						if (!parsed.success) {
 							if (bodyBuilder.length() == 0) {
 								bodyBuilder.put("Parsing failed");
@@ -525,6 +535,14 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 				final File tmpFile = tmp.get();
 				if (tmpFile != null) {
 					tmpFile.delete();
+				}
+			}
+
+			if (stylesProvider[0] != null) {
+				final ClientStyles newStyles = stylesProvider[0].get();
+				if (!newStyles.equals(lastClientStyles)) {
+					lastClientStyles = newStyles;
+					retBuilder.put("clientStyles", newStyles.toJSON());
 				}
 			}
 

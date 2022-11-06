@@ -16,7 +16,7 @@ class CustomCSSElement {
     let globalID = this.cssName();
     let styleBody = `.${globalID} ${config.darkCSS}\n`;
     if (config.lightCSS) {
-      styleBody += `.${globalID} data-theme-light ${config.lightCSS}\n`;
+      styleBody += `body[data-theme-light='true'] .${globalID} ${config.lightCSS}\n`;
     }
     style.innerHTML = styleBody;
     document.getElementsByTagName('head')[0].appendChild(style);

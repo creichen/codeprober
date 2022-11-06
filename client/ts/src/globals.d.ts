@@ -173,6 +173,7 @@ interface RpcResponse {
 
   // Expected for requests meta:listAllProperties and meta:listProperties
   properties?: AstAttr[];
+  clientStyles?: CustomCSS[];
 
   totalTime?: number;
   parseTime?: number;

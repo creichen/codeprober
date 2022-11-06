@@ -3,12 +3,14 @@ package codeprober.util;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class MagicStdoutMessageParser {
 
-	public static final Pattern MESSAGE_PATTERN = Pattern.compile("(ERR|WARN|INFO|HINT|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)");
+	public static final Pattern MESSAGE_PATTERN = Pattern.compile("(ERR|WARN|INFO|HINT|STYLE|LINE-PP|LINE-AA|LINE-AP|LINE-PA)@(\\d+);(\\d+);(.*)");
 
 	public static JSONObject parse(boolean stdout, String line) {
 		// Ignore whether the message is stdout or stderr, capture everything!
@@ -27,6 +29,11 @@ public class MagicStdoutMessageParser {
 			break;
 		case "WARN":
 			obj.put("severity", "warning");
+			break;
+		case "STYLE":
+			final String[] styles = msg.split(",", -1);
+			obj.put("highlightClasses",
+				new JSONArray(Stream.of(styles).map(String::trim).toArray(String[]::new)));
 			break;
 		default:
 			obj.put("severity", matcher.group(1).toLowerCase(Locale.ENGLISH));

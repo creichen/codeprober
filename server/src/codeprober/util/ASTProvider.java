@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.jar.JarFile;
 
 import org.json.JSONArray;
@@ -23,6 +24,9 @@ import codeprober.metaprogramming.StdIoInterceptor;
  */
 public class ASTProvider {
 	private static class LoadedJar {
+		static final String DRAST_ROOT_NODE_FIELD = "DrAST_root_node";
+		static final String CODEPROBER_REPORT_STYLES_FIELD = "CodeProber_report_styles";
+
 		public final String jarPath;
 		public final long jarLastModified;
 		public final CompilerClassLoader classLoader;
@@ -30,16 +34,74 @@ public class ASTProvider {
 		public final JarFile jar;
 		public final Method mainMth;
 		public final Field drAstField;
+		public final Field clientStylesField;;
+
+		public Object
+		getASTRoot() throws IllegalAccessException {
+			return this.drAstField.get(this.mainClazz);
+		}
+
+		public ClientStyles
+		getClientStyles() {
+			return new ClientStyles(this.getClientStylesRaw());
+		}
+
+		protected String[]
+		getClientStylesRaw() {
+			if (this.clientStylesField == null) {
+				return null;
+			}
+			final Object styles;
+			try {
+				styles = this.clientStylesField.get(this.mainClazz);
+			} catch (IllegalAccessException exn) {
+				exn.printStackTrace();
+				return null;
+			}
+
+			if (styles == null) {
+				return null;
+			}
+
+			if (!(styles instanceof Object[])) {
+				System.err.println(CODEPROBER_REPORT_STYLES_FIELD + " does not contain a string/object array: " + styles.getClass());
+				return null;
+			}
+
+			Object[] ostyles = (Object[]) styles;
+			for (Object o : ostyles) {
+				if (!(o instanceof String)) {
+					System.err.println(CODEPROBER_REPORT_STYLES_FIELD + " contains non-String object: " + ((o == null)? "null" : o.getClass()));
+					return null;
+				}
+			}
+			return (String[]) ostyles;
+		}
+
+		public Field getField(String fieldName, boolean required) {
+			try {
+				Field field = this.mainClazz.getField(fieldName);
+				field.setAccessible(true);
+				return field;
+			} catch (NoSuchFieldException exn) {
+				System.err.println("Coulnd not load field '" + fieldName + "': " + exn);
+				if (!required) {
+					return null;
+				}
+				throw new RuntimeException(exn);
+			}
+		}
 
 		public LoadedJar(String jarPath, long jarLastModified, CompilerClassLoader classLoader, Class<?> mainClazz, JarFile jar,
-				Method mainMth, Field drAstField) {
+				Method mainMth) {
 			this.jarPath = jarPath;
 			this.jarLastModified = jarLastModified;
 			this.classLoader = classLoader;
 			this.mainClazz = mainClazz;
 			this.jar = jar;
 			this.mainMth = mainMth;
-			this.drAstField = drAstField;
+			this.drAstField = this.getField(DRAST_ROOT_NODE_FIELD, true);
+			this.clientStylesField = this.getField(CODEPROBER_REPORT_STYLES_FIELD, false);
 		}
 	}
 
@@ -75,10 +137,8 @@ public class ASTProvider {
 		String mainClassName = jar.getManifest().getMainAttributes().getValue("Main-Class");
 		Class<?> klass = Class.forName(mainClassName, true, urlClassLoader);
 		Method mainMethod = klass.getMethod("main", String[].class);
-		Field rootField = klass.getField("DrAST_root_node");
-		rootField.setAccessible(true);
 
-		lastJar = new LoadedJar(jarPath, jarLastMod, urlClassLoader, klass, jar, mainMethod, rootField);
+		lastJar = new LoadedJar(jarPath, jarLastMod, urlClassLoader, klass, jar, mainMethod);
 		return lastJar;
 	}
 
@@ -91,10 +151,12 @@ public class ASTProvider {
 	public static class ParseResult {
 		public final boolean success;
 		public final JSONArray captures;
+		public final Supplier<ClientStyles> stylesClosure;
 
-		public ParseResult(boolean success, JSONArray captures) {
+		public ParseResult(boolean success, JSONArray captures, Supplier<ClientStyles> stylesClosure) {
 			this.success = success;
 			this.captures = captures;
+			this.stylesClosure = stylesClosure;
 		}
 	}
 
@@ -110,7 +172,7 @@ public class ASTProvider {
 			// root.
 			try {
 				long start = System.currentTimeMillis();
-				Object prevRoot = ljar.drAstField.get(ljar.mainClazz);
+				Object prevRoot = ljar.getASTRoot();
 				JSONArray captures = null;
 				try {
 					System.setProperty("java.security.manager", "allow");
@@ -124,7 +186,7 @@ public class ASTProvider {
 							System.err.println("Example:");
 							System.err.println("   java -Djava.security.manager=allow -jar path/to/code-prober.jar path/to/your/analyzer-or-compiler.jar");
 						});
-						return new ParseResult(false, captures);
+						return new ParseResult(false, captures, ljar::getClientStyles);
 					}
 
 					final AtomicReference<Exception> innerError = new AtomicReference<>();
@@ -146,19 +208,19 @@ public class ASTProvider {
 						e.printStackTrace();
 						System.err.println(
 								"compiler error : " + (e.getMessage() != null ? e.getMessage() : e.getCause()));
-						return new ParseResult(false, captures);
+						return new ParseResult(false, captures, ljar::getClientStyles);
 					}
 				} finally {
 					SystemExitControl.enableSystemExit();
 					System.out.printf("Compiler finished after : %d ms%n", (System.currentTimeMillis() - start));
 				}
-				Object root = ljar.drAstField.get(ljar.mainClazz);
+				Object root = ljar.getASTRoot();
 				if (root == prevRoot) {
 					// Parse ended without unexpected error (System.exit is expected), but nothing changed
 					System.out.println("DrAST_root_node didn't change after main invocation, treating this as a parse failure.");
 					System.out.println("If you perform semantic checks and call System.exit(..) if you get errors, then please do so *after* assigning DrAST_root_node");
 					System.out.println("I.e do 1: parse. 2: update DrAST_root_node. 3: perform semantic checks (optional)");
-					return new ParseResult(false, captures);
+					return new ParseResult(false, captures, ljar::getClientStyles);
 				}
 				rootConsumer.accept(root, otherCls -> {
 //					System.out.println("Load underlying class: " + otherCls);
@@ -170,7 +232,7 @@ public class ASTProvider {
 						throw new RuntimeException(e);
 					}
 				});
-				return new ParseResult(true, captures);
+				return new ParseResult(true, captures, ljar::getClientStyles);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			} finally {
@@ -187,6 +249,6 @@ public class ASTProvider {
 			e.printStackTrace();
 		}
 		SystemExitControl.enableSystemExit();
-		return new ParseResult(false, null);
+		return new ParseResult(false, null, null);
 	}
 }

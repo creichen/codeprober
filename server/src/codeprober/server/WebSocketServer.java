@@ -20,7 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
-import org.json.JSONArray;
 
 import codeprober.util.VersionInfo;
 

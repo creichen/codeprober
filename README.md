@@ -182,6 +182,65 @@ class MyWrapper {
 
 At the time of writing, the live node tracking used in CodeProber doesn't work well with wrapper implementations, since all types will be the same. This might be improved in the future, at least for nodes that implement cpr_nodeLabel().
 
+## CodeProber Server
+
+CodeProber takes a number of command line parameters that can override the default UI settings.
+For a full list of options, run `java -jar code-prober.jar -h`.
+
+### Autoprobes and Overlay Markings
+
+With the `--autoprobes p1,...,pn` parameter, CodeProber will automatically probe the object in the
+`DrAST_root_node` field for methods `p1()` through `pn()`.  These methods can provide reports
+that CodeProber will highlight, if they return a  `java.util.Collection` that
+contains objects with a `getCodeProberReportString()` method, as in the following example:
+
+
+```
+class MyRecord {
+    String getCodeProberReportString() { ... }
+}
+
+class MyRootNode {
+    java.util.List<MyRecord> p1() { ... }
+	...
+    java.util.Collection<MyRecord> pn() { ... }
+}
+```
+
+If the `getCodeProberReportString()` method returns a string that matches one of the following formats,
+it can generates *overlay markings* in the code editor:
+
+| `ERR@S;E;MSG`         | Show a red squiggly line from `S` to `E` with a hover for `MSG` |
+| `WARN@S;E;MSG`        | Like `ERR`, but yellow                                          |
+| `INFO@S;E;MSG`        | Like `ERR`, but blue                                            |
+| `HINT@S;E;MSG`        | Show three dots near `S` with a hover for `MSG`                 |
+| `LINE-PP@S;E;COLOR`   | Draw line from `S` to `E` in colour `COLOR`                     |
+| `LINE-PA@S;E;COLOR`   | Draw arrow from `S` to `E` in colour `COLOR`                    |
+| `LINE-AP@S;E;COLOR`   | Draw arrow from `E` to `S` in colour `COLOR`                    |
+| `LINE-AA@S;E;COLOR`   | Draw double-headed arrow between `S` and `E` in colour `COLOR`  |
+| `STYLE@S;E;S1,...,Sn` | Appply styles S1 through Sn to the area between `S` and `E`     |
+
+- Locations S and E have the format `line << 12 | column`, with the topmost `line` and the leftmost `column` being `1`.
+- `COLOR` is an RGBA quadruple in the format `#RGBA`  (Other CSS colours may be supported).
+- `STYLE` specifications must refer to client style specifications, see below.
+
+### Client Style Specifications
+
+To use STYLE specifications, the analyser-or-compiler jar file's main class must export a field
+`public static String[] CodeProber_report_styles`.  Each element in the array can define
+a style for `STYLE` overlay markings, by following the format
+
+- `S={CSS}`
+- `S#light={CSS}`
+- `S#dark={CSS}`
+
+where `S` is the name of the style and `{CSS}` is a Cascading Stylesheets style definition block.
+CodeProber will automatically rename the style `S`, so it cannot be used elsewhere.
+The styles `S#light` and `S#dark` override the "light mode" and "dark mode" variants of the style,
+respectively.
+
+
+
 ## Artifact
 
 If you want to try CodeProber, but don't have an analysis tool of your own, you can follow the instructions in the artifact to our Property probe paper, found here: https://doi.org/10.5281/zenodo.7185242.
