@@ -3769,6 +3769,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     syntaxHighlightingDefaultLanguage = config.syntax;
                     settings_4.default.setSyntaxHighlighting(config.syntax);
                 }
+                if (config['ast-cache']) {
+                    uiElements.astCacheStrategySelector.value = config['ast-cache'];
+                }
                 setupSimpleSelector(syntaxHighlightingSelector, syntaxHighlightingDefaultLanguage, cb => {
                     settings_4.default.setSyntaxHighlighting(syntaxHighlightingSelector.value);
                     syntaxHighlightingToggler === null || syntaxHighlightingToggler === void 0 ? void 0 : syntaxHighlightingToggler(settings_4.default.getSyntaxHighlighting());

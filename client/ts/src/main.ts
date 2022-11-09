@@ -198,6 +198,9 @@ const doMain = (wsPort: number) => {
         syntaxHighlightingDefaultLanguage = config.syntax;
         settings.setSyntaxHighlighting(config.syntax);
       }
+      if (config['ast-cache']) {
+	uiElements.astCacheStrategySelector.value = config['ast-cache'];
+      }
       setupSimpleSelector(syntaxHighlightingSelector, syntaxHighlightingDefaultLanguage, cb => {
         settings.setSyntaxHighlighting(syntaxHighlightingSelector.value as SyntaxHighlightingLanguageId);
         syntaxHighlightingToggler?.(settings.getSyntaxHighlighting());

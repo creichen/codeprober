@@ -84,6 +84,7 @@ public class CodeProber {
 
 	static final ArgOption[] ARG_OPTIONS = new ArgOption[] {
 		new ArgOption.StringArg("syntax", "Force specific syntax highlighting"),
+		new ArgOption.StringArg("ast-cache", "Force specific ast-caching setup (FULL|PARTIAL|NONE|PURGE)"),
 		new ArgOption.FileArg("source", "Load specific file, overriding browser-local storage"),
 		new ArgOption.ListArg("autoprobes", "Comma-separated list of attributes on the root node to automatically extract and highlight"),
 		new ArgOption.ListArg("disable-ui", "Comma-separated list of UI elements to disable.  (cf. UIElements.ts for a full list.)")
