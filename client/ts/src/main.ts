@@ -118,6 +118,10 @@ const doMain = (wsPort: number) => {
               { name: attributeName,  'extract-reports': true, },
             ));
 
+          if (config['disable-ui']) {
+            config['disable-ui'].forEach((s:string) => uiElements.disable(s));
+          }
+
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
           registerStickyMarker = res.registerStickyMarker || registerStickyMarker;

@@ -3221,32 +3221,56 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class UIElements {
+        constructor() {
+            this._registry = {};
+        }
+        disable(name) {
+            if (name in this._registry) {
+                this._registry[name].style.display = 'none';
+            }
+            else {
+                console.warn('No such element: "' + name + '"');
+                for (const [key] of Object.entries(this._registry)) {
+                    console.log(" - " + key);
+                }
+            }
+        }
+        getElt(name) {
+            let elt = document.getElementById(name);
+            if (elt) {
+                this._registry[name] = elt;
+            }
+            else {
+                console.warn('No such element: "' + name + '"');
+            }
+            return elt;
+        }
         // Use lazy getters since the dom elements haven't been loaded
         // by the time this script initially runs.
-        get positionRecoverySelector() { return document.getElementById('control-position-recovery-strategy'); }
-        get positionRecoveryHelpButton() { return document.getElementById('control-position-recovery-strategy-help'); }
-        get astCacheStrategySelector() { return document.getElementById('ast-cache-strategy'); }
-        get astCacheStrategyHelpButton() { return document.getElementById('control-ast-cache-strategy-help'); }
-        get syntaxHighlightingSelector() { return document.getElementById('syntax-highlighting'); }
-        get syntaxHighlightingHelpButton() { return document.getElementById('control-syntax-highlighting-help'); }
-        get shouldOverrideMainArgsCheckbox() { return document.getElementById('control-should-override-main-args'); }
-        get configureMainArgsOverrideButton() { return document.getElementById('configure-main-args'); }
-        get mainArgsOverrideHelpButton() { return document.getElementById('main-args-override-help'); }
-        get shouldCustomizeFileSuffixCheckbox() { return document.getElementById('control-customize-file-suffix'); }
-        get configureCustomFileSuffixButton() { return document.getElementById('customize-file-suffix'); }
-        get customFileSuffixHelpButton() { return document.getElementById('customize-file-suffix-help'); }
-        get showAllPropertiesCheckbox() { return document.getElementById('control-show-all-properties'); }
-        get showAllPropertiesHelpButton() { return document.getElementById('show-all-properties-help'); }
-        get duplicateProbeCheckbox() { return document.getElementById('control-duplicate-probe-on-attr'); }
-        get duplicateProbeHelpButton() { return document.getElementById('duplicate-probe-on-attr-help'); }
-        get captureStdoutCheckbox() { return document.getElementById('control-capture-stdout'); }
-        get captureStdoutHelpButton() { return document.getElementById('capture-stdout-help'); }
-        get locationStyleSelector() { return document.getElementById('location-style'); }
-        get locationStyleHelpButton() { return document.getElementById('control-location-style-help'); }
-        get generalHelpButton() { return document.getElementById('display-help'); }
-        get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
-        get displayStatisticsButton() { return document.getElementById('display-statistics'); }
-        get versionInfo() { return document.getElementById('version'); }
+        get positionRecoverySelector() { return this.getElt('control-position-recovery-strategy'); }
+        get positionRecoveryHelpButton() { return this.getElt('control-position-recovery-strategy-help'); }
+        get astCacheStrategySelector() { return this.getElt('ast-cache-strategy'); }
+        get astCacheStrategyHelpButton() { return this.getElt('control-ast-cache-strategy-help'); }
+        get syntaxHighlightingSelector() { return this.getElt('syntax-highlighting'); }
+        get syntaxHighlightingHelpButton() { return this.getElt('control-syntax-highlighting-help'); }
+        get shouldOverrideMainArgsCheckbox() { return this.getElt('control-should-override-main-args'); }
+        get configureMainArgsOverrideButton() { return this.getElt('configure-main-args'); }
+        get mainArgsOverrideHelpButton() { return this.getElt('main-args-override-help'); }
+        get shouldCustomizeFileSuffixCheckbox() { return this.getElt('control-customize-file-suffix'); }
+        get configureCustomFileSuffixButton() { return this.getElt('customize-file-suffix'); }
+        get customFileSuffixHelpButton() { return this.getElt('customize-file-suffix-help'); }
+        get showAllPropertiesCheckbox() { return this.getElt('control-show-all-properties'); }
+        get showAllPropertiesHelpButton() { return this.getElt('show-all-properties-help'); }
+        get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr'); }
+        get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help'); }
+        get captureStdoutCheckbox() { return this.getElt('control-capture-stdout'); }
+        get captureStdoutHelpButton() { return this.getElt('capture-stdout-help'); }
+        get locationStyleSelector() { return this.getElt('location-style'); }
+        get locationStyleHelpButton() { return this.getElt('control-location-style-help'); }
+        get generalHelpButton() { return this.getElt('display-help'); }
+        get darkModeCheckbox() { return this.getElt('control-dark-mode'); }
+        get displayStatisticsButton() { return this.getElt('display-statistics'); }
+        get versionInfo() { return this.getElt('version'); }
     }
     exports.default = UIElements;
 });
@@ -3676,6 +3700,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         }
                         // Run invisible probes on all collections selected by the server
                         config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: attributeName, 'extract-reports': true, }));
+                        if (config['disable-ui']) {
+                            config['disable-ui'].forEach((s) => uiElements.disable(s));
+                        }
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;
