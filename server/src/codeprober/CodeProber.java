@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,13 +21,19 @@ import org.json.JSONObject;
 
 public class CodeProber {
 	/**
-	 * Command line option.  Currently only supports options with paramters, not toggles.
+	 * Command line option.
 	 */
-	static abstract class ArgOption {
+	static abstract class Arg {
 		private String name, description;
-		public ArgOption(String name, String description) {
+
+		public Arg(String name, String description) {
 			this.name = name;
 			this.description = description;
+		}
+
+		public boolean
+		expectsArgument() {
+			return false;
 		}
 
 		public String
@@ -36,10 +43,41 @@ public class CodeProber {
 		getDescription() { return this.description; }
 
 		/**
-		 * @param arg The argument following this option
+		 * @param arg The argument following this option ("null" if no argument)
 		 */
 		public abstract void
 		apply(JSONObject target, String arg);
+
+		/**
+		 * Pass argument as comma-separated list
+		 */
+		public static class Flag extends Arg {
+			private Consumer<JSONObject> action;
+			public Flag(String name, String descr, Consumer<JSONObject> action) {
+				super(name, descr);
+				this.action = action;
+			}
+
+			public void
+			apply(JSONObject target, String arg) {
+				this.action.accept(target);
+			}
+		}
+
+	}
+	/**
+	 * Command ine option with arguments
+	 */
+	static abstract class ArgOption extends Arg {
+		public ArgOption(String name, String description) {
+			super(name, description);
+		}
+
+		@Override
+		public boolean
+		expectsArgument() {
+			return true;
+		}
 
 		/**
 		 * Pass argument as literal string
@@ -82,7 +120,9 @@ public class CodeProber {
 		}
 	}
 
-	static final ArgOption[] ARG_OPTIONS = new ArgOption[] {
+	static final Arg[] ARG_OPTIONS = new Arg[] {
+		new Arg.Flag("no-jastadd-stdout", "Suppress stdout/stderr output from the client program",
+			     (e -> { codeprober.metaprogramming.StreamInterceptor.SUPPRESS_STDERR_STDOUT = true; })),
 		new ArgOption.StringArg("syntax", "Force specific syntax highlighting"),
 		new ArgOption.StringArg("ast-cache", "Force specific ast-caching setup (FULL|PARTIAL|NONE|PURGE)"),
 		new ArgOption.FileArg("source", "Load specific file, overriding browser-local storage"),
@@ -105,27 +145,33 @@ public class CodeProber {
 				// stop checking for args
 				break;
 			}
-			if (startArgIndex == mainArgs.length) {
-				System.err.println("Missing parameter to option " + argName);
-				printUsage();
-				System.exit(1);
-			}
 
-			final String param = mainArgs[startArgIndex++];
 			argName = argName.substring(2);
-
-			for (ArgOption opt : ARG_OPTIONS) {
+			Arg argHandler = null;
+			for (Arg opt : ARG_OPTIONS) {
 				if (opt.getName().equals(argName)) {
-					argName = null;
-					opt.apply(config, param);
+					argHandler = opt;
+					break;
 				}
 			}
 
-			if (argName != null) {
+			if (argHandler == null) {
 				System.err.println("Unknown option --" + argName);
 				printUsage();
 				System.exit(1);
 			}
+
+			String arg = null;
+			if (argHandler.expectsArgument()) {
+				if (startArgIndex == mainArgs.length) {
+					System.err.println("Missing argument to option --" + argName);
+					printUsage();
+					System.exit(1);
+				}
+				arg = mainArgs[startArgIndex++];
+			}
+
+			argHandler.apply(config, arg);
 		}
 		return startArgIndex;
 	}
@@ -134,8 +180,10 @@ public class CodeProber {
 		System.out.println(
 				"Usage: java -jar code-prober.jar [args] path/to/your/analyzer-or-compiler.jar [args-to-forward-to-your-main]");
 		System.out.println("Options:");
-		for (ArgOption opt : ARG_OPTIONS) {
-			System.out.println("\t--" + opt.getName() + " x   \t" + opt.getDescription());
+		for (Arg opt : ARG_OPTIONS) {
+			System.out.println("\t--" + opt.getName()
+					   + (opt.expectsArgument()? " x" : "  ")
+					   + "   \t" + opt.getDescription());
 		}
 	}
 
