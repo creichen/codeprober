@@ -1,7 +1,19 @@
 
 class UIElements {
+  // TODO: Declarative table of UI elements plus lazy initialisation so we don't have to rely on getters being used before calls to disable/enable, can show list of options
+
   // Remembers the UI element that allows toggling this feature on/off
   _registry: { [key: string]: HTMLElement } = {};
+
+  init() {
+    this.controlPanel; // Populate _registry with reference to 'control-panel'
+    const uie = this;
+    window.codeprober_enable_full_ui = function() {
+      for (const [key] of Object.entries(uie._registry)) {
+	uie.enable(key);
+      }
+    }
+  }
 
   // Disable UI element by name.
   disable(name: string): void {
@@ -12,6 +24,13 @@ class UIElements {
       for (const [key] of Object.entries(this._registry)) {
 	console.log(" - " + key);
       }
+    }
+  }
+
+  // Enable UI element by name.
+  enable(name: string): void {
+    if (name in this._registry) {
+      this._registry[name].style.display = 'block';
     }
   }
 
@@ -39,6 +58,8 @@ class UIElements {
     }
     return elt;
   }
+
+  get controlPanel() { return this.getElt('control-panel') as HTMLButtonElement; }
 
   // Use lazy getters since the dom elements haven't been loaded
   // by the time this script initially runs.

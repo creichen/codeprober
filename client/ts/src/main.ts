@@ -39,6 +39,9 @@ const doMain = (wsPort: number) => {
     tmpSuffix: settings.getCurrentFileSuffix(),
   });
 
+  uiElements.init();
+  uiElements.disable('control-panel');
+
     const onChangeListeners: ModalEnv['onChangeListeners'] = {};
 
     const probeWindowStateSavers: { [key: string]: (target: ProbeWindowState[]) => void } = {};
@@ -121,6 +124,7 @@ const doMain = (wsPort: number) => {
           if (config['disable-ui']) {
             config['disable-ui'].forEach((s:string) => uiElements.disable(s));
           }
+	  uiElements.enable('control-panel');
 
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;

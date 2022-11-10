@@ -3222,8 +3222,19 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     class UIElements {
         constructor() {
+            // TODO: Declarative table of UI elements plus lazy initialisation so we don't have to rely on getters being used before calls to disable/enable, can show list of options
             // Remembers the UI element that allows toggling this feature on/off
             this._registry = {};
+        }
+        init() {
+            this.controlPanel; // Populate _registry with reference to 'control-panel'
+            const uie = this;
+            window.codeprober_enable_full_ui = function () {
+                // For Anton
+                for (const [key] of Object.entries(uie._registry)) {
+                    uie.enable(key);
+                }
+            };
         }
         // Disable UI element by name.
         disable(name) {
@@ -3235,6 +3246,12 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
                 for (const [key] of Object.entries(this._registry)) {
                     console.log(" - " + key);
                 }
+            }
+        }
+        // Enable UI element by name.
+        enable(name) {
+            if (name in this._registry) {
+                this._registry[name].style.display = 'block';
             }
         }
         // Get element that can be disabled directly
@@ -3262,6 +3279,7 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
             }
             return elt;
         }
+        get controlPanel() { return this.getElt('control-panel'); }
         // Use lazy getters since the dom elements haven't been loaded
         // by the time this script initially runs.
         get positionRecoverySelector() { return this.getEltInDiv('control-position-recovery-strategy'); }
@@ -3658,6 +3676,8 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             mainArgs: settings_4.default.getMainArgsOverride(),
             tmpSuffix: settings_4.default.getCurrentFileSuffix(),
         });
+        uiElements.init();
+        uiElements.disable('control-panel');
         const onChangeListeners = {};
         const probeWindowStateSavers = {};
         const triggerWindowSave = () => {
@@ -3720,6 +3740,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         if (config['disable-ui']) {
                             config['disable-ui'].forEach((s) => uiElements.disable(s));
                         }
+                        uiElements.enable('control-panel');
                         getLocalState = res.getLocalState || getLocalState;
                         updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
                         registerStickyMarker = res.registerStickyMarker || registerStickyMarker;

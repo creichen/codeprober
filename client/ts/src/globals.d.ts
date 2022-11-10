@@ -198,6 +198,7 @@ interface Window {
   MiniEditorMain: () => void;
   clearUserSettings: () => void;
   ActiveLocatorRequest?: ActiveNodeLocatorRequest;
+  codeprober_enable_full_ui: () => void; // enable all UI elements
 }
 
 interface ActiveNodeLocatorRequest {
