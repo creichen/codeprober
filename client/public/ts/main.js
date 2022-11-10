@@ -3222,8 +3222,10 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     Object.defineProperty(exports, "__esModule", { value: true });
     class UIElements {
         constructor() {
+            // Remembers the UI element that allows toggling this feature on/off
             this._registry = {};
         }
+        // Disable UI element by name.
         disable(name) {
             if (name in this._registry) {
                 this._registry[name].style.display = 'none';
@@ -3235,6 +3237,7 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
                 }
             }
         }
+        // Get element that can be disabled directly
         getElt(name) {
             let elt = document.getElementById(name);
             if (elt) {
@@ -3245,28 +3248,42 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
             }
             return elt;
         }
+        // Get element whose parent element should be used for disabling
+        getEltInDiv(name) {
+            let elt = document.getElementById(name);
+            if (elt) {
+                const parent = elt.parentElement;
+                if (parent) {
+                    this._registry[name] = parent;
+                }
+            }
+            else {
+                console.warn('No such element: "' + name + '"');
+            }
+            return elt;
+        }
         // Use lazy getters since the dom elements haven't been loaded
         // by the time this script initially runs.
-        get positionRecoverySelector() { return this.getElt('control-position-recovery-strategy'); }
-        get positionRecoveryHelpButton() { return this.getElt('control-position-recovery-strategy-help'); }
-        get astCacheStrategySelector() { return this.getElt('ast-cache-strategy'); }
-        get astCacheStrategyHelpButton() { return this.getElt('control-ast-cache-strategy-help'); }
-        get syntaxHighlightingSelector() { return this.getElt('syntax-highlighting'); }
-        get syntaxHighlightingHelpButton() { return this.getElt('control-syntax-highlighting-help'); }
-        get shouldOverrideMainArgsCheckbox() { return this.getElt('control-should-override-main-args'); }
-        get configureMainArgsOverrideButton() { return this.getElt('configure-main-args'); }
-        get mainArgsOverrideHelpButton() { return this.getElt('main-args-override-help'); }
-        get shouldCustomizeFileSuffixCheckbox() { return this.getElt('control-customize-file-suffix'); }
-        get configureCustomFileSuffixButton() { return this.getElt('customize-file-suffix'); }
-        get customFileSuffixHelpButton() { return this.getElt('customize-file-suffix-help'); }
-        get showAllPropertiesCheckbox() { return this.getElt('control-show-all-properties'); }
-        get showAllPropertiesHelpButton() { return this.getElt('show-all-properties-help'); }
-        get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr'); }
-        get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help'); }
-        get captureStdoutCheckbox() { return this.getElt('control-capture-stdout'); }
-        get captureStdoutHelpButton() { return this.getElt('capture-stdout-help'); }
-        get locationStyleSelector() { return this.getElt('location-style'); }
-        get locationStyleHelpButton() { return this.getElt('control-location-style-help'); }
+        get positionRecoverySelector() { return this.getEltInDiv('control-position-recovery-strategy'); }
+        get positionRecoveryHelpButton() { return this.getEltInDiv('control-position-recovery-strategy-help'); }
+        get astCacheStrategySelector() { return this.getEltInDiv('ast-cache-strategy'); }
+        get astCacheStrategyHelpButton() { return this.getEltInDiv('control-ast-cache-strategy-help'); }
+        get syntaxHighlightingSelector() { return this.getEltInDiv('syntax-highlighting'); }
+        get syntaxHighlightingHelpButton() { return this.getEltInDiv('control-syntax-highlighting-help'); }
+        get shouldOverrideMainArgsCheckbox() { return this.getEltInDiv('control-should-override-main-args'); }
+        get configureMainArgsOverrideButton() { return this.getEltInDiv('configure-main-args'); }
+        get mainArgsOverrideHelpButton() { return this.getEltInDiv('main-args-override-help'); }
+        get shouldCustomizeFileSuffixCheckbox() { return this.getEltInDiv('control-customize-file-suffix'); }
+        get configureCustomFileSuffixButton() { return this.getEltInDiv('customize-file-suffix'); }
+        get customFileSuffixHelpButton() { return this.getEltInDiv('customize-file-suffix-help'); }
+        get showAllPropertiesCheckbox() { return this.getEltInDiv('control-show-all-properties'); }
+        get showAllPropertiesHelpButton() { return this.getEltInDiv('show-all-properties-help'); }
+        get duplicateProbeCheckbox() { return this.getEltInDiv('control-duplicate-probe-on-attr'); }
+        get duplicateProbeHelpButton() { return this.getEltInDiv('duplicate-probe-on-attr-help'); }
+        get captureStdoutCheckbox() { return this.getEltInDiv('control-capture-stdout'); }
+        get captureStdoutHelpButton() { return this.getEltInDiv('capture-stdout-help'); }
+        get locationStyleSelector() { return this.getEltInDiv('location-style'); }
+        get locationStyleHelpButton() { return this.getEltInDiv('control-location-style-help'); }
         get generalHelpButton() { return this.getElt('display-help'); }
         get darkModeCheckbox() { return this.getElt('control-dark-mode'); }
         get displayStatisticsButton() { return this.getElt('display-statistics'); }

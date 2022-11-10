@@ -1,7 +1,9 @@
 
 class UIElements {
+  // Remembers the UI element that allows toggling this feature on/off
   _registry: { [key: string]: HTMLElement } = {};
 
+  // Disable UI element by name.
   disable(name: string): void {
     if (name in this._registry) {
       this._registry[name].style.display = 'none';
@@ -13,6 +15,7 @@ class UIElements {
     }
   }
 
+  // Get element that can be disabled directly
   getElt(name: string): HTMLElement | null {
     let elt = document.getElementById(name);
     if (elt) {
@@ -23,36 +26,50 @@ class UIElements {
     return elt;
   }
 
+  // Get element whose parent element should be used for disabling
+  getEltInDiv(name: string): HTMLElement | null {
+    let elt = document.getElementById(name);
+    if (elt) {
+      const parent = elt.parentElement;
+      if (parent) {
+	this._registry[name] = parent;
+      }
+    } else {
+      console.warn('No such element: "' + name + '"')
+    }
+    return elt;
+  }
+
   // Use lazy getters since the dom elements haven't been loaded
   // by the time this script initially runs.
-  get positionRecoverySelector() { return this.getElt('control-position-recovery-strategy') as HTMLSelectElement; }
-  get positionRecoveryHelpButton() { return this.getElt('control-position-recovery-strategy-help') as HTMLButtonElement; }
+  get positionRecoverySelector() { return this.getEltInDiv('control-position-recovery-strategy') as HTMLSelectElement; }
+  get positionRecoveryHelpButton() { return this.getEltInDiv('control-position-recovery-strategy-help') as HTMLButtonElement; }
 
-  get astCacheStrategySelector() { return this.getElt('ast-cache-strategy') as HTMLSelectElement; }
-  get astCacheStrategyHelpButton() { return this.getElt('control-ast-cache-strategy-help') as HTMLButtonElement; }
+  get astCacheStrategySelector() { return this.getEltInDiv('ast-cache-strategy') as HTMLSelectElement; }
+  get astCacheStrategyHelpButton() { return this.getEltInDiv('control-ast-cache-strategy-help') as HTMLButtonElement; }
 
-  get syntaxHighlightingSelector() { return this.getElt('syntax-highlighting') as HTMLSelectElement; }
-  get syntaxHighlightingHelpButton() { return this.getElt('control-syntax-highlighting-help') as HTMLButtonElement; }
+  get syntaxHighlightingSelector() { return this.getEltInDiv('syntax-highlighting') as HTMLSelectElement; }
+  get syntaxHighlightingHelpButton() { return this.getEltInDiv('control-syntax-highlighting-help') as HTMLButtonElement; }
 
-  get shouldOverrideMainArgsCheckbox() { return this.getElt('control-should-override-main-args') as HTMLInputElement; }
-  get configureMainArgsOverrideButton() { return this.getElt('configure-main-args') as HTMLButtonElement; }
-  get mainArgsOverrideHelpButton() { return this.getElt('main-args-override-help') as HTMLButtonElement; }
+  get shouldOverrideMainArgsCheckbox() { return this.getEltInDiv('control-should-override-main-args') as HTMLInputElement; }
+  get configureMainArgsOverrideButton() { return this.getEltInDiv('configure-main-args') as HTMLButtonElement; }
+  get mainArgsOverrideHelpButton() { return this.getEltInDiv('main-args-override-help') as HTMLButtonElement; }
 
-  get shouldCustomizeFileSuffixCheckbox() { return this.getElt('control-customize-file-suffix') as HTMLInputElement; }
-  get configureCustomFileSuffixButton() { return this.getElt('customize-file-suffix') as HTMLButtonElement; }
-  get customFileSuffixHelpButton() { return this.getElt('customize-file-suffix-help') as HTMLButtonElement; }
+  get shouldCustomizeFileSuffixCheckbox() { return this.getEltInDiv('control-customize-file-suffix') as HTMLInputElement; }
+  get configureCustomFileSuffixButton() { return this.getEltInDiv('customize-file-suffix') as HTMLButtonElement; }
+  get customFileSuffixHelpButton() { return this.getEltInDiv('customize-file-suffix-help') as HTMLButtonElement; }
 
-  get showAllPropertiesCheckbox() { return this.getElt('control-show-all-properties') as HTMLInputElement; }
-  get showAllPropertiesHelpButton() { return this.getElt('show-all-properties-help') as HTMLButtonElement; }
+  get showAllPropertiesCheckbox() { return this.getEltInDiv('control-show-all-properties') as HTMLInputElement; }
+  get showAllPropertiesHelpButton() { return this.getEltInDiv('show-all-properties-help') as HTMLButtonElement; }
 
-  get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr') as HTMLInputElement; }
-  get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help') as HTMLButtonElement; }
+  get duplicateProbeCheckbox() { return this.getEltInDiv('control-duplicate-probe-on-attr') as HTMLInputElement; }
+  get duplicateProbeHelpButton() { return this.getEltInDiv('duplicate-probe-on-attr-help') as HTMLButtonElement; }
 
-  get captureStdoutCheckbox() { return this.getElt('control-capture-stdout') as HTMLInputElement; }
-  get captureStdoutHelpButton() { return this.getElt('capture-stdout-help') as HTMLButtonElement; }
+  get captureStdoutCheckbox() { return this.getEltInDiv('control-capture-stdout') as HTMLInputElement; }
+  get captureStdoutHelpButton() { return this.getEltInDiv('capture-stdout-help') as HTMLButtonElement; }
 
-  get locationStyleSelector() { return this.getElt('location-style') as HTMLSelectElement; }
-  get locationStyleHelpButton() { return this.getElt('control-location-style-help') as HTMLButtonElement; }
+  get locationStyleSelector() { return this.getEltInDiv('location-style') as HTMLSelectElement; }
+  get locationStyleHelpButton() { return this.getEltInDiv('control-location-style-help') as HTMLButtonElement; }
 
   get generalHelpButton() { return this.getElt('display-help') as HTMLButtonElement; }
   get darkModeCheckbox() { return this.getElt('control-dark-mode') as HTMLInputElement; }
