@@ -34,8 +34,9 @@ public class AttrsInNode {
 		for (Method m : node.underlyingAstNode.getClass().getMethods()) { // getMethods() rather than
 																			// getDeclaredMethods() to only get public
 																			// methods
-			if (!includeAll && (!MethodKindDetector.looksLikeAUserAccessibleJastaddRelatedMethod(m)
-					    || !whitelistFilter.contains(m.getName()))) {
+			if (!includeAll
+			    //&& !MethodKindDetector.looksLikeAUserAccessibleJastaddRelatedMethod(m)
+			    && !whitelistFilter.contains(m.getName())) {
 				continue;
 			}
 //			System.out.println("include " + m.getName() + "; annotation len: " + m.getAnnotations().length);
