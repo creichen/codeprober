@@ -3230,7 +3230,6 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
             this.controlPanel; // Populate _registry with reference to 'control-panel'
             const uie = this;
             window.codeprober_enable_full_ui = function () {
-                // For Anton
                 for (const [key] of Object.entries(uie._registry)) {
                     uie.enable(key);
                 }
@@ -3583,6 +3582,10 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
                 (0, CustomCSS_1.setCustomCSS)(res.clientStyles);
             }
             [res.errors, res.reports].forEach((reportlist) => reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
+                if (errEnd === 0) {
+                    // Mark Down Everything!
+                    errEnd = -1;
+                }
                 if (severity) {
                     // Regular issue report
                     this.localProbeMarkers.push({ severity, errStart, errEnd, msg });
@@ -3616,6 +3619,7 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
             env.performRpcQuery({
                 attr,
                 locator,
+                bgProbe: true,
             })
                 .then((res) => {
                 bgProbe.update(res);

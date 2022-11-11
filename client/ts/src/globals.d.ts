@@ -82,6 +82,7 @@ interface ModalEnv {
   performRpcQuery: (args: {
     attr: AstAttrWithValue;
     locator: NodeLocator;
+    bgProbe? : boolean;
   }) => Promise<any>;
   getLocalState: () => string;
   updateSpanHighlight: (span: Span | null) => void;

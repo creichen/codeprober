@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
@@ -27,6 +29,7 @@ import codeprober.locator.ApplyLocator.ResolvedNode;
 import codeprober.locator.AttrsInNode;
 import codeprober.locator.CreateLocator;
 import codeprober.locator.NodesAtPosition;
+import codeprober.locator.Span;
 import codeprober.metaprogramming.InvokeProblem;
 import codeprober.metaprogramming.AstNodeApiStyle;
 import codeprober.metaprogramming.Reflect;
@@ -58,6 +61,13 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 	private StringBuffer log = new StringBuffer();
 
+	public static String
+	stackTrace(Throwable exn) {
+		final StringWriter sw = new StringWriter();
+		exn.printStackTrace(new java.io.PrintWriter(sw));
+		return sw.toString();
+	}
+
 	public DefaultRequestHandler(String underlyingJarFile, String[] forwardArgs) {
 		this.underlyingCompilerJar = underlyingJarFile;
 		this.defaultForwardArgs = forwardArgs;
@@ -68,6 +78,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 	 * Shared state for processing a single request
 	 */
 	private class RequestProcessor {
+		private boolean mustCollectReports = false;
 		private JSONArray reportCollector = null; // nonnull if report extraction requested
 		private JSONObject queryObj;
 
@@ -75,12 +86,37 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 			this.queryObj = queryObj;
 		}
 
+		/**
+		 * Collects a single report, pre-encoded as string
+		 */
+		void
+		addReport(JSONObject report) {
+			if (reportCollector == null) {
+				reportCollector = new JSONArray();
+			}
+
+			reportCollector.put(report);
+		}
+
+		/**
+		 * Report issue for one specific node
+		 */
+		void
+		addErrorReportAt(AstNode node, String report) {
+			final Span span = node.getRecoveredSpan(lastInfo);
+			final String startpos = span.encodingStart();
+			final String endpos = span.encodingEnd();
+			final String reportStub = "ERR@" + startpos + ";" + endpos + ";msg";
+			final JSONObject rep = MagicStdoutMessageParser.parse(false, reportStub);
+			rep.put("msg", "Encountered error while extracting reports:\n" + report);
+			addReport(rep);
+		}
 
 		/**
 		 * Extract reports for background probes
 		 */
 		void extractReports(Object value) {
-			if (reportCollector  == null) {
+			if (!mustCollectReports) {
 				return;
 			}
 
@@ -115,16 +151,16 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 						JSONObject decoded = MagicStdoutMessageParser.parse(true, msg);
 						if (decoded != null) {
-							reportCollector.put(decoded);
+							this.addReport(decoded);
 						}
 					} catch (Throwable exn) {
 						// Mixed data?  Warn user
-						log.append(exn.toString());
+						log.append(stackTrace(exn));
+						throw new InvokeProblem(exn);
 					}
 				}
 			}
 		}
-
 
 		void handleParsedAst(Object ast, Function<String, Class<?>> loadAstClass,
 				     JSONObject retBuilder, JSONArray bodyBuilder) {
@@ -182,6 +218,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 			final JSONObject queryBody = queryObj.getJSONObject("query");
 			final JSONObject locator = queryBody.getJSONObject("locator");
+			final boolean isBackgroundProbe = queryBody.has("bgProbe") && queryBody.getBoolean("bgProbe");
 			ResolvedNode match = ApplyLocator.toNode(info, locator);
 
 //		System.out.println("MatchedNode: " + match);
@@ -195,12 +232,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 			final JSONObject queryAttr = queryBody.getJSONObject("attr");
 			final String queryAttrName = queryAttr.getString("name");
 			// Should we extract error reports from java.util.Collection values?
-			final boolean extractReports = queryAttr.has("extract-reports") && queryAttr.getBoolean("extract-reports");
-			if (extractReports) {
-				if (reportCollector == null) {
-					reportCollector = new JSONArray();
-				}
-			}
+			this.mustCollectReports = queryAttr.has("extract-reports") && queryAttr.getBoolean("extract-reports");
 
 			// First check for 'magic' methods
 			switch (queryAttrName) {
@@ -278,6 +310,9 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 						BenchmarkTimer.EVALUATE_ATTR.enter();
 						try {
 							value = Reflect.invokeN(match.node.underlyingAstNode, queryAttrName, argTypes, argValues);
+						} catch (Throwable t) {
+							t.printStackTrace();
+							throw t;
 						} finally {
 							BenchmarkTimer.EVALUATE_ATTR.exit();
 						}
@@ -291,7 +326,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 					if (value != Reflect.VOID_RETURN_VALUE) {
 						CreateLocator.setBuildFastButFragileLocator(true);
-						if (extractReports) {
+						if (mustCollectReports) {
 							this.extractReports(value);
 						}
 						try {
@@ -302,19 +337,27 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 					}
 					retBuilder.put("args", updatedArgs);
 				} catch (InvokeProblem e) {
-					final Throwable cause = e.getCause();
+					Throwable cause = e.getCause();
 					if (cause instanceof NoSuchMethodException) {
 						bodyBuilder.put("No such attribute '" + queryAttrName + "' on "
 								+ match.node.underlyingAstNode.getClass().getName());
 					} else {
 						if (cause != null && cause.getCause() != null) {
-							cause.getCause().printStackTrace();
-						} else {
-							(cause != null ? cause : e).printStackTrace();
+							cause = cause.getCause();
 						}
-						bodyBuilder.put("Exception thrown while evaluating attribute.");
-						if (!captureStdio) {
-							bodyBuilder.put("Click 'Capture stdout' to see full error.");
+						if (cause != null) {
+							cause.printStackTrace();
+						}
+						cause.printStackTrace();
+						if (isBackgroundProbe) {
+							// Create error marker
+							addErrorReportAt(match.node, stackTrace(cause));
+						} else {
+							// Attach to regular probed node
+							bodyBuilder.put("Exception thrown while evaluating attribute.");
+							if (!captureStdio) {
+								bodyBuilder.put("Click 'Capture stdout' to see full error.");
+							}
 						}
 					}
 				}

@@ -53,6 +53,10 @@ class BgProbe {
 
     [res.errors, res.reports].forEach((reportlist : IssueReport[]) =>
       reportlist.forEach(({ severity, highlightClasses, start: errStart, end: errEnd, msg }) => {
+	if (errEnd === 0) {
+	  // Mark Down Everything!
+	  errEnd = -1;
+	}
 	if (severity) {
 	  // Regular issue report
           this.localProbeMarkers.push({ severity, errStart, errEnd, msg });
@@ -87,6 +91,7 @@ const runBgProbe = (env: ModalEnv, locator: NodeLocator, attr: AstAttrWithValue)
     env.performRpcQuery({
       attr,
       locator,
+      bgProbe: true,
     })
       .then((res: RpcResponse) => {
 	bgProbe.update(res);

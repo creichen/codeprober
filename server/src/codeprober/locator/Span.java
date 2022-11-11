@@ -30,6 +30,16 @@ public class Span {
 		return start != 0 || end != 0;
 	}
 
+	public String
+	encodingStart() {
+		return "" + this.start;
+	}
+
+	public String
+	encodingEnd() {
+		return "" + this.end;
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(end, start);
