@@ -103,7 +103,7 @@
     </div>
     <div id="control-panel" style="block: none;">
       <!-- Settings top part -->
-      <div>
+      <div id="control-panel-top">
         <div>
           <input type='checkbox' id='control-dark-mode' checked></input>
           <label for='control-dark-mode'>Dark mode</label>
@@ -181,6 +181,7 @@
           <label for='location-style'>Location style</label>
           <button onClick="displayHelp('location-style')" id="control-location-style-help" style="border-radius: 50%; ">?</button>
         </div>
+	<div id='control-panel-regular-buttons-end'></div>
         <button id="display-help" onclick="displayHelp('general')">Help</button>
         <button id="clear-settings" onclick="clearUserSettings()">Clear state and reload</button>
         <br>

@@ -3547,15 +3547,37 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class BgProbe {
-        constructor(env) {
+        constructor(env, name, config) {
             this.localProbeMarkers = []; // "regular" markers (flexible hover text, must be error|warning|hint|info)
             this.localStickies = []; // "sticky" markers (css styling)
             this.env = env;
+            this.name = name;
+            this.description = config === null || config === void 0 ? void 0 : config.description;
             this.id = `invisible-probe-${BgProbe.probeCounter++}`;
+            this.enabled = !((config === null || config === void 0 ? void 0 : config.enabled) === '-');
+            this.refresh = () => { console.log("bad refresh"); };
             env.probeMarkers[this.id] = this.localProbeMarkers;
         }
-        // Remove all sticky markers
-        clearStickyMarkers() {
+        setEnabled(enable) {
+            if (enable != this.enabled) {
+                this.enabled = enable;
+                console.log(enable);
+                if (enable) {
+                    // enable
+                    this.refresh();
+                }
+                else {
+                    // disable
+                    this.clearMarkers();
+                    this.env.updateMarkers();
+                }
+            }
+        }
+        // Remove all markers
+        clearMarkers() {
+            // probe markers
+            this.localProbeMarkers.length = 0;
+            // sticky markers
             this.localStickies.forEach(this.env.clearStickyHighlight);
             this.localStickies.length = 0;
         }
@@ -3571,12 +3593,29 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
             highlight.classNames = localizedClasses;
             this.env.setStickyHighlight(sticky_id, highlight);
         }
+        createControlMenu() {
+            const elt_name = 'bg-probe-control-for-' + this.name;
+            const div = document.createElement('div');
+            const checkbox = document.createElement('input');
+            const label = document.createElement('label');
+            label.htmlFor = elt_name;
+            label.appendChild(document.createTextNode(this.description));
+            checkbox['type'] = 'checkbox';
+            checkbox.id = elt_name;
+            checkbox.checked = this.enabled;
+            const bgProbe = this;
+            checkbox.onchange = () => {
+                bgProbe.setEnabled(checkbox.checked);
+            };
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            return div;
+        }
         // Process Rpc update: refresh all markers
         update(res) {
             const prevLen = this.localProbeMarkers.length;
             // drop probe markers, but do not refresh yet
-            this.localProbeMarkers.length = 0;
-            this.clearStickyMarkers();
+            this.clearMarkers();
             // Update to stylesheets
             if (res.clientStyles) {
                 (0, CustomCSS_1.setCustomCSS)(res.clientStyles);
@@ -3603,8 +3642,8 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
         }
     }
     BgProbe.probeCounter = 0;
-    const runBgProbe = (env, locator, attr) => {
-        const bgProbe = new BgProbe(env);
+    const runBgProbe = (env, config, locator, attr) => {
+        const bgProbe = new BgProbe(env, attr.name, config);
         let state = 'idle';
         let reloadOnDone = false;
         const onRpcDone = () => {
@@ -3631,15 +3670,19 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
             });
         };
         const refresh = () => {
-            if (state === 'loading') {
-                reloadOnDone = true;
-            }
-            else {
-                performRpc();
+            if (bgProbe.enabled) {
+                if (state === 'loading') {
+                    reloadOnDone = true;
+                }
+                else {
+                    performRpc();
+                }
             }
         };
         env.onChangeListeners[bgProbe.id] = refresh;
+        bgProbe.refresh = refresh;
         refresh();
+        return bgProbe;
     };
     exports.default = runBgProbe;
 });
@@ -3739,8 +3782,17 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         if (config.source) {
                             setLocalState(config.source);
                         }
+                        const controlPanelDiv = document.getElementById('control-panel-top');
+                        const controlPanelButtonsEndDiv = document.getElementById('control-panel-regular-buttons-end');
                         // Run invisible probes on all collections selected by the server
-                        config.autoprobes.forEach((attributeName) => (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: attributeName, 'extract-reports': true, }));
+                        for (const name in config.autoprobes) {
+                            const probeConfig = config.autoprobes[name];
+                            const bgProbe = (0, runBgProbe_1.default)(modalEnv, probeConfig, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [], }, { name: probeConfig.key, 'extract-reports': true, });
+                            if (probeConfig.enabled !== 'force') {
+                                controlPanelDiv === null || controlPanelDiv === void 0 ? void 0 : controlPanelDiv.insertBefore(bgProbe.createControlMenu(), controlPanelButtonsEndDiv);
+                            }
+                        }
+                        ;
                         if (config['disable-ui']) {
                             config['disable-ui'].forEach((s) => uiElements.disable(s));
                         }
@@ -3756,7 +3808,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         location.search.split(/\?|&/g).forEach((kv) => {
                             const needle = `bgProbe=`;
                             if (kv.startsWith(needle)) {
-                                (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] }, { name: kv.slice(needle.length), });
+                                const name = kv.slice(needle.length);
+                                const bgProbe = (0, runBgProbe_1.default)(modalEnv, { description: 'needle', enabled: '+', key: name }, { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] }, { name, });
+                                controlPanelDiv === null || controlPanelDiv === void 0 ? void 0 : controlPanelDiv.insertBefore(bgProbe.createControlMenu(), controlPanelButtonsEndDiv);
                             }
                         });
                     });

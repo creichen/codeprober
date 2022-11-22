@@ -23,6 +23,12 @@ type EditorPreloader = () => {
   predicate: () => boolean;
 };
 
+type BGProbeConfig = {
+  description: string;
+  key: string,
+  enabled: '+' | '-' | '' | 'force' ; // '-' disables the probe by default, 'force' does not offer a UI element for disabling it
+}
+
 type TextMarker = {
   clear?: () => void;
 }

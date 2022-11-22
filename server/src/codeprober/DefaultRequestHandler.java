@@ -77,7 +77,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 	/**
 	 * Shared state for processing a single request
 	 */
-	private class RequestProcessor {
+	public class RequestProcessor {
 		private boolean mustCollectReports = false;
 		private JSONArray reportCollector = null; // nonnull if report extraction requested
 		private JSONObject queryObj;
@@ -609,9 +609,15 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 		}
 	}
 
+	public RequestProcessor
+	requestProcessor(JSONObject queryObj) {
+		return new RequestProcessor(queryObj);
+	}
+
+
 	@Override
 	public JSONObject handleRequest(JSONObject queryObj) {
-		RequestProcessor rproc = new RequestProcessor(queryObj);
+		RequestProcessor rproc = this.requestProcessor(queryObj);
 		return rproc.process();
 	}
 }

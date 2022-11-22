@@ -73,6 +73,47 @@ public class CodeProber {
 			super(name, description);
 		}
 
+		// masxplit of <= 0: unbounded
+		// unescape: remove backslash-escapes?
+		public static String[] escapedSplit(String s, char splitchar, boolean unescape, int maxcount) {
+			ArrayList<String> results = new ArrayList<>();
+
+			char[] chars = s.toCharArray();
+			int src = 0; // iterator moving forward over input characters
+			int dest = 0; // write index into chars, always <= src
+			int start = 0; // first character after the most recent splitchar
+			int last_split_offset = 0;
+
+			boolean escape = false;
+			for (src = 0; src < chars.length; ++src) {
+				char c = chars[src];
+				if (escape) {
+					escape = false;
+				} else {
+					// not in escape mode
+					if (c == '\\') {
+						escape = true;
+						if (unescape) {
+							continue;
+						}
+					}
+					if (c == splitchar
+					    && (maxcount <= 0
+						|| results.size() + 1 < maxcount)) {
+						// unescaped split character?
+						String subs = new String(chars, start, dest - start);
+						results.add(subs);
+						start = dest;
+						continue;
+					}
+				}
+				chars[dest++] = c;
+			}
+
+			results.add(new String(chars, start, dest - start));
+			return results.toArray(new String[results.size()]);
+		}
+
 		@Override
 		public boolean
 		expectsArgument() {
@@ -118,6 +159,41 @@ public class CodeProber {
 				target.put(this.getName(), list);
 			}
 		}
+
+		/**
+		 * Pass argument as 'key:enabled:description' triples, 'key:description' tuples
+		 * (same semantics as 'key::description'), or just 'key' (equivalent to 'key::key').
+		 * Multiple arguments may be separated by commas.
+		 * Serialised as { "00000": { key, description, enabled }, ... }
+		 */
+		public static class MapArg extends ArgOption {
+			public MapArg(String name, String descr) { super(name, descr); }
+			public void
+			apply(JSONObject target, String args) {
+				if (!target.has(this.getName())) {
+					target.put(this.getName(), new JSONObject());
+				}
+				JSONObject argmap = (JSONObject) target.get(this.getName());
+				for (String arg : ArgOption.escapedSplit(args, ',', false, 0)) {
+					String[] key_value = ArgOption.escapedSplit(arg, ':', true, 3);
+					String name = key_value[0];
+					JSONObject config = new JSONObject();
+					config.put("key", name);
+					if (key_value.length >= 3) {
+						config.put("description", key_value[2]);
+						config.put("enabled", key_value[1]);
+					} else {
+						config.put("enabled", ""); // let UI pick default
+						if (key_value.length == 2) {
+							config.put("description", key_value[1]);
+						} else {
+							config.put("description", name);
+						}
+					}
+					argmap.put(String.format("%05d", argmap.length()), config);
+				}
+			}
+		}
 	}
 
 	static final Arg[] ARG_OPTIONS = new Arg[] {
@@ -126,7 +202,7 @@ public class CodeProber {
 		new ArgOption.StringArg("syntax", "Force specific syntax highlighting"),
 		new ArgOption.StringArg("ast-cache", "Force specific ast-caching setup (FULL|PARTIAL|NONE|PURGE)"),
 		new ArgOption.FileArg("source", "Load specific file, overriding browser-local storage"),
-		new ArgOption.ListArg("autoprobes", "Comma-separated list of attributes on the root node to automatically extract and highlight"),
+		new ArgOption.MapArg("autoprobes", "Attributes on the root node to automatically extract and highlight, of the form 'attr:UI-toggle-name' or 'attr:conf:UI-toggle-name', where 'conf' is '+'/'-' to enabled/disable by default, or 'force' to enable and hide the UI element. Can be used more than once, and/or separated by commas."),
 		new ArgOption.ListArg("disable-ui", "Comma-separated list of UI elements to disable.  (cf. UIElements.ts for a full list.)")
 	};
 

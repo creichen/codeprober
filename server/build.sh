@@ -48,3 +48,18 @@ rm sources.txt
 rm -rf build_tmp
 
 echo "Done! Built '$DST'"
+
+if [ x$TEST_SERVER != x ]; then
+    echo "Testing..."
+    TESTLIBS=src-test/:/usr/share/java/junit4.jar:src/${DST}:libs/json.jar
+    echo javac -cp ${TESTLIBS} `find src-test -name "*.java"` || exit 1
+    javac -cp ${TESTLIBS} `find src-test -name "*.java"` || exit 1
+    for CLASS in `find src-test -name "Test*.java" | grep -v TestData.java`; do
+	CLASS=${CLASS#src-test/}
+	CLASS=${CLASS%\.java}
+	CLASS=`echo ${CLASS} | tr '/' '.'`
+	echo $CLASS
+	java -cp ${TESTLIBS} org.junit.runner.JUnitCore ${CLASS}
+    done
+    echo "Done testing!"
+fi

@@ -113,13 +113,22 @@ const doMain = (wsPort: number) => {
             setLocalState(config.source);
           }
 
+	  const controlPanelDiv = document.getElementById('control-panel-top');
+	  const controlPanelButtonsEndDiv = document.getElementById('control-panel-regular-buttons-end');
+
           // Run invisible probes on all collections selected by the server
-          config.autoprobes.forEach((attributeName : string) =>
-            runBgProbe(
+	  for (const name in config.autoprobes) {
+	    const probeConfig : BGProbeConfig = config.autoprobes[name];
+            const bgProbe = runBgProbe(
               modalEnv,
+	      probeConfig,
               { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [],},
-              { name: attributeName,  'extract-reports': true, },
-            ));
+              { name:probeConfig.key,  'extract-reports': true, },
+            );
+	    if (probeConfig.enabled !== 'force') {
+	      controlPanelDiv?.insertBefore(bgProbe.createControlMenu(), controlPanelButtonsEndDiv);
+	    }
+	  };
 
           if (config['disable-ui']) {
             config['disable-ui'].forEach((s:string) => uiElements.disable(s));
@@ -138,11 +147,14 @@ const doMain = (wsPort: number) => {
           location.search.split(/\?|&/g).forEach((kv) => {
             const needle = `bgProbe=`;
             if (kv.startsWith(needle)) {
-              runBgProbe(
+	      const name = kv.slice(needle.length);
+              const bgProbe = runBgProbe(
                 modalEnv,
+		{ description: 'needle', enabled: '+', key:name },
                 { result: { start: 0, end: 0, type: '<ROOT>' }, steps: [] },
-                { name: kv.slice(needle.length), },
+                { name, },
               );
+	      controlPanelDiv?.insertBefore(bgProbe.createControlMenu(), controlPanelButtonsEndDiv);
             }
           });
         })

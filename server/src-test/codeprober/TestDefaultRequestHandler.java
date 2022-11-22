@@ -45,7 +45,8 @@ public class TestDefaultRequestHandler extends TestCase {
 		final JSONObject retBuilder = new JSONObject();
 		final JSONArray bodyBuilder = new JSONArray();
 
-		handler.handleParsedAst(ast.underlyingAstNode, info.loadAstClass, requestObj, retBuilder, bodyBuilder);
+		DefaultRequestHandler.RequestProcessor rproc = handler.requestProcessor(requestObj);
+		rproc.handleParsedAst(ast.underlyingAstNode, info.loadAstClass, retBuilder, bodyBuilder);
 
 		assertEquals(1, bodyBuilder.length());
 		assertEquals("42", bodyBuilder.get(0));
@@ -77,11 +78,11 @@ public class TestDefaultRequestHandler extends TestCase {
 		final JSONObject retBuilder = new JSONObject();
 		final JSONArray bodyBuilder = new JSONArray();
 
-		handler.handleParsedAst(ast.underlyingAstNode, info.loadAstClass, requestObj, retBuilder, bodyBuilder);
+		DefaultRequestHandler.RequestProcessor rproc = handler.requestProcessor(requestObj);
+		rproc.handleParsedAst(ast.underlyingAstNode, info.loadAstClass, retBuilder, bodyBuilder);
 
 		assertEquals(2, bodyBuilder.length());
 		assertEquals("First msg with linebreak", bodyBuilder.getJSONObject(0).getString("value"));
 		assertEquals("Second msg without linebreak", bodyBuilder.getJSONObject(1).getString("value"));
 	}
-
 }

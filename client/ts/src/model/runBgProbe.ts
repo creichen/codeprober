@@ -5,18 +5,45 @@ class BgProbe {
 
   env: ModalEnv;
   id: string;
+  enabled: boolean;
+  refresh: () => void;
+  name: string;
+  description: string;
 
   localProbeMarkers : ProbeMarker[] = []; // "regular" markers (flexible hover text, must be error|warning|hint|info)
   localStickies : string[] = [];    // "sticky" markers (css styling)
 
-  constructor(env: ModalEnv) {
+  constructor(env: ModalEnv, name: string, config: BGProbeConfig) {
     this.env = env;
+    this.name = name;
+    this.description = config?.description;
     this.id = `invisible-probe-${BgProbe.probeCounter++}`
+    this.enabled = !(config?.enabled === '-');
+    this.refresh = () => {console.log("bad refresh");};
     env.probeMarkers[this.id] = this.localProbeMarkers;
   }
 
-  // Remove all sticky markers
-  clearStickyMarkers() {
+  setEnabled(enable: boolean) {
+    if (enable != this.enabled) {
+      this.enabled = enable;
+      console.log(enable);
+      if (enable) {
+	// enable
+	this.refresh();
+      } else {
+	// disable
+	this.clearMarkers();
+	this.env.updateMarkers();
+      }
+    }
+  }
+
+  // Remove all markers
+  clearMarkers() {
+    // probe markers
+    this.localProbeMarkers.length = 0;
+
+    // sticky markers
     this.localStickies.forEach(this.env.clearStickyHighlight);
     this.localStickies.length = 0;
   }
@@ -37,14 +64,32 @@ class BgProbe {
     this.env.setStickyHighlight(sticky_id, highlight);
   }
 
+  createControlMenu(): HTMLElement {
+    const elt_name = 'bg-probe-control-for-' + this.name;
+
+    const div = document.createElement('div');
+    const checkbox = document.createElement('input');
+    const label = document.createElement('label');
+    label.htmlFor = elt_name;
+    label.appendChild(document.createTextNode(this.description));
+    checkbox['type'] = 'checkbox';
+    checkbox.id = elt_name;
+    checkbox.checked = this.enabled;
+    const bgProbe = this;
+    checkbox.onchange = () => {
+      bgProbe.setEnabled(checkbox.checked);
+    }
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    return div;
+  }
+
   // Process Rpc update: refresh all markers
   update(res: RpcResponse) {
     const prevLen = this.localProbeMarkers.length;
 
     // drop probe markers, but do not refresh yet
-    this.localProbeMarkers.length = 0;
-
-    this.clearStickyMarkers();
+    this.clearMarkers();
 
     // Update to stylesheets
     if (res.clientStyles) {
@@ -74,8 +119,8 @@ class BgProbe {
   }
 }
 
-const runBgProbe = (env: ModalEnv, locator: NodeLocator, attr: AstAttrWithValue) => {
-  const bgProbe = new BgProbe(env);
+const runBgProbe = (env: ModalEnv, config: BGProbeConfig, locator: NodeLocator, attr: AstAttrWithValue) => {
+  const bgProbe = new BgProbe(env, attr.name, config);
 
   let state: 'loading' | 'idle' = 'idle';
   let reloadOnDone = false;
@@ -104,14 +149,19 @@ const runBgProbe = (env: ModalEnv, locator: NodeLocator, attr: AstAttrWithValue)
   };
 
   const refresh = () => {
-    if (state === 'loading') {
-      reloadOnDone = true;
-    } else {
-      performRpc();
+    if (bgProbe.enabled) {
+      if (state === 'loading') {
+	reloadOnDone = true;
+      } else {
+	performRpc();
+      }
     }
   };
   env.onChangeListeners[bgProbe.id] = refresh;
+  bgProbe.refresh = refresh;
   refresh();
+
+  return bgProbe;
 };
 
 export default runBgProbe;
