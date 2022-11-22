@@ -26,7 +26,6 @@ class BgProbe {
   setEnabled(enable: boolean) {
     if (enable != this.enabled) {
       this.enabled = enable;
-      console.log(enable);
       if (enable) {
 	// enable
 	this.refresh();
