@@ -23,7 +23,7 @@ const encodeRpcBodyLines = (env: ModalEnv, body: RpcBodyLine[]): HTMLElement => 
   let needCapturedStreamArgExplanation = false;
 
   const streamArgPrefix = Math.min(...body.map(getCommonStreamArgWhitespacePrefix));
-  const encodeLine = (target: HTMLElement, line: RpcBodyLine, respectIndent = false) => {
+  const encodeLine = (target: HTMLElement, line: RpcBodyLine, respectIndent = false, singleLine = false) => {
     if (typeof line === 'string') {
       const trimmed = line.trimStart();
       if (trimmed.length !== line.length) {
@@ -32,22 +32,37 @@ const encodeRpcBodyLines = (env: ModalEnv, body: RpcBodyLine[]): HTMLElement => 
       if (line.trim()) {
         target.appendChild(document.createTextNode(line.trim()));
       }
-      target.appendChild(document.createElement('br'));
+      if (singleLine) {
+	target.appendChild(document.createTextNode(' '));
+      } else {
+	target.appendChild(document.createElement('br'));
+      }
     } else if (Array.isArray(line)) {
       if (!respectIndent) {
         // First level indent, 'inline' it
-        line.forEach(sub => encodeLine(target, sub, true));
+        line.forEach(sub => encodeLine(target, sub, true, false));
       } else {
         // >=2 level indent, respect it
-        const deeper = document.createElement('pre');
-        // deeper.style.borderLeft = '1px solid #88888877';
-        deeper.style.marginLeft = '1rem';
-        deeper.style.marginTop = '0.125rem';
-        line.forEach(sub => encodeLine(deeper, sub, true));
-        target.appendChild(deeper);
+	if (!singleLine) {
+          const deeper = document.createElement('pre');
+          // deeper.style.borderLeft = '1px solid #88888877';
+          deeper.style.marginLeft = '1rem';
+          deeper.style.marginTop = '0.125rem';
+          line.forEach(sub => encodeLine(deeper, sub, true, false));
+          target.appendChild(deeper);
+	} else {
+	  line.forEach(sub => encodeLine(target, sub, true, true));
+	}
       }
     } else {
       switch (line.type) {
+	case "singleline": {
+	  encodeLine(target, line.value, true, true);
+	  if (!singleLine) {
+	    target.appendChild(document.createElement('br'));
+	  }
+	  break;
+	}
         case "stdout": {
           const span = document.createElement('span');
           span.classList.add('captured-stdout');

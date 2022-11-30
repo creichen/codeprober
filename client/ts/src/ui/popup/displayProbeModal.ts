@@ -290,12 +290,12 @@ const displayProbeModal = (env: ModalEnv, modalPos: ModalPosition, locator: Node
 
           let refreshMarkers = localErrors.length > 0;
           localErrors.length = 0;
-
-          parsed.errors.forEach(({severity, start: errStart, end: errEnd, msg }) => {
-	    if (severity) {
-              localErrors.push({ severity, errStart, errEnd, msg });
-	    }
-          })
+	  [parsed.errors, parsed.reports].forEach(msgset =>
+            msgset.forEach(({severity, start: errStart, end: errEnd, msg }) => {
+	      if (severity) {
+		localErrors.push({ severity, errStart, errEnd, msg });
+	      }
+            }));
           const updatedArgs = parsed.args;
           if (updatedArgs) {
             refreshMarkers = true;

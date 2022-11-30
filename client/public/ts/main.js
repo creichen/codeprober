@@ -1637,7 +1637,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "ui/create/createTe
     const encodeRpcBodyLines = (env, body) => {
         let needCapturedStreamArgExplanation = false;
         const streamArgPrefix = Math.min(...body.map(getCommonStreamArgWhitespacePrefix));
-        const encodeLine = (target, line, respectIndent = false) => {
+        const encodeLine = (target, line, respectIndent = false, singleLine = false) => {
             if (typeof line === 'string') {
                 const trimmed = line.trimStart();
                 if (trimmed.length !== line.length) {
@@ -1646,25 +1646,42 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "ui/create/createTe
                 if (line.trim()) {
                     target.appendChild(document.createTextNode(line.trim()));
                 }
-                target.appendChild(document.createElement('br'));
+                if (singleLine) {
+                    target.appendChild(document.createTextNode(' '));
+                }
+                else {
+                    target.appendChild(document.createElement('br'));
+                }
             }
             else if (Array.isArray(line)) {
                 if (!respectIndent) {
                     // First level indent, 'inline' it
-                    line.forEach(sub => encodeLine(target, sub, true));
+                    line.forEach(sub => encodeLine(target, sub, true, false));
                 }
                 else {
                     // >=2 level indent, respect it
-                    const deeper = document.createElement('pre');
-                    // deeper.style.borderLeft = '1px solid #88888877';
-                    deeper.style.marginLeft = '1rem';
-                    deeper.style.marginTop = '0.125rem';
-                    line.forEach(sub => encodeLine(deeper, sub, true));
-                    target.appendChild(deeper);
+                    if (!singleLine) {
+                        const deeper = document.createElement('pre');
+                        // deeper.style.borderLeft = '1px solid #88888877';
+                        deeper.style.marginLeft = '1rem';
+                        deeper.style.marginTop = '0.125rem';
+                        line.forEach(sub => encodeLine(deeper, sub, true, false));
+                        target.appendChild(deeper);
+                    }
+                    else {
+                        line.forEach(sub => encodeLine(target, sub, true, true));
+                    }
                 }
             }
             else {
                 switch (line.type) {
+                    case "singleline": {
+                        encodeLine(target, line.value, true, true);
+                        if (!singleLine) {
+                            target.appendChild(document.createElement('br'));
+                        }
+                        break;
+                    }
                     case "stdout": {
                         const span = document.createElement('span');
                         span.classList.add('captured-stdout');
@@ -2372,11 +2389,11 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                         root.removeChild(root.firstChild);
                     let refreshMarkers = localErrors.length > 0;
                     localErrors.length = 0;
-                    parsed.errors.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
+                    [parsed.errors, parsed.reports].forEach(msgset => msgset.forEach(({ severity, start: errStart, end: errEnd, msg }) => {
                         if (severity) {
                             localErrors.push({ severity, errStart, errEnd, msg });
                         }
-                    });
+                    }));
                     const updatedArgs = parsed.args;
                     if (updatedArgs) {
                         refreshMarkers = true;
@@ -3561,7 +3578,6 @@ define("model/runBgProbe", ["require", "exports", "ui/CustomCSS"], function (req
         setEnabled(enable) {
             if (enable != this.enabled) {
                 this.enabled = enable;
-                console.log(enable);
                 if (enable) {
                     // enable
                     this.refresh();

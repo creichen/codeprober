@@ -11,10 +11,25 @@ import codeprober.ast.AstNode;
 import codeprober.locator.CreateLocator;
 import codeprober.metaprogramming.InvokeProblem;
 import codeprober.metaprogramming.Reflect;
+import codeprober.util.MagicStdoutMessageParser;
 
 public class EncodeResponseValue {
+	public static JSONArray
+	indentEncoding(JSONArray parent, boolean singleLine) {
+		JSONArray indentedArray = new JSONArray();
+		if (singleLine) {
+			JSONObject wrapper = new JSONObject();
+			wrapper.put("type", "singleline");
+			wrapper.put("value", indentedArray);
+			parent.put(wrapper);
+		} else {
+			parent.put(indentedArray);
+		}
+		return indentedArray;
+	}
 
-	public static void encode(AstInfo info, JSONArray out, Object value, HashSet<Object> alreadyVisitedNodes) {
+
+	public static void encode(AstInfo info, JSONArray out, JSONArray markersOut, Object value, HashSet<Object> alreadyVisitedNodes) {
 		if (value == null) {
 			out.put("null");
 			return;
@@ -34,7 +49,7 @@ public class EncodeResponseValue {
 				try {
 					Object preferredView = Reflect.invoke0(node.underlyingAstNode, "cpr_getOutput");
 					alreadyVisitedNodes.add(node.underlyingAstNode);
-					encode(info, out, preferredView, alreadyVisitedNodes);
+					encode(info, out, markersOut, preferredView, alreadyVisitedNodes);
 					return;
 				} catch (InvokeProblem e) {
 					// Fall down to default view
@@ -60,7 +75,7 @@ public class EncodeResponseValue {
 							alreadyVisitedNodes.add(node.underlyingAstNode);
 							out.put("List contents [" + numEntries + "]:");
 							for (AstNode child : node.getChildren(info)) {
-								encode(info, out, child, alreadyVisitedNodes);
+								encode(info, out, markersOut, child, alreadyVisitedNodes);
 							}
 						}
 						return;
@@ -85,12 +100,39 @@ public class EncodeResponseValue {
 				try {
 					Object preferredView = Reflect.invoke0(value, "cpr_getOutput");
 					alreadyVisitedNodes.add(value);
-					encode(info, out, preferredView, alreadyVisitedNodes);
+					encode(info, out, markersOut, preferredView, alreadyVisitedNodes);
 					return;
 				} catch (InvokeProblem e) {
 					// Fall down to default view
 				}
 			}
+		}
+
+		boolean requestingSingleLine = false;
+		try {
+			Object singleLineResult = Reflect.invoke0(value, "cpr_singleLine");
+			requestingSingleLine = Boolean.TRUE.equals(singleLineResult);
+		} catch (InvokeProblem exn) {
+			// no single line preference
+		}
+
+		try {
+			Object marker = Reflect.invoke0(value, "cpr_getMarker");
+			if (marker != null) {
+				JSONObject decoded = null;
+				if (marker instanceof String[]) {
+					decoded = MagicStdoutMessageParser.interpretArray((String[]) marker);
+				} else if (marker instanceof String) {
+					decoded = MagicStdoutMessageParser.parse(true, (String) marker);
+				} else {
+					decoded = MagicStdoutMessageParser.parse(true, marker.toString());
+				}
+				if (decoded != null) {
+					markersOut.put(decoded);
+				}
+			}
+		} catch (InvokeProblem exn) {
+			// don't get marker, then
 		}
 
 		if (value instanceof Iterable<?>) {
@@ -100,12 +142,11 @@ public class EncodeResponseValue {
 			}
 			alreadyVisitedNodes.add(value);
 
-			JSONArray indent = new JSONArray();
+			final JSONArray indent = indentEncoding(out, requestingSingleLine);
 			Iterable<?> iter = (Iterable<?>) value;
 			for (Object o : iter) {
-				encode(info, indent, o, alreadyVisitedNodes);
+				encode(info, indent, markersOut, o, alreadyVisitedNodes);
 			}
-			out.put(indent);
 			return;
 		}
 		if (value instanceof Iterator<?>) {
@@ -114,12 +155,11 @@ public class EncodeResponseValue {
 				return;
 			}
 			alreadyVisitedNodes.add(value);
-			JSONArray indent = new JSONArray();
+			final JSONArray indent = indentEncoding(out, requestingSingleLine);
 			Iterator<?> iter = (Iterator<?>) value;
 			while (iter.hasNext()) {
-				encode(info, indent, iter.next(), alreadyVisitedNodes);
+				encode(info, indent, markersOut, iter.next(), alreadyVisitedNodes);
 			}
-			out.put(indent);
 			return;
 		}
 		if (value instanceof Object[]) {
@@ -129,14 +169,13 @@ public class EncodeResponseValue {
 			}
 			alreadyVisitedNodes.add(value);
 
-			final JSONArray indent = new JSONArray();
+			final JSONArray indent = indentEncoding(out, requestingSingleLine);
 			for (Object child : (Object[]) value) {
-				encode(info, indent, child, alreadyVisitedNodes);
+				encode(info, indent, markersOut, child, alreadyVisitedNodes);
 			}
 //			final JSONObject indentObj = new JSONObject();
 //			indentObj.put("type", "indent");
 //			indentObj.put("value", indent);
-			out.put(indent);
 			return;
 		}
 		try {

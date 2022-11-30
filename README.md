@@ -224,6 +224,21 @@ it can generates *overlay markings* in the code editor:
 - `COLOR` is an RGBA quadruple in the format `#RGBA`  (Other CSS colours may be supported).
 - `STYLE` specifications must refer to client style specifications, see below.
 
+Alternatively, the method can (instead of a string) return a `String[]` with the above four elements, in the same order.
+
+### Custom Visualistion
+
+Objects exposed by the AST under analysis can additionally provide a
+method `public String cpr_getMarker()` to expose the above custom
+stylings when probed.  The stylings will only appear while the probe is active.
+This can be useful e.g. to visualise parts of a graph on demand.
+
+When a CodeProber probe exposes an `Iterable` object, CodeProber
+serialises all elements in the `Iterable` separately and recursively
+(eliminating cycles), displaying elemnt per line.  To group multiple
+elements on one line, the `Iterable` can provide a method
+`public boolean cpr_singleLine() { return true; }`
+
 ### Client Style Specifications
 
 To use STYLE specifications, the analyser-or-compiler jar file's main class must export a field

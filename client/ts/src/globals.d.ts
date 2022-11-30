@@ -110,6 +110,7 @@ type RpcBodyLine = string
   | { type: ('stdout' | 'stderr' | 'stream-arg'); value: string }
   | RpcBodyLine[]
   | { type: 'node'; value: NodeLocator }
+  | { type: 'singleline'; value: RpcBodyLine[] }
   ;
 
 interface AstAttrArg {

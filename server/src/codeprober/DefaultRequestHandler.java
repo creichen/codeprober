@@ -81,6 +81,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 		private boolean mustCollectReports = false;
 		private JSONArray reportCollector = null; // nonnull if report extraction requested
 		private JSONObject queryObj;
+		private final JSONArray probeMarkers = new JSONArray();
 
 		public RequestProcessor(JSONObject queryObj) {
 			this.queryObj = queryObj;
@@ -141,15 +142,21 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 				for (Object o : coll) {
 					try {
 						Object obj = extractor.invoke(o);
-						if (obj == null) {
-							continue;
+
+						JSONObject decoded = null;
+
+						if (obj != null) {
+							if (obj instanceof String[]) {
+								decoded = MagicStdoutMessageParser.interpretArray((String[]) obj);
+							} else {
+								String msg = (obj instanceof String)
+									? (String) obj
+									: obj.toString();
+
+								decoded = MagicStdoutMessageParser.parse(true, msg);
+							}
 						}
 
-						String msg = (obj instanceof String)
-							? (String) obj
-							: obj.toString();
-
-						JSONObject decoded = MagicStdoutMessageParser.parse(true, msg);
 						if (decoded != null) {
 							this.addReport(decoded);
 						}
@@ -164,6 +171,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 
 		void handleParsedAst(Object ast, Function<String, Class<?>> loadAstClass,
 				     JSONObject retBuilder, JSONArray bodyBuilder) {
+
 			if (ast == null) {
 				lastInfo = null;
 				bodyBuilder.put("Compiler exited, but no 'DrAST_root_node' found.");
@@ -330,7 +338,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 							this.extractReports(value);
 						}
 						try {
-							EncodeResponseValue.encode(info, bodyBuilder, value, new HashSet<>());
+							EncodeResponseValue.encode(info, bodyBuilder, probeMarkers, value, new HashSet<>());
 						} finally {
 							CreateLocator.setBuildFastButFragileLocator(false);
 						}
@@ -589,10 +597,17 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 				}
 			}
 
+			// join errors and probe markers
+			if (reportCollector != null) {
+				for (Object obj : reportCollector) {
+					probeMarkers.put(obj);
+				}
+			}
+
 			// Somehow extract syntax errors from stdout?
 			retBuilder.put("body", bodyBuilder);
 			retBuilder.put("errors", errors != null ? errors : new JSONArray());
-			retBuilder.put("reports", reportCollector != null ? reportCollector : new JSONArray());
+			retBuilder.put("reports", probeMarkers);
 			retBuilder.put("totalTime", (System.nanoTime() - requestStart));
 			retBuilder.put("createLocatorTime", BenchmarkTimer.CREATE_LOCATOR.getAccumulatedNano());
 			retBuilder.put("applyLocatorTime", BenchmarkTimer.APPLY_LOCATOR.getAccumulatedNano());

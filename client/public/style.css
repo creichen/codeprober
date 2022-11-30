@@ -556,6 +556,9 @@ body[data-theme-light="true"] .lds-spinner div:after {
   }
 }
 
+.single-line {
+  white-space:nowrap;
+}
 
 .captured-stdout {
   color: cyan;
