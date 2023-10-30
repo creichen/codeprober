@@ -167,8 +167,13 @@ public class GenTs {
 
 		for (Field f : s.getClass().getFields()) {
 			f.setAccessible(true);
+
 			out.print(prefix + f.getName());
-			final Object val = f.get(s);
+			Object val = f.get(s);
+			if (null != f.getAnnotation(Nullable.class)) {
+				val = TSNullable.of(val);
+			}
+
 			if (val instanceof Optional<?>) {
 				out.print("?: ");
 				genTypescriptRef(out, prefix, ((Optional<?>) val).get());
@@ -230,6 +235,9 @@ public class GenTs {
 			out.println("{");
 			genTypescriptDef(out, prefix + "  ", (Streamable) rawRef);
 			out.print(prefix + "}");
+		} else if (rawRef instanceof TSNullable) {
+			out.print("null | ");
+			genTypescriptRef(out, prefix, ((TSNullable) rawRef).get());
 		} else if (rawRef instanceof Optional<?>) {
 			out.print("undefined | ");
 			genTypescriptRef(out, prefix, ((Optional<?>) rawRef).get());
@@ -263,5 +271,18 @@ public class GenTs {
 			throw new Error("TODO encode " + rawRef);
 		}
 
+	}
+
+	private static class TSNullable {
+		private Object inner;
+		public TSNullable(Object obj) {
+			this.inner = obj;
+		}
+		public Object get() {
+			return this.inner;
+		}
+		public static TSNullable of(Object obj) {
+			return new TSNullable(obj);
+		}
 	}
 }

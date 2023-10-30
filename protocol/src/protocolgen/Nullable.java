@@ -6,12 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that indicates that a "string"-typed field is actually an (ad-hoc) enumeration.
- *
- * The set of options specified here is the total set of all allowed options.
+ * Annotation that indicates that a field may be null
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface EnumString {
-    String[] options();
+public @interface Nullable {
 }
