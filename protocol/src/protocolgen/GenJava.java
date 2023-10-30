@@ -556,7 +556,15 @@ public class GenJava {
 		}
 
 		for (int i = 0; i < fields.size(); i++) {
-			println.accept("  public final " + refs.get(i).name + " " + fields.get(i).getName() + ";");
+			Field field = fields.get(i);
+			EnumString enum_strings = null;
+			enum_strings = field.getAnnotation(EnumString.class);
+			if (enum_strings != null) {
+				println.accept("  "
+					       + enum_strings.toString().replace("protocolgen", "codeprober.protocol")
+					);
+			}
+			println.accept("  public final " + refs.get(i).name + " " + field.getName() + ";");
 		}
 
 		for (int optionalBackoff = fields.size() - 1; optionalBackoff >= 0; optionalBackoff--) {
