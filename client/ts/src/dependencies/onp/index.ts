@@ -2,6 +2,7 @@ import {SES_DELETE, SES_COMMON, SES_ADD} from "./data";
 import {ArrayResults, TextResults, ResultItem, createTextResults} from "./results";
 import {onp} from "./onp";
 import {objectifyArray, objectifyLcs, stringifyArray} from "./array";
+import {ComparedItem} from "./array";
 
 export {
 	SES_DELETE,
@@ -36,7 +37,7 @@ export interface DiffArray<T> {
 	lcs: Array<T>;
 	results: ArrayResults<T>;
 }
-export function diffArray<T>(arrayA: Array<T>, arrayB: Array<T>): DiffArray<T> {
+export function diffArray<T extends ComparedItem>(arrayA: Array<T>, arrayB: Array<T>): DiffArray<T> {
 	const [a, b, map] = stringifyArray(arrayA, arrayB);
 	const [res, ed] = onp(a, b);
 	const results = objectifyArray(arrayA, arrayB, res, map);
