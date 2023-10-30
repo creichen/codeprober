@@ -3,6 +3,7 @@ package codeprober.protocol.data;
 import org.json.JSONObject;
 
 public class ListTreeReq implements codeprober.util.JsonUtil.ToJsonable {
+  @codeprober.protocol.EnumString(options = {"ListTreeUpwards", "ListTreeDownwards"})
   public final String type;
   public final NodeLocator locator;
   public final ParsingRequestData src;

@@ -66,6 +66,7 @@ public class GenJava {
 		public final FieldKind kind;
 		public final BiFunction<String, String, String> genReadFromJsonObj;
 		public final WriteToJsonGenerator genWriteToJson;
+		private String[] enumOptions = null;
 
 		public GeneratedType(String name, FieldKind kind, BiFunction<String, String, String> genReadFromJsonObj,
 				WriteToJsonGenerator genWriteToJson) {
@@ -86,6 +87,18 @@ public class GenJava {
 			default:
 				return name;
 			}
+		}
+
+		public String[] getEnumOptions() {
+			return this.enumOptions;
+		}
+
+		public GeneratedType withEnumOptions(Object[] options) {
+			this.enumOptions = new String[options.length];
+			for (int i = 0; i < options.length; ++i) {
+				this.enumOptions[i] = (String) options[i];
+			}
+			return this;
 		}
 
 	}
@@ -557,14 +570,18 @@ public class GenJava {
 
 		for (int i = 0; i < fields.size(); i++) {
 			Field field = fields.get(i);
-			EnumString enum_strings = null;
-			enum_strings = field.getAnnotation(EnumString.class);
-			if (enum_strings != null) {
-				println.accept("  "
-					       + enum_strings.toString().replace("protocolgen", "codeprober.protocol")
-					);
+			GeneratedType generated_type = refs.get(i);
+			if (null != field.getAnnotation(Nullable.class)) {
+			    println.accept("  @codeprober.protocol.Nullable");
 			}
-			println.accept("  public final " + refs.get(i).name + " " + field.getName() + ";");
+
+			if (null != generated_type.getEnumOptions()) {
+				final String options = java.util.Arrays.stream(generated_type.getEnumOptions())
+					.map(str -> "\"" + str + "\"")
+					.collect(java.util.stream.Collectors.joining(", "));
+				println.accept("  @codeprober.protocol.EnumString(options = {" + options + "})");
+			}
+			println.accept("  public final " + generated_type.name + " " + field.getName() + ";");
 		}
 
 		for (int optionalBackoff = fields.size() - 1; optionalBackoff >= 0; optionalBackoff--) {
@@ -886,7 +903,8 @@ public class GenJava {
 				return new GeneratedType("String", FieldKind.PRIMITIVE,
 						(obj, field) -> "codeprober.util.JsonUtil.requireString(" + obj + ".getString(" + field + ")"
 								+ options + ")",
-						(obj, field, val) -> String.format("%s.put(%s, %s);", obj, field, val));
+						(obj, field, val) -> String.format("%s.put(%s, %s);", obj, field, val))
+				    .withEnumOptions(opt);
 			}
 			throw new Exception("Unknown object array type: " + Arrays.toString(opt));
 

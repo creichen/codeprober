@@ -10,7 +10,6 @@ find src -name "*.java" > sources.txt
 echo "Building.."
 javac @sources.txt -cp ../code-prober.jar -d build_tmp -source 8 -target 8
 
-
 java \
   -DJAVA_DST_DIR="../server/src/codeprober/protocol/data/" \
   -DJAVA_DST_PKG="codeprober.protocol.data" \
