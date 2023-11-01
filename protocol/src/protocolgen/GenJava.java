@@ -571,10 +571,6 @@ public class GenJava {
 		for (int i = 0; i < fields.size(); i++) {
 			Field field = fields.get(i);
 			GeneratedType generated_type = refs.get(i);
-			if (null != field.getAnnotation(Nullable.class)) {
-			    println.accept("  @codeprober.protocol.Nullable");
-			}
-
 			if (null != generated_type.getEnumOptions()) {
 				final String options = java.util.Arrays.stream(generated_type.getEnumOptions())
 					.map(str -> "\"" + str + "\"")
@@ -622,6 +618,7 @@ public class GenJava {
 					print.accept(", ");
 				}
 				print.accept("null");
+				++numForwardedArgs;
 			}
 			println.accept(");");
 			println.accept("  }");
@@ -809,6 +806,9 @@ public class GenJava {
 					(obj, field) -> req.getTypeName() + ".fromJSON(" + obj + ".getJSONObject(" + field + "))", //
 					(obj, field, val) -> String.format("%s.put(%s, %s.toJSON());", obj, field, val));
 
+		} else if (rawRef instanceof Nullable) {
+			// Ignore
+			return genRef(((Nullable)rawRef).get());
 		} else if (rawRef instanceof Optional<?>) {
 			// TODO
 			final GeneratedType ent = genRef(((Optional<?>) rawRef).get());
@@ -871,6 +871,10 @@ public class GenJava {
 
 //			System.out.print("undefined | ");
 //			genTypescriptRef(prefix, ((Optional<?>) val).get());
+		} else if (rawRef instanceof TsEnumRef) {
+			TsEnumRef ref = (TsEnumRef) rawRef;
+			return genRef(ref.options);
+			// continues below:
 		} else if (rawRef instanceof Object[]) {
 			final Object[] opt = (Object[]) rawRef;
 			if (opt.length <= 1) {

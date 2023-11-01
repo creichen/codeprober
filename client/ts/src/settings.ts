@@ -2,24 +2,11 @@ import { getAppropriateFileSuffix } from "./model/syntaxHighlighting";
 import WindowState from './model/WindowState';
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import UIElements from './ui/UIElements';
+import { InitSettings } from "./settings.generated";
 
 
-interface Settings {
-  editorContents?: string;
-  lightTheme?: boolean;
-  captureStdio?: boolean;
-  captureTraces?: boolean;
-  autoflushTraces?: boolean;
-  duplicateProbeOnAttrClick?: boolean;
-  showAllProperties?: boolean;
-  positionRecoveryStrategy?: string;
-  astCacheStrategy?: string;
+interface Settings extends InitSettings {
   probeWindowStates?: WindowState[];
-  syntaxHighlighting?: SyntaxHighlightingLanguageId;
-  mainArgsOverride?: string[] | null;
-  customFileSuffix?: string | null;
-  locationStyle?: TextSpanStyle | null;
-  hideSettingsPanel?: boolean;
 }
 
 let settingsObj: Settings | null = null;

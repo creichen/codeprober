@@ -10,6 +10,7 @@ import protocolgen.spec.EvaluateProperty;
 import protocolgen.spec.GetTestSuite;
 import protocolgen.spec.GetWorkerStatus;
 import protocolgen.spec.Hover;
+import protocolgen.spec.InitSettings;
 import protocolgen.spec.ListNodes;
 import protocolgen.spec.ListProperties;
 import protocolgen.spec.ListTestSuites;
@@ -33,6 +34,7 @@ public class GenAll {
 	public static void main(String[] args) throws Exception {
 		final List<Class<? extends Rpc>> rpcs = new ArrayList<>();
 		final List<Class<? extends Streamable>> serverToClient = new ArrayList<>();
+		final List<Class<? extends Streamable>> serverToClientSettings = new ArrayList<>();
 
 		// Shared
 		rpcs.add(TopRequest.class);
@@ -67,8 +69,17 @@ public class GenAll {
 		serverToClient.add(Refresh.class);
 		serverToClient.add(BackingFileUpdated.class);
 		serverToClient.add(AsyncRpcUpdate.class);
+		//   settings only
+		serverToClientSettings.add(InitSettings.class);
 
+		// TS gen (non-settings)
 		GenJava.gen(rpcs, serverToClient);
-		GenTs.gen(rpcs, serverToClient);
+		// TS gen (settings)
+		GenTs.genToFile(new ArrayList<>(), serverToClientSettings,
+				GenTs.getDstFile("TS_DST_SETTINGS_FILE"));
+
+		// Java gen (everything together)
+		serverToClient.addAll(serverToClientSettings);
+		GenJava.gen(rpcs, serverToClient);
 	}
 }

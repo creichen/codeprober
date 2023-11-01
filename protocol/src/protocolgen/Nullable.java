@@ -1,14 +1,18 @@
 package protocolgen;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Annotation that indicates that a field may be null
+ * Pseudo-annotation that indicates that a field may be null
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Nullable {
+public class Nullable {
+	private Object obj;
+
+	public Nullable(Object obj) {
+		this.obj = obj;
+	}
+	public Object get() {
+		return obj;
+	}
+	public static Nullable of(Object obj) {
+		return new Nullable(obj);
+	}
 }
