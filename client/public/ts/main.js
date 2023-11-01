@@ -862,6 +862,10 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     }
     exports.default = UIElements;
 });
+define("settings.generated", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElements"], function (require, exports, syntaxHighlighting_1, UIElements_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
