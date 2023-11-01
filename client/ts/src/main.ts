@@ -125,7 +125,7 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
 
     const rootElem = document.getElementById('root') as HTMLElement;
     const initHandler = (info: InitInfo) => {
-      const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile } = info;
+      const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, initSettings } = info;
       console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
       rootElem.style.display = "grid";
 

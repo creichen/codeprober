@@ -28,7 +28,6 @@ java \
   -DJAVA_DST_DIR="../server/src/codeprober/protocol/data/" \
   -DJAVA_DST_PKG="codeprober.protocol.data" \
   -DTS_DST_FILE="../client/ts/src/protocol.ts" \
-  -DTS_DST_SETTINGS_FILE="../client/ts/src/settings.generated.ts" \
   -cp build_tmp:../code-prober.jar protocolgen.GenAll
 
 echo "Cleaning up.."
