@@ -33,7 +33,6 @@ public class GenAll {
 	public static void main(String[] args) throws Exception {
 		final List<Class<? extends Rpc>> rpcs = new ArrayList<>();
 		final List<Class<? extends Streamable>> serverToClient = new ArrayList<>();
-		final List<Class<? extends Streamable>> serverToClientSettings = new ArrayList<>();
 
 		// Shared
 		rpcs.add(TopRequest.class);
@@ -67,17 +66,10 @@ public class GenAll {
 		// Server->Client
 		serverToClient.add(Refresh.class);
 		serverToClient.add(AsyncRpcUpdate.class);
-		//   settings only
-		serverToClientSettings.add(InitSettings.class);
+		serverToClient.add(InitSettings.class);
 
-		// TS gen (non-settings)
-		GenJava.gen(rpcs, serverToClient);
-		// TS gen (settings)
-		GenTs.genToFile(new ArrayList<>(), serverToClientSettings,
-				GenTs.getDstFile("TS_DST_SETTINGS_FILE"));
-
-		// Java gen (everything together)
-		serverToClient.addAll(serverToClientSettings);
+		// Generate
+		GenTs.gen(rpcs, serverToClient);
 		GenJava.gen(rpcs, serverToClient);
 	}
 }

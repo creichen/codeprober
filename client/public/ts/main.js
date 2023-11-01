@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -22,9 +25,330 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+define("model/syntaxHighlighting", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.getAvailableLanguages = exports.getAppropriateFileSuffix = void 0;
+    const langstoSuffixes = {
+        plaintext: ['txt', 'Plain Text'],
+        abap: ['abap', 'abap'],
+        apex: ['cls', 'Apex'],
+        azcli: ['azcli', 'Azure CLI'],
+        bat: ['bat', 'Batch'],
+        bicep: ['bicep', 'Bicep'],
+        cameligo: ['mligo', 'Cameligo'],
+        clojure: ['clj', 'clojure'],
+        coffeescript: ['coffee', 'CoffeeScript'],
+        c: ['c', 'C'],
+        cpp: ['cpp', 'C++'],
+        csharp: ['cs', 'C#'],
+        csp: ['csp', 'CSP'],
+        css: ['css', 'CSS'],
+        dart: ['dart', 'Dart'],
+        dockerfile: ['dockerfile', 'Dockerfile'],
+        ecl: ['ecl', 'ECL'],
+        elixir: ['ex', 'Elixir'],
+        flow9: ['flow', 'Flow9'],
+        fsharp: ['fs', 'F#'],
+        go: ['go', 'Go'],
+        graphql: ['graphql', 'GraphQL'],
+        handlebars: ['handlebars', 'Handlebars'],
+        hcl: ['tf', 'Terraform'],
+        html: ['html', 'HTML'],
+        ini: ['ini', 'Ini'],
+        java: ['java', 'Java'],
+        javascript: ['js', 'JavaScript'],
+        julia: ['jl', 'Julia'],
+        kotlin: ['kt', 'Kotlin'],
+        less: ['less', 'Less'],
+        lexon: ['lex', 'Lexon'],
+        lua: ['lua', 'Lua'],
+        liquid: ['liquid', 'Liquid'],
+        m3: ['m3', 'Modula-3'],
+        markdown: ['md', 'Markdown'],
+        mips: ['s', 'MIPS'],
+        msdax: ['dax', 'DAX'],
+        mysql: ['mysql', 'MySQL'],
+        'objective-c': ['m', 'Objective-C'],
+        pascal: ['pas', 'Pascal'],
+        pascaligo: ['ligo', 'Pascaligo'],
+        perl: ['pl', 'Perl'],
+        pgsql: ['pgsql', 'PostgreSQL'],
+        php: ['php', 'PHP'],
+        postiats: ['dats', 'ATS'],
+        powerquery: ['pq', 'PQ'],
+        powershell: ['ps1', 'PowerShell'],
+        proto: ['proto', 'protobuf'],
+        pug: ['jade', 'Pug'],
+        python: ['py', 'Python'],
+        qsharp: ['qs', 'Q#'],
+        r: ['r', 'R'],
+        razor: ['cshtml', 'Razor'],
+        redis: ['redis', 'redis'],
+        redshift: ['redshift', 'Redshift'],
+        restructuredtext: ['rst', 'reStructuredText'],
+        ruby: ['rb', 'Ruby'],
+        rust: ['rs', 'Rust'],
+        sb: ['sb', 'Small Basic'],
+        scala: ['scala', 'Scala'],
+        scheme: ['scm', 'scheme'],
+        scss: ['scss', 'Sass'],
+        shell: ['sh', 'Shell'],
+        sol: ['sol', 'sol'],
+        aes: ['aes', 'aes'],
+        sparql: ['rq', 'sparql'],
+        sql: ['sql', 'SQL'],
+        st: ['st', 'StructuredText'],
+        swift: ['swift', 'Swift'],
+        systemverilog: ['sv', 'SV'],
+        verilog: ['v', 'V'],
+        tcl: ['tcl', 'tcl'],
+        twig: ['twig', 'Twig'],
+        typescript: ['ts', 'TypeScript'],
+        vb: ['vb', 'Visual Basic'],
+        xml: ['xml', 'XML'],
+        yaml: ['yaml', 'YAML'],
+        json: ['json', 'JSON']
+    };
+    const getAppropriateFileSuffix = (lang) => {
+        var _a, _b;
+        return (_b = (_a = langstoSuffixes[lang]) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : `.${lang.toLowerCase()}`;
+    };
+    exports.getAppropriateFileSuffix = getAppropriateFileSuffix;
+    const getAvailableLanguages = () => Object.assign(Object.entries(langstoSuffixes).map(([k, v]) => ({ id: k, alias: v[1] })));
+    exports.getAvailableLanguages = getAvailableLanguages;
+});
+define("model/WindowState", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("ui/UIElements", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class UIElements {
+        // Use lazy getters since the dom elements haven't been loaded
+        // by the time this script initially runs.
+        get positionRecoverySelector() { return document.getElementById('control-position-recovery-strategy'); }
+        get positionRecoveryHelpButton() { return document.getElementById('control-position-recovery-strategy-help'); }
+        get astCacheStrategySelector() { return document.getElementById('ast-cache-strategy'); }
+        get astCacheStrategyHelpButton() { return document.getElementById('control-ast-cache-strategy-help'); }
+        get syntaxHighlightingSelector() { return document.getElementById('syntax-highlighting'); }
+        get syntaxHighlightingHelpButton() { return document.getElementById('control-syntax-highlighting-help'); }
+        get shouldOverrideMainArgsCheckbox() { return document.getElementById('control-should-override-main-args'); }
+        get configureMainArgsOverrideButton() { return document.getElementById('configure-main-args'); }
+        get mainArgsOverrideHelpButton() { return document.getElementById('main-args-override-help'); }
+        get shouldCustomizeFileSuffixCheckbox() { return document.getElementById('control-customize-file-suffix'); }
+        get configureCustomFileSuffixButton() { return document.getElementById('customize-file-suffix'); }
+        get customFileSuffixHelpButton() { return document.getElementById('customize-file-suffix-help'); }
+        get showAllPropertiesCheckbox() { return document.getElementById('control-show-all-properties'); }
+        get showAllPropertiesHelpButton() { return document.getElementById('show-all-properties-help'); }
+        get duplicateProbeCheckbox() { return document.getElementById('control-duplicate-probe-on-attr'); }
+        get duplicateProbeHelpButton() { return document.getElementById('duplicate-probe-on-attr-help'); }
+        get captureStdoutCheckbox() { return document.getElementById('control-capture-stdout'); }
+        get captureStdoutHelpButton() { return document.getElementById('capture-stdout-help'); }
+        get captureTracesCheckbox() { return document.getElementById('control-capture-traces'); }
+        get captureTracesHelpButton() { return document.getElementById('capture-traces-help'); }
+        get autoflushTracesCheckbox() { return document.getElementById('control-autoflush-traces'); }
+        get autoflushTracesContainer() { return document.getElementById('container-autoflush-traces'); }
+        get locationStyleSelector() { return document.getElementById('location-style'); }
+        get locationStyleHelpButton() { return document.getElementById('control-location-style-help'); }
+        get generalHelpButton() { return document.getElementById('display-help'); }
+        get saveAsUrlButton() { return document.getElementById('saveAsUrl'); }
+        get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
+        get displayStatisticsButton() { return document.getElementById('display-statistics'); }
+        get displayWorkerStatusButton() { return document.getElementById('display-worker-status'); }
+        get versionInfo() { return document.getElementById('version'); }
+        get settingsHider() { return document.getElementById('settings-hider'); }
+        get settingsRevealer() { return document.getElementById('settings-revealer'); }
+        get showTests() { return document.getElementById('show-tests'); }
+        get minimizedProbeArea() { return document.getElementById('minimized-probe-area'); }
+    }
+    exports.default = UIElements;
+});
+define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElements"], function (require, exports, syntaxHighlighting_1, UIElements_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    UIElements_1 = __importDefault(UIElements_1);
+    let settingsObj = null;
+    const clearHashFromLocation = () => history.replaceState('', document.title, `${window.location.pathname}${window.location.search}`);
+    window.saveStateAsUrl = () => {
+        const encoded = encodeURIComponent(JSON.stringify(settings.get()));
+        // delete location.hash;'
+        // console.log('loc:', location.toString());
+        navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}${window.location.search}${window.location.search.length === 0 ? '?' : '&'}settings=${encoded}`);
+        const btn = new UIElements_1.default().saveAsUrlButton;
+        const saveText = btn.textContent;
+        setTimeout(() => {
+            btn.textContent = saveText;
+            btn.style.border = 'unset';
+            delete btn.style.border;
+        }, 1000);
+        btn.textContent = `Copied to clipboard`;
+        btn.style.border = '1px solid green';
+    };
+    const settings = {
+        get: () => {
+            if (!settingsObj) {
+                let settingsMatch;
+                if ((settingsMatch = /[?&]settings=[^?&]+/.exec(location.search)) != null) {
+                    const trimmedSearch = settingsMatch.index === 0
+                        ? (settingsMatch[0].length < location.search.length
+                            ? `?${location.search.slice(settingsMatch[0].length + 1)}`
+                            : `${location.search.slice(0, settingsMatch.index)}${location.search.slice(settingsMatch.index + settingsMatch[0].length)}`)
+                        : `${location.search.slice(0, settingsMatch.index)}${location.search.slice(settingsMatch.index + settingsMatch[0].length)}`;
+                    history.replaceState('', document.title, `${window.location.pathname}${trimmedSearch}`);
+                    try {
+                        settingsObj = JSON.parse(decodeURIComponent(settingsMatch[0].slice(`?settings=`.length)));
+                        clearHashFromLocation();
+                        if (settingsObj) {
+                            settings.set(settingsObj);
+                        }
+                    }
+                    catch (e) {
+                        console.warn('Invalid windowState in hash', e);
+                    }
+                }
+                if (!settingsObj) {
+                    try {
+                        // TODO remove 'pasta-settings' fallback after an appropriate amount of time
+                        settingsObj = JSON.parse(localStorage.getItem('codeprober-settings') || localStorage.getItem('pasta-settings') || '{}');
+                    }
+                    catch (e) {
+                        console.warn('Bad data in localStorage, resetting settings', e);
+                        settingsObj = {};
+                    }
+                }
+            }
+            return settingsObj || {};
+        },
+        set: (newSettings) => {
+            settingsObj = newSettings;
+            localStorage.setItem('codeprober-settings', JSON.stringify(settingsObj));
+        },
+        getEditorContents: () => settings.get().editorContents,
+        setEditorContents: (editorContents) => settings.set({ ...settings.get(), editorContents }),
+        isLightTheme: () => { var _a; return (_a = settings.get().lightTheme) !== null && _a !== void 0 ? _a : false; },
+        setLightTheme: (lightTheme) => settings.set({ ...settings.get(), lightTheme }),
+        shouldDuplicateProbeOnAttrClick: () => { var _a; return (_a = settings.get().duplicateProbeOnAttrClick) !== null && _a !== void 0 ? _a : true; },
+        setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick) => settings.set({ ...settings.get(), duplicateProbeOnAttrClick }),
+        shouldCaptureStdio: () => { var _a; return (_a = settings.get().captureStdio) !== null && _a !== void 0 ? _a : true; },
+        setShouldCaptureStdio: (captureStdio) => settings.set({ ...settings.get(), captureStdio }),
+        shouldCaptureTraces: () => { var _a; return (_a = settings.get().captureTraces) !== null && _a !== void 0 ? _a : false; },
+        setShouldCaptureTraces: (captureTraces) => settings.set({ ...settings.get(), captureTraces }),
+        shouldAutoflushTraces: () => { var _a; return (_a = settings.get().autoflushTraces) !== null && _a !== void 0 ? _a : true; },
+        setShouldAutoflushTraces: (autoflushTraces) => settings.set({ ...settings.get(), autoflushTraces }),
+        getPositionRecoveryStrategy: () => { var _a; return (_a = settings.get().positionRecoveryStrategy) !== null && _a !== void 0 ? _a : 'ALTERNATE_PARENT_CHILD'; },
+        setPositionRecoveryStrategy: (positionRecoveryStrategy) => settings.set({ ...settings.get(), positionRecoveryStrategy }),
+        getAstCacheStrategy: () => { var _a; return (_a = settings.get().astCacheStrategy) !== null && _a !== void 0 ? _a : 'PARTIAL'; },
+        setAstCacheStrategy: (astCacheStrategy) => settings.set({ ...settings.get(), astCacheStrategy }),
+        getProbeWindowStates: () => {
+            var _a;
+            const ret = (_a = settings.get().probeWindowStates) !== null && _a !== void 0 ? _a : [];
+            return ret.map((item) => {
+                if (typeof item.data === 'undefined') {
+                    // Older variant of this data, upgrade it
+                    return {
+                        modalPos: item.modalPos,
+                        data: {
+                            type: 'probe',
+                            locator: item.locator,
+                            property: item.property,
+                            nested: {},
+                        }
+                    };
+                }
+                return item;
+            });
+        },
+        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.get(), probeWindowStates }),
+        getSyntaxHighlighting: () => { var _a; return (_a = settings.get().syntaxHighlighting) !== null && _a !== void 0 ? _a : 'java'; },
+        setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.get(), syntaxHighlighting }),
+        getMainArgsOverride: () => { var _a; return (_a = settings.get().mainArgsOverride) !== null && _a !== void 0 ? _a : null; },
+        setMainArgsOverride: (mainArgsOverride) => settings.set({ ...settings.get(), mainArgsOverride }),
+        getCustomFileSuffix: () => { var _a; return (_a = settings.get().customFileSuffix) !== null && _a !== void 0 ? _a : null; },
+        setCustomFileSuffix: (customFileSuffix) => settings.set({ ...settings.get(), customFileSuffix }),
+        getCurrentFileSuffix: () => { var _a; return (_a = settings.getCustomFileSuffix()) !== null && _a !== void 0 ? _a : `.${(0, syntaxHighlighting_1.getAppropriateFileSuffix)(settings.getSyntaxHighlighting())}`; },
+        shouldShowAllProperties: () => { var _a; return (_a = settings.get().showAllProperties) !== null && _a !== void 0 ? _a : false; },
+        setShouldShowAllProperties: (showAllProperties) => settings.set({ ...settings.get(), showAllProperties }),
+        getLocationStyle: () => { var _a; return (_a = settings.get().locationStyle) !== null && _a !== void 0 ? _a : 'full'; },
+        setLocationStyle: (locationStyle) => settings.set({ ...settings.get(), locationStyle }),
+        shouldHideSettingsPanel: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.hideSettingsPanel) !== null && _b !== void 0 ? _b : false; },
+        setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
+        shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
+    };
+    exports.default = settings;
+});
+define("ui/create/registerOnHover", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const registerOnHover = (element, onHover) => {
+        element.onmouseenter = () => onHover(true);
+        element.onmouseleave = () => onHover(false);
+    };
+    exports.default = registerOnHover;
+});
+define("ui/create/createTextSpanIndicator", ["require", "exports", "settings", "ui/create/registerOnHover"], function (require, exports, settings_1, registerOnHover_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    settings_1 = __importDefault(settings_1);
+    registerOnHover_1 = __importDefault(registerOnHover_1);
+    const createTextSpanIndicator = (args) => {
+        var _a;
+        const { span, marginLeft, marginRight, onHover, onClick } = args;
+        const indicator = document.createElement('span');
+        indicator.style.fontSize = '0.75rem';
+        indicator.style.color = 'gray';
+        if (marginLeft) {
+            indicator.style.marginLeft = '0.25rem';
+        }
+        if (args.autoVerticalMargin) {
+            indicator.style.marginTop = 'auto';
+            indicator.style.marginBottom = 'auto';
+        }
+        if (marginRight) {
+            indicator.style.marginRight = '0.25rem';
+        }
+        const ext = args.external ? '↰' : '';
+        const warn = span.lineStart === 0 && span.colStart === 0 && span.lineEnd === 0 && span.colEnd === 0 ? '⚠️' : '';
+        switch ((_a = args.styleOverride) !== null && _a !== void 0 ? _a : settings_1.default.getLocationStyle()) {
+            case 'full-compact':
+                if (span.lineStart === span.lineEnd) {
+                    indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}-${span.colEnd}]${warn}`;
+                    break;
+                }
+            // Else, fall through
+            case 'full':
+                indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}→${span.lineEnd}:${span.colEnd}]${warn}`;
+                break;
+            case 'lines-compact':
+                if (span.lineStart === span.lineEnd) {
+                    indicator.innerText = `${ext}[${span.lineStart}]${warn}`;
+                    break;
+                }
+            // Else, fall through
+            case 'lines':
+                indicator.innerText = `${ext}[${span.lineStart}→${span.lineEnd}]${warn}`;
+                break;
+            case 'start':
+                indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}]${warn}`;
+                break;
+            case 'start-line':
+                indicator.innerText = `${ext}[${span.lineStart}]${warn}`;
+                break;
+        }
+        if (!args.external) {
+            if (onHover) {
+                indicator.classList.add('highlightOnHover');
+                (0, registerOnHover_1.default)(indicator, onHover);
+            }
+            if (onClick) {
+                indicator.onclick = () => onClick();
+            }
+        }
+        return indicator;
+    };
+    exports.default = createTextSpanIndicator;
+});
 define("protocol", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -721,334 +1045,6 @@ define("model/repositoryUrl", ["require", "exports"], function (require, exports
     exports.repositoryUrl = repositoryUrl;
     const rawUrl = (resource) => `https://raw.githubusercontent.com/lu-cs-sde/codeprober/master/${resource}`;
     exports.rawUrl = rawUrl;
-});
-define("model/syntaxHighlighting", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getAvailableLanguages = exports.getAppropriateFileSuffix = void 0;
-    const langstoSuffixes = {
-        plaintext: ['txt', 'Plain Text'],
-        abap: ['abap', 'abap'],
-        apex: ['cls', 'Apex'],
-        azcli: ['azcli', 'Azure CLI'],
-        bat: ['bat', 'Batch'],
-        bicep: ['bicep', 'Bicep'],
-        cameligo: ['mligo', 'Cameligo'],
-        clojure: ['clj', 'clojure'],
-        coffeescript: ['coffee', 'CoffeeScript'],
-        c: ['c', 'C'],
-        cpp: ['cpp', 'C++'],
-        csharp: ['cs', 'C#'],
-        csp: ['csp', 'CSP'],
-        css: ['css', 'CSS'],
-        dart: ['dart', 'Dart'],
-        dockerfile: ['dockerfile', 'Dockerfile'],
-        ecl: ['ecl', 'ECL'],
-        elixir: ['ex', 'Elixir'],
-        flow9: ['flow', 'Flow9'],
-        fsharp: ['fs', 'F#'],
-        go: ['go', 'Go'],
-        graphql: ['graphql', 'GraphQL'],
-        handlebars: ['handlebars', 'Handlebars'],
-        hcl: ['tf', 'Terraform'],
-        html: ['html', 'HTML'],
-        ini: ['ini', 'Ini'],
-        java: ['java', 'Java'],
-        javascript: ['js', 'JavaScript'],
-        julia: ['jl', 'Julia'],
-        kotlin: ['kt', 'Kotlin'],
-        less: ['less', 'Less'],
-        lexon: ['lex', 'Lexon'],
-        lua: ['lua', 'Lua'],
-        liquid: ['liquid', 'Liquid'],
-        m3: ['m3', 'Modula-3'],
-        markdown: ['md', 'Markdown'],
-        mips: ['s', 'MIPS'],
-        msdax: ['dax', 'DAX'],
-        mysql: ['mysql', 'MySQL'],
-        'objective-c': ['m', 'Objective-C'],
-        pascal: ['pas', 'Pascal'],
-        pascaligo: ['ligo', 'Pascaligo'],
-        perl: ['pl', 'Perl'],
-        pgsql: ['pgsql', 'PostgreSQL'],
-        php: ['php', 'PHP'],
-        postiats: ['dats', 'ATS'],
-        powerquery: ['pq', 'PQ'],
-        powershell: ['ps1', 'PowerShell'],
-        proto: ['proto', 'protobuf'],
-        pug: ['jade', 'Pug'],
-        python: ['py', 'Python'],
-        qsharp: ['qs', 'Q#'],
-        r: ['r', 'R'],
-        razor: ['cshtml', 'Razor'],
-        redis: ['redis', 'redis'],
-        redshift: ['redshift', 'Redshift'],
-        restructuredtext: ['rst', 'reStructuredText'],
-        ruby: ['rb', 'Ruby'],
-        rust: ['rs', 'Rust'],
-        sb: ['sb', 'Small Basic'],
-        scala: ['scala', 'Scala'],
-        scheme: ['scm', 'scheme'],
-        scss: ['scss', 'Sass'],
-        shell: ['sh', 'Shell'],
-        sol: ['sol', 'sol'],
-        aes: ['aes', 'aes'],
-        sparql: ['rq', 'sparql'],
-        sql: ['sql', 'SQL'],
-        st: ['st', 'StructuredText'],
-        swift: ['swift', 'Swift'],
-        systemverilog: ['sv', 'SV'],
-        verilog: ['v', 'V'],
-        tcl: ['tcl', 'tcl'],
-        twig: ['twig', 'Twig'],
-        typescript: ['ts', 'TypeScript'],
-        vb: ['vb', 'Visual Basic'],
-        xml: ['xml', 'XML'],
-        yaml: ['yaml', 'YAML'],
-        json: ['json', 'JSON']
-    };
-    const getAppropriateFileSuffix = (lang) => {
-        var _a, _b;
-        return (_b = (_a = langstoSuffixes[lang]) === null || _a === void 0 ? void 0 : _a[0]) !== null && _b !== void 0 ? _b : `.${lang.toLowerCase()}`;
-    };
-    exports.getAppropriateFileSuffix = getAppropriateFileSuffix;
-    const getAvailableLanguages = () => Object.assign(Object.entries(langstoSuffixes).map(([k, v]) => ({ id: k, alias: v[1] })));
-    exports.getAvailableLanguages = getAvailableLanguages;
-});
-define("model/WindowState", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("ui/UIElements", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    class UIElements {
-        // Use lazy getters since the dom elements haven't been loaded
-        // by the time this script initially runs.
-        get positionRecoverySelector() { return document.getElementById('control-position-recovery-strategy'); }
-        get positionRecoveryHelpButton() { return document.getElementById('control-position-recovery-strategy-help'); }
-        get astCacheStrategySelector() { return document.getElementById('ast-cache-strategy'); }
-        get astCacheStrategyHelpButton() { return document.getElementById('control-ast-cache-strategy-help'); }
-        get syntaxHighlightingSelector() { return document.getElementById('syntax-highlighting'); }
-        get syntaxHighlightingHelpButton() { return document.getElementById('control-syntax-highlighting-help'); }
-        get shouldOverrideMainArgsCheckbox() { return document.getElementById('control-should-override-main-args'); }
-        get configureMainArgsOverrideButton() { return document.getElementById('configure-main-args'); }
-        get mainArgsOverrideHelpButton() { return document.getElementById('main-args-override-help'); }
-        get shouldCustomizeFileSuffixCheckbox() { return document.getElementById('control-customize-file-suffix'); }
-        get configureCustomFileSuffixButton() { return document.getElementById('customize-file-suffix'); }
-        get customFileSuffixHelpButton() { return document.getElementById('customize-file-suffix-help'); }
-        get showAllPropertiesCheckbox() { return document.getElementById('control-show-all-properties'); }
-        get showAllPropertiesHelpButton() { return document.getElementById('show-all-properties-help'); }
-        get duplicateProbeCheckbox() { return document.getElementById('control-duplicate-probe-on-attr'); }
-        get duplicateProbeHelpButton() { return document.getElementById('duplicate-probe-on-attr-help'); }
-        get captureStdoutCheckbox() { return document.getElementById('control-capture-stdout'); }
-        get captureStdoutHelpButton() { return document.getElementById('capture-stdout-help'); }
-        get captureTracesCheckbox() { return document.getElementById('control-capture-traces'); }
-        get captureTracesHelpButton() { return document.getElementById('capture-traces-help'); }
-        get autoflushTracesCheckbox() { return document.getElementById('control-autoflush-traces'); }
-        get autoflushTracesContainer() { return document.getElementById('container-autoflush-traces'); }
-        get locationStyleSelector() { return document.getElementById('location-style'); }
-        get locationStyleHelpButton() { return document.getElementById('control-location-style-help'); }
-        get generalHelpButton() { return document.getElementById('display-help'); }
-        get saveAsUrlButton() { return document.getElementById('saveAsUrl'); }
-        get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
-        get displayStatisticsButton() { return document.getElementById('display-statistics'); }
-        get displayWorkerStatusButton() { return document.getElementById('display-worker-status'); }
-        get versionInfo() { return document.getElementById('version'); }
-        get settingsHider() { return document.getElementById('settings-hider'); }
-        get settingsRevealer() { return document.getElementById('settings-revealer'); }
-        get showTests() { return document.getElementById('show-tests'); }
-        get minimizedProbeArea() { return document.getElementById('minimized-probe-area'); }
-    }
-    exports.default = UIElements;
-});
-define("settings.generated", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElements"], function (require, exports, syntaxHighlighting_1, UIElements_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    UIElements_1 = __importDefault(UIElements_1);
-    let settingsObj = null;
-    const clearHashFromLocation = () => history.replaceState('', document.title, `${window.location.pathname}${window.location.search}`);
-    window.saveStateAsUrl = () => {
-        const encoded = encodeURIComponent(JSON.stringify(settings.get()));
-        // delete location.hash;'
-        // console.log('loc:', location.toString());
-        navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}${window.location.search}${window.location.search.length === 0 ? '?' : '&'}settings=${encoded}`);
-        const btn = new UIElements_1.default().saveAsUrlButton;
-        const saveText = btn.textContent;
-        setTimeout(() => {
-            btn.textContent = saveText;
-            btn.style.border = 'unset';
-            delete btn.style.border;
-        }, 1000);
-        btn.textContent = `Copied to clipboard`;
-        btn.style.border = '1px solid green';
-    };
-    const settings = {
-        get: () => {
-            if (!settingsObj) {
-                let settingsMatch;
-                if ((settingsMatch = /[?&]settings=[^?&]+/.exec(location.search)) != null) {
-                    const trimmedSearch = settingsMatch.index === 0
-                        ? (settingsMatch[0].length < location.search.length
-                            ? `?${location.search.slice(settingsMatch[0].length + 1)}`
-                            : `${location.search.slice(0, settingsMatch.index)}${location.search.slice(settingsMatch.index + settingsMatch[0].length)}`)
-                        : `${location.search.slice(0, settingsMatch.index)}${location.search.slice(settingsMatch.index + settingsMatch[0].length)}`;
-                    history.replaceState('', document.title, `${window.location.pathname}${trimmedSearch}`);
-                    try {
-                        settingsObj = JSON.parse(decodeURIComponent(settingsMatch[0].slice(`?settings=`.length)));
-                        clearHashFromLocation();
-                        if (settingsObj) {
-                            settings.set(settingsObj);
-                        }
-                    }
-                    catch (e) {
-                        console.warn('Invalid windowState in hash', e);
-                    }
-                }
-                if (!settingsObj) {
-                    try {
-                        // TODO remove 'pasta-settings' fallback after an appropriate amount of time
-                        settingsObj = JSON.parse(localStorage.getItem('codeprober-settings') || localStorage.getItem('pasta-settings') || '{}');
-                    }
-                    catch (e) {
-                        console.warn('Bad data in localStorage, resetting settings', e);
-                        settingsObj = {};
-                    }
-                }
-            }
-            return settingsObj || {};
-        },
-        set: (newSettings) => {
-            settingsObj = newSettings;
-            localStorage.setItem('codeprober-settings', JSON.stringify(settingsObj));
-        },
-        getEditorContents: () => settings.get().editorContents,
-        setEditorContents: (editorContents) => settings.set({ ...settings.get(), editorContents }),
-        isLightTheme: () => { var _a; return (_a = settings.get().lightTheme) !== null && _a !== void 0 ? _a : false; },
-        setLightTheme: (lightTheme) => settings.set({ ...settings.get(), lightTheme }),
-        shouldDuplicateProbeOnAttrClick: () => { var _a; return (_a = settings.get().duplicateProbeOnAttrClick) !== null && _a !== void 0 ? _a : true; },
-        setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick) => settings.set({ ...settings.get(), duplicateProbeOnAttrClick }),
-        shouldCaptureStdio: () => { var _a; return (_a = settings.get().captureStdio) !== null && _a !== void 0 ? _a : true; },
-        setShouldCaptureStdio: (captureStdio) => settings.set({ ...settings.get(), captureStdio }),
-        shouldCaptureTraces: () => { var _a; return (_a = settings.get().captureTraces) !== null && _a !== void 0 ? _a : false; },
-        setShouldCaptureTraces: (captureTraces) => settings.set({ ...settings.get(), captureTraces }),
-        shouldAutoflushTraces: () => { var _a; return (_a = settings.get().autoflushTraces) !== null && _a !== void 0 ? _a : true; },
-        setShouldAutoflushTraces: (autoflushTraces) => settings.set({ ...settings.get(), autoflushTraces }),
-        getPositionRecoveryStrategy: () => { var _a; return (_a = settings.get().positionRecoveryStrategy) !== null && _a !== void 0 ? _a : 'ALTERNATE_PARENT_CHILD'; },
-        setPositionRecoveryStrategy: (positionRecoveryStrategy) => settings.set({ ...settings.get(), positionRecoveryStrategy }),
-        getAstCacheStrategy: () => { var _a; return (_a = settings.get().astCacheStrategy) !== null && _a !== void 0 ? _a : 'PARTIAL'; },
-        setAstCacheStrategy: (astCacheStrategy) => settings.set({ ...settings.get(), astCacheStrategy }),
-        getProbeWindowStates: () => {
-            var _a;
-            const ret = (_a = settings.get().probeWindowStates) !== null && _a !== void 0 ? _a : [];
-            return ret.map((item) => {
-                if (typeof item.data === 'undefined') {
-                    // Older variant of this data, upgrade it
-                    return {
-                        modalPos: item.modalPos,
-                        data: {
-                            type: 'probe',
-                            locator: item.locator,
-                            property: item.property,
-                            nested: {},
-                        }
-                    };
-                }
-                return item;
-            });
-        },
-        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.get(), probeWindowStates }),
-        getSyntaxHighlighting: () => { var _a; return (_a = settings.get().syntaxHighlighting) !== null && _a !== void 0 ? _a : 'java'; },
-        setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.get(), syntaxHighlighting }),
-        getMainArgsOverride: () => { var _a; return (_a = settings.get().mainArgsOverride) !== null && _a !== void 0 ? _a : null; },
-        setMainArgsOverride: (mainArgsOverride) => settings.set({ ...settings.get(), mainArgsOverride }),
-        getCustomFileSuffix: () => { var _a; return (_a = settings.get().customFileSuffix) !== null && _a !== void 0 ? _a : null; },
-        setCustomFileSuffix: (customFileSuffix) => settings.set({ ...settings.get(), customFileSuffix }),
-        getCurrentFileSuffix: () => { var _a; return (_a = settings.getCustomFileSuffix()) !== null && _a !== void 0 ? _a : `.${(0, syntaxHighlighting_1.getAppropriateFileSuffix)(settings.getSyntaxHighlighting())}`; },
-        shouldShowAllProperties: () => { var _a; return (_a = settings.get().showAllProperties) !== null && _a !== void 0 ? _a : false; },
-        setShouldShowAllProperties: (showAllProperties) => settings.set({ ...settings.get(), showAllProperties }),
-        getLocationStyle: () => { var _a; return (_a = settings.get().locationStyle) !== null && _a !== void 0 ? _a : 'full'; },
-        setLocationStyle: (locationStyle) => settings.set({ ...settings.get(), locationStyle }),
-        shouldHideSettingsPanel: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.hideSettingsPanel) !== null && _b !== void 0 ? _b : false; },
-        setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
-        shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
-    };
-    exports.default = settings;
-});
-define("ui/create/registerOnHover", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    const registerOnHover = (element, onHover) => {
-        element.onmouseenter = () => onHover(true);
-        element.onmouseleave = () => onHover(false);
-    };
-    exports.default = registerOnHover;
-});
-define("ui/create/createTextSpanIndicator", ["require", "exports", "settings", "ui/create/registerOnHover"], function (require, exports, settings_1, registerOnHover_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    settings_1 = __importDefault(settings_1);
-    registerOnHover_1 = __importDefault(registerOnHover_1);
-    const createTextSpanIndicator = (args) => {
-        var _a;
-        const { span, marginLeft, marginRight, onHover, onClick } = args;
-        const indicator = document.createElement('span');
-        indicator.style.fontSize = '0.75rem';
-        indicator.style.color = 'gray';
-        if (marginLeft) {
-            indicator.style.marginLeft = '0.25rem';
-        }
-        if (args.autoVerticalMargin) {
-            indicator.style.marginTop = 'auto';
-            indicator.style.marginBottom = 'auto';
-        }
-        if (marginRight) {
-            indicator.style.marginRight = '0.25rem';
-        }
-        const ext = args.external ? '↰' : '';
-        const warn = span.lineStart === 0 && span.colStart === 0 && span.lineEnd === 0 && span.colEnd === 0 ? '⚠️' : '';
-        switch ((_a = args.styleOverride) !== null && _a !== void 0 ? _a : settings_1.default.getLocationStyle()) {
-            case 'full-compact':
-                if (span.lineStart === span.lineEnd) {
-                    indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}-${span.colEnd}]${warn}`;
-                    break;
-                }
-            // Else, fall through
-            case 'full':
-                indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}→${span.lineEnd}:${span.colEnd}]${warn}`;
-                break;
-            case 'lines-compact':
-                if (span.lineStart === span.lineEnd) {
-                    indicator.innerText = `${ext}[${span.lineStart}]${warn}`;
-                    break;
-                }
-            // Else, fall through
-            case 'lines':
-                indicator.innerText = `${ext}[${span.lineStart}→${span.lineEnd}]${warn}`;
-                break;
-            case 'start':
-                indicator.innerText = `${ext}[${span.lineStart}:${span.colStart}]${warn}`;
-                break;
-            case 'start-line':
-                indicator.innerText = `${ext}[${span.lineStart}]${warn}`;
-                break;
-        }
-        if (!args.external) {
-            if (onHover) {
-                indicator.classList.add('highlightOnHover');
-                (0, registerOnHover_1.default)(indicator, onHover);
-            }
-            if (onClick) {
-                indicator.onclick = () => onClick();
-            }
-        }
-        return indicator;
-    };
-    exports.default = createTextSpanIndicator;
 });
 define("ui/popup/displayHelp", ["require", "exports", "model/repositoryUrl", "ui/create/createModalTitle", "ui/create/createTextSpanIndicator", "ui/create/showWindow"], function (require, exports, repositoryUrl_1, createModalTitle_1, createTextSpanIndicator_1, showWindow_2) {
     "use strict";
@@ -14339,7 +14335,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             });
             const rootElem = document.getElementById('root');
             const initHandler = (info) => {
-                const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile } = info;
+                const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, initSettings } = info;
                 console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
                 rootElem.style.display = "grid";
                 if (backingFile) {
@@ -14782,6 +14778,10 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             doMain(8080);
         });
     };
+});
+define("settings.generated", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
 const lightColors = {
     'window-border': '#999',

@@ -2,7 +2,7 @@ import { getAppropriateFileSuffix } from "./model/syntaxHighlighting";
 import WindowState from './model/WindowState';
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import UIElements from './ui/UIElements';
-import { InitSettings } from "./settings.generated";
+import { InitSettings } from "./protocol";
 
 
 interface Settings extends InitSettings {
