@@ -12,9 +12,11 @@ public class InitSettings implements codeprober.util.JsonUtil.ToJsonable {
   public final Boolean showAllProperties;
   public final String positionRecoveryStrategy;
   public final String astCacheStrategy;
+  @codeprober.protocol.EnumString(options = {"plaintext", "abap", "apex", "azcli", "bat", "bicep", "cameligo", "clojure", "coffeescript", "c", "cpp", "csharp", "csp", "css", "dart", "dockerfile", "ecl", "elixir", "flow9", "fsharp", "go", "graphql", "handlebars", "hcl", "html", "ini", "java", "javascript", "julia", "kotlin", "less", "lexon", "lua", "liquid", "m3", "markdown", "mips", "msdax", "mysql", "objective-c", "pascal", "pascaligo", "perl", "pgsql", "php", "postiats", "powerquery", "powershell", "proto", "pug", "python", "qsharp", "r", "razor", "redis", "redshift", "restructuredtext", "ruby", "rust", "sb", "scala", "scheme", "scss", "shell", "sol", "aes", "sparql", "sql", "st", "swift", "systemverilog", "verilog", "tcl", "twig", "typescript", "vb", "xml", "yaml", "json"})
   public final String syntaxHighlighting;
   public final java.util.List<String> mainArgsOverride;
   public final String customFileSuffix;
+  @codeprober.protocol.EnumString(options = {"full", "full-compact", "lines", "lines-compact", "start", "start-line"})
   public final String locationStyle;
   public final Boolean hideSettingsPanel;
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, java.util.List<String> mainArgsOverride, String customFileSuffix, String locationStyle) {

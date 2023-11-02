@@ -14779,10 +14779,6 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
         });
     };
 });
-define("settings.generated", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 const lightColors = {
     'window-border': '#999',
     'probe-result-area': '#F4F4F4',

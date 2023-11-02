@@ -93,7 +93,14 @@ public class GenJava {
 			return this.enumOptions;
 		}
 
+		/**
+		 * Builder operation; updates `this`
+		 */
 		public GeneratedType withEnumOptions(Object[] options) {
+			if (options == null) {
+				this.enumOptions = null;
+				return this;
+			}
 			this.enumOptions = new String[options.length];
 			for (int i = 0; i < options.length; ++i) {
 				this.enumOptions[i] = (String) options[i];
@@ -862,7 +869,8 @@ public class GenJava {
 							+ ") : null", //
 					(obj, field, val) -> {
 						return String.format("if (%s != null) %s;", val, ent.genWriteToJson.genWrite(obj, field, val));
-					});
+					})
+				.withEnumOptions(ent.getEnumOptions());
 //					(obj, field, val) -> String.format("%s.put(%s, %s == null ? JSONObject.NULL : (%s))", obj, field, val, //
 //							String.format("%s", ) //
 //							));
@@ -873,7 +881,8 @@ public class GenJava {
 //			genTypescriptRef(prefix, ((Optional<?>) val).get());
 		} else if (rawRef instanceof TsEnumRef) {
 			TsEnumRef ref = (TsEnumRef) rawRef;
-			return genRef(ref.options);
+			return genRef(ref.options)
+				.withEnumOptions(ref.options);
 			// continues below:
 		} else if (rawRef instanceof Object[]) {
 			final Object[] opt = (Object[]) rawRef;
