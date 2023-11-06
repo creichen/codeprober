@@ -8,21 +8,44 @@ import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Constructor;
+
 /**
  * The target class must satisfy a <i>configuration class invariant</i>:
  */
 public class ArgsParser<T> {
 	Class<T> target;
-	List<ArgOpt<?>> args;
+	Constructor<T> constructor;
+	List<ArgOpt<?>> formalArgs;
 
 	public ArgsParser(Class<T> target_class) {
 		this.target = target_class;
-		args = Arrays.stream(target_class.getFields())
+		this.formalArgs = Arrays.stream(target_class.getFields())
 			.map(ArgOpt::new)
-			.collect(Collectors.toList);
+			.collect(Collectors.toList());
+		try {
+			Class<?> types[] = Arrays.stream(target_class.getFields())
+				.map(Field::getType)
+				.collect(Collectors.toList())
+				.toArray(new Class<?>[this.formalArgs.size()]);
+			this.constructor = target_class.getConstructor(types);
+		} catch (Exception exn) {
+			System.err.println("ArgsParser doesn't seem to support this type-- must satisfy configuration class invariant!");
+			throw new RuntimeException(exn);
+		}
 	}
 
-	static class ArgOpt<E> {
+	/**
+	 * Obtain all args supported by this ArgParser
+	 *
+	 * Intended for testing
+	 */
+	List<? extends ArgOpt<?>> getArgs() {
+		return this.formalArgs;
+	}
+
+	public static class ArgOpt<E> {
 		final String name;
 		final Field field;
 		final ArgType<E> arg_type;
@@ -30,7 +53,7 @@ public class ArgsParser<T> {
 
 		public ArgOpt(Field field) {
 			this.field = field;
-			this.name = getName();
+			this.name = field.getName();
 			this.arg_type = getArgType(field.getType());
 			if (this.arg_type == null) {
 				throw new RuntimeException("Can't autogenerate CLI processor for field " + field + " of type " + field.getType());
@@ -99,31 +122,31 @@ public class ArgsParser<T> {
 
 			// Specified with '='?
 			if (this.matchesPrefix(actual_arg)) {
-				actual_arg_next = actual_arg.substring(this.prefixArg.length());
+				actual_arg_next = actual_arg.substring(this.prefixArg().length());
 			}
 			return this.arg_type.parseValue(this, actual_arg_next);
 		}
 	}
 
 	private static String dashify(String optname) {
-		String[] tokens = camelCase.split("(?=[A-Z])");
+		String[] tokens = optname.split("(?=[A-Z])");
 		return Arrays.stream(tokens)
-			.map(String::toLower)
+			.map(String::toLowerCase)
 			.collect(Collectors.joining("-"));
 	}
 
 	public Result parse(String[] args) {
 		Args actuals = new Args(args);
 		// Collect positional arg bindings here; pre-init to "null"
-		ArrayList<Object> arg_bindings = new ArrayList<>(Arrays.toList(new Object[actuals.size()]));
+		ArrayList<Object> arg_bindings = new ArrayList<>(Arrays.asList(new Object[actuals.remainingArgsSize()]));
 
-		for (int i = 0; i < args.length(); ++i) {
-			final String actual = args.get(i);
-			final String next_actual = (i >= args.length()) ? null : args.get(i+1);
+		for (int i = 0; i < actuals.remainingArgsSize(); ++i) {
+			final String actual = actuals.get(i);
+			final String next_actual = (i >= args.length) ? null : actuals.get(i+1);
 
 			boolean matched = false;
 
-			for (ArgOpt formal : this.args) {
+			for (ArgOpt formal : this.formalArgs) {
 				final int match_count = formal.matches(actual);
 				if (match_count > 0) {
 					matched = true;
@@ -135,9 +158,9 @@ public class ArgsParser<T> {
 					arg_bindings.set(i, formal.getValue(actual, next_actual));
 
 					// Remove the arguments; we consider them processed
-					args.remove(i);
+					actuals.remove(i);
 					if (match_count == 2) {
-						args.remove(i);
+						actuals.remove(i);
 					}
 					i -= match_count;
 
@@ -149,12 +172,12 @@ public class ArgsParser<T> {
 		// Now try to instantiate:
 		T result = null;
 		try {
-			result = this.target.newInstance(arg_bindings.toArray());
+			result = this.constructor.newInstance(arg_bindings.toArray());
 		} catch (Exception e) {
 			System.err.println("Internal error: is " + target + " violating the configuration class invariant?");
 			throw new RuntimeException(e);
 		}
-		return new Result(args, result);
+		return new Result(actuals, result);
 	}
 
 	/**
@@ -164,7 +187,7 @@ public class ArgsParser<T> {
 		List<String> actual_args = new ArrayList<>();
 		List<String> trailing_args = new ArrayList<>(); // after a "--" or otherwise left over
 
-		public void Args(String[] actual_args) {
+		public Args(String[] actual_args) {
 			// Split by "--", if present
 			boolean check_trailing = true;
 			List<String> dest = this.actual_args;
@@ -177,8 +200,8 @@ public class ArgsParser<T> {
 			}
 		}
 
-		public int remainingArgsLength() {
-			return this.actual_args.length();
+		public int remainingArgsSize() {
+			return this.actual_args.size();
 		}
 
 		public String get(int index) {
@@ -190,7 +213,7 @@ public class ArgsParser<T> {
 		}
 	}
 
-	public static class Result {
+	public class Result {
 		public final Args args;
 		public final T result;
 
@@ -201,22 +224,22 @@ public class ArgsParser<T> {
 	}
 
 	static final ArgType[] ARG_TYPES = new ArgType[] {
-		(new ArgType(boolean.class, false))
-		.onPresent(true),
+		(new FlagArgType(boolean.class, false))
+		.onPresent(true)
 		.onNegated(false),
 
-		(new ValueArgType(Integer.class, null))
-		.onArg(Integer::valueOf),
+		(new ValueArgType<Integer>(Integer.class, null,
+					   Integer::valueOf)),
 
-		(new ValueArgType(String.class, null))
-		.onArg(s -> s),
+		(new ValueArgType<String>(String.class, null,
+					  s -> s)),
 
-		(new ValueArgType(Boolean.class, null))
+		(new FlagArgType<Boolean>(Boolean.class, null))
 		.onPresent(Boolean.TRUE)
 		.onNegated(Boolean.FALSE),
 	};
 
-	protected ArgType getArgType(Class<?> argtype) {
+	public static  ArgType getArgType(Class<?> argtype) {
 		for (ArgType at : ARG_TYPES) {
 			if (at.getType().equals(argtype)) {
 				return at;
@@ -228,28 +251,36 @@ public class ArgsParser<T> {
 	/**
 	 * Argument that expects an explicit value
 	 */
-	static class ValueArgType<E> {
+	static class ValueArgType<E> extends ArgType<E> {
 		private Function<String, E> arg_processor = null;
 
-		public class ValueArgType(Class<E> classobj, E default_value,
-					  Function<String, E> processor) {
+		public ValueArgType(Class<E> classobj, E default_value,
+				    Function<String, E> processor) {
 			super(classobj, default_value);
 			this.arg_processor = processor;
 		}
 
+		@Override
 		public E parseValue(ArgOpt<E> opt, String str) {
 			return this.arg_processor.apply(str);
+		}
+
+		/**
+		 * Do we always require an argument for this type?
+		 */
+		public boolean requiresArg() {
+			return true;
 		}
 	}
 
 	/**
 	 * Boolean-ish
 	 */
-	static class FlagArgType<E> {
+	static class FlagArgType<E> extends ArgType<E> {
 		private E value_if_negated = null;
 		private E value_if_present = null;
 
-		public class FlagArgType(Class<E> classobj, E default_value) {
+		public FlagArgType(Class<E> classobj, E default_value) {
 			super(classobj, default_value);
 		}
 		public FlagArgType<E> onPresent(E e) {
@@ -280,7 +311,7 @@ public class ArgsParser<T> {
 		private final Class<E> classobj;
 		private final E default_value;
 
-		public class ArgType(Class<E> classobj, E default_value) {
+		public ArgType(Class<E> classobj, E default_value) {
 			this.classobj = classobj;
 			this.default_value = default_value;
 		}
@@ -289,7 +320,7 @@ public class ArgsParser<T> {
 		 * Do we always require an argument for this type?
 		 */
 		public boolean requiresArg() {
-			return null != this.arg_processor;
+			return false;
 		}
 
 		public Class<E> getType() {

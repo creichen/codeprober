@@ -145,8 +145,8 @@ public class WebSocketServer {
 				bufferTime > 0 ? bufferTime : null, //
 				args.workerProcessCount, //
 				disableVersionCheckerByDefault ? true : null, //
-				backingFile == null ? null : new BackingFile(backingFile.getPath(), backingFileContents), //
-				args.getSettings(),
+				backingFile == null ? null : new BackingFile(backingFile.getPath(), backingFileContents) //
+				//args.getSettings()
 		);
 	}
 
