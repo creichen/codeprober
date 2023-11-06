@@ -18,11 +18,6 @@ public class ParsedArgs {
 	public final String oneshotRequest;
 	public final File oneshotOutput;
 
-	private InitInfo settings = null;
-	public InitSettings getSettings() {
-		return this.settings;
-	}
-
 	public ParsedArgs(boolean runTest, ConcurrencyMode concurrencyMode, Integer workerProcessCount, String jarPath,
 			String[] extraArgs, String oneshotRequest, File oneshotOutput) {
 		this.runTest = runTest;
