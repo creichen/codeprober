@@ -29,6 +29,7 @@ import createMinimizedProbeModal from './ui/create/createMinimizedProbeModal';
 import getEditorDefinitionPlace from './model/getEditorDefinitionPlace';
 import installASTEditor from './ui/installASTEditor';
 import configureCheckboxWithHiddenCheckbox from './ui/configureCheckboxWithHiddenCheckbox';
+import { tealInit } from  "./model/teal"
 
 const uiElements = new UIElements();
 
@@ -196,6 +197,7 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
       if (getEditorDefinitionPlace().definedEditors[editorType]) {
         const { preload, init, } = getEditorDefinitionPlace().definedEditors[editorType];
         getEditorDefinitionPlace().loadPreload(preload, () => {
+          tealInit(editorType);
           const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
           getLocalState = res.getLocalState || getLocalState;
