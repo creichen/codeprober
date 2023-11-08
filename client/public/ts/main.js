@@ -103,6 +103,7 @@ define("model/syntaxHighlighting", ["require", "exports"], function (require, ex
         systemverilog: ['sv', 'SV'],
         verilog: ['v', 'V'],
         tcl: ['tcl', 'tcl'],
+        teal: ['teal', 'Teal'],
         twig: ['twig', 'Twig'],
         typescript: ['ts', 'TypeScript'],
         vb: ['vb', 'Visual Basic'],
@@ -14241,7 +14242,107 @@ define("ui/configureCheckboxWithHiddenCheckbox", ["require", "exports"], functio
     };
     exports.default = configureCheckboxWithHiddenCheckbox;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/runBgProbe", "model/cullingTaskSubmitterFactory", "ui/popup/displayAstModal", "model/test/TestManager", "ui/popup/displayTestSuiteListModal", "ui/popup/displayWorkerStatus", "ui/create/showWindow", "model/UpdatableNodeLocator", "hacks", "ui/create/createMinimizedProbeModal", "model/getEditorDefinitionPlace", "ui/installASTEditor", "ui/configureCheckboxWithHiddenCheckbox"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_6, displayRagModal_1, displayHelp_5, displayAttributeModal_7, settings_9, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_4, showVersionInfo_1, runBgProbe_1, cullingTaskSubmitterFactory_2, displayAstModal_4, TestManager_1, displayTestSuiteListModal_1, displayWorkerStatus_1, showWindow_11, UpdatableNodeLocator_9, hacks_5, createMinimizedProbeModal_2, getEditorDefinitionPlace_2, installASTEditor_1, configureCheckboxWithHiddenCheckbox_1) {
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation, Christoph Reichenbach.  All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+define("model/teal", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.tealInit = exports.tealTokens = void 0;
+    exports.tealTokens = {
+        keywords: [
+            'fun', 'var', 'while', 'if', 'else', 'return',
+            'not', 'and', 'or', 'null', 'new',
+            'for', 'in', 'qualifier', 'type',
+            'assert',
+            'class', 'self'
+        ],
+        typeKeywords: [
+            'int', 'string', 'array', 'any', 'nonnull'
+        ],
+        operators: [
+            '+', '-', '*', '/', '%',
+            ':=',
+            '>', '<', '==', '<=', '>=', '!=', '=',
+            ':', '<:'
+        ],
+        brackets: [['{', '}', 'delimiter.curly'],
+            ['[', ']', 'delimiter.square'],
+            ['(', ')', 'delimiter.parenthesis']],
+        // we include these common regular expressions
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        escapes: /\\(?:[\\"])/,
+        // The main tokenizer for our languages
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [/[a-zA-Z_][a-zA-Z_0-9]*/, { cases: { '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier' } }],
+                [/[A-Z][a-zA-Z_0-9]*/, 'type.identifier'],
+                // whitespace
+                { include: '@whitespace' },
+                // delimiters and operators
+                [/[{}()\[\]]/, '@brackets'],
+                [/@symbols/, { cases: { '@operators': 'operator',
+                            '@default': '' } }],
+                // // @ annotations.
+                // // As an example, we emit a debugging log message on these tokens.
+                // // Note: message are supressed during the first load -- change some lines to see them.
+                // [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+                // numbers
+                [/\d+/, 'number'],
+                // delimiter: after number because of .\d floats
+                [/[;,.]/, 'delimiter'],
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],
+                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                // characters
+                [/'[^\\']'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid']
+            ],
+            comment: [
+                [/[^\/*]+/, 'comment'],
+                [/\*\//, 'comment', '@pop'],
+                [/[\/*]/, 'comment']
+            ],
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
+            ],
+            whitespace: [
+                [/[ \t\r\n]+/, ''],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment']
+            ],
+        },
+    };
+    const tealConf = {
+        comments: {
+            lineComment: '//',
+            blockComment: ['/*', '*/']
+        },
+        brackets: [
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')']
+        ],
+    };
+    const tealInit = (editorType) => {
+        if (editorType == 'Monaco') {
+            var languages = window.monaco.languages;
+            languages.register({ id: 'teal' });
+            languages.setMonarchTokensProvider('teal', exports.tealTokens);
+            languages.setLanguageConfiguration('teal', tealConf);
+        }
+    };
+    exports.tealInit = tealInit;
+});
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/runBgProbe", "model/cullingTaskSubmitterFactory", "ui/popup/displayAstModal", "model/test/TestManager", "ui/popup/displayTestSuiteListModal", "ui/popup/displayWorkerStatus", "ui/create/showWindow", "model/UpdatableNodeLocator", "hacks", "ui/create/createMinimizedProbeModal", "model/getEditorDefinitionPlace", "ui/installASTEditor", "ui/configureCheckboxWithHiddenCheckbox", "model/teal"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_6, displayRagModal_1, displayHelp_5, displayAttributeModal_7, settings_9, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_4, showVersionInfo_1, runBgProbe_1, cullingTaskSubmitterFactory_2, displayAstModal_4, TestManager_1, displayTestSuiteListModal_1, displayWorkerStatus_1, showWindow_11, UpdatableNodeLocator_9, hacks_5, createMinimizedProbeModal_2, getEditorDefinitionPlace_2, installASTEditor_1, configureCheckboxWithHiddenCheckbox_1, teal_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
@@ -14406,6 +14507,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     const { preload, init, } = (0, getEditorDefinitionPlace_2.default)().definedEditors[editorType];
                     (0, getEditorDefinitionPlace_2.default)().loadPreload(preload, () => {
                         var _a;
+                        (0, teal_1.tealInit)(editorType);
                         const res = init((_a = settings_9.default.getEditorContents()) !== null && _a !== void 0 ? _a : `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings_9.default.getSyntaxHighlighting());
                         setLocalState = res.setLocalState || setLocalState;
                         getLocalState = res.getLocalState || getLocalState;
