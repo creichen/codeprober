@@ -15,5 +15,6 @@ public class InitInfo extends Streamable{
 	public final Object workerProcessCount = opt(Integer.class);
 	public final Object disableVersionCheckerByDefault = opt(Boolean.class);
 	public final Object backingFile = opt(BackingFile.class);
-	public final Object initSettings = opt(InitSettings.class);
+	public final Object defaultSettings = opt(InitSettings.class);
+	public final Object overrideSettings = opt(InitSettings.class);
 }

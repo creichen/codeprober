@@ -6,12 +6,17 @@ import { InitSettings } from "./protocol";
 
 
 interface Settings extends InitSettings {
+  mainArgsOverride?: string[] | null;
   probeWindowStates?: WindowState[];
 }
 
 let settingsObj: Settings | null = null;
+let defaultSettings: Settings = {};
+let overrideSettings: Settings = {};
 
-
+const applyDefaults = (settings: Settings): Settings => {
+  return { ...defaultSettings, ...settings, ...overrideSettings };
+}
 
 const clearHashFromLocation = () => history.replaceState('', document.title, `${window.location.pathname}${window.location.search}`);
 
@@ -68,11 +73,18 @@ const settings = {
         }
       }
     }
-    return settingsObj || {};
+    const result = applyDefaults(settingsObj || {});
+    console.log("from ", settingsObj, "to ", result);
+    return result;
   },
   set: (newSettings: Settings) => {
     settingsObj = newSettings;
     localStorage.setItem('codeprober-settings', JSON.stringify(settingsObj));
+  },
+  setDefaults: (newDefaultSettings: Settings, newOverrideSettings: Settings) => {
+    defaultSettings = newDefaultSettings;
+    overrideSettings = newOverrideSettings;
+    console.log("changing defaults: ", defaultSettings, " overrides: ", overrideSettings);
   },
 
   getEditorContents: () => settings.get().editorContents,

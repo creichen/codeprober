@@ -125,9 +125,11 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
 
     const rootElem = document.getElementById('root') as HTMLElement;
     const initHandler = (info: InitInfo) => {
-      const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, initSettings } = info;
+      const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, defaultSettings, overrideSettings } = info;
       console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
       rootElem.style.display = "grid";
+      settings.setDefaults(defaultSettings || {},
+			   overrideSettings || {});
 
       if (backingFile) {
         settings.setEditorContents(backingFile.value);

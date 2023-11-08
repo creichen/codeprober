@@ -170,6 +170,11 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
     Object.defineProperty(exports, "__esModule", { value: true });
     UIElements_1 = __importDefault(UIElements_1);
     let settingsObj = null;
+    let defaultSettings = {};
+    let overrideSettings = {};
+    const applyDefaults = (settings) => {
+        return { ...defaultSettings, ...settings, ...overrideSettings };
+    };
     const clearHashFromLocation = () => history.replaceState('', document.title, `${window.location.pathname}${window.location.search}`);
     window.saveStateAsUrl = () => {
         const encoded = encodeURIComponent(JSON.stringify(settings.get()));
@@ -219,11 +224,18 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
                     }
                 }
             }
-            return settingsObj || {};
+            const result = applyDefaults(settingsObj || {});
+            console.log("from ", settingsObj, "to ", result);
+            return result;
         },
         set: (newSettings) => {
             settingsObj = newSettings;
             localStorage.setItem('codeprober-settings', JSON.stringify(settingsObj));
+        },
+        setDefaults: (newDefaultSettings, newOverrideSettings) => {
+            defaultSettings = newDefaultSettings;
+            overrideSettings = newOverrideSettings;
+            console.log("changing defaults: ", defaultSettings, " overrides: ", overrideSettings);
         },
         getEditorContents: () => settings.get().editorContents,
         setEditorContents: (editorContents) => settings.set({ ...settings.get(), editorContents }),
@@ -14324,9 +14336,10 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             });
             const rootElem = document.getElementById('root');
             const initHandler = (info) => {
-                const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, initSettings } = info;
+                const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, defaultSettings, overrideSettings } = info;
                 console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
                 rootElem.style.display = "grid";
+                settings_9.default.setDefaults(defaultSettings || {}, overrideSettings || {});
                 if (backingFile) {
                     settings_9.default.setEditorContents(backingFile.value);
                     const inputLabel = document.querySelector('#input-header > span');
