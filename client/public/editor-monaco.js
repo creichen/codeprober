@@ -517,6 +517,7 @@ window.defineEditor(
         editor.updateOptions({ language: langId });
         monaco.editor.setModelLanguage(editor.getModel(), langId)
       },
+      readOnlyToggler: readOnly => editor.updateOptions({ 'readOnly': readOnly }),
     };
   },
 );

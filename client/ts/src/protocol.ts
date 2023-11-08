@@ -104,6 +104,7 @@ interface InitSettings {
   customFileSuffix?: null | string;
   locationStyle?: null | TextSpanStyle;
   hideSettingsPanel?: boolean;
+  readOnly?: boolean;
 }
 interface ListNodesReq {
   type: "ListNodes";

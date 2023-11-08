@@ -8,6 +8,7 @@ type EditorInitializer = (initialValue: string, onChange: (newValue: string, adj
   markText?: TextMarkFn;
   themeToggler: (isLightTheme: boolean) => void;
   syntaxHighlightingToggler: (langId: SyntaxHighlightingLanguageId) => void;
+  readOnlyToggler: (isReadOnly: boolean) => void;
   registerModalEnv?: (env: ModalEnv) => void;
 };
 

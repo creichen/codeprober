@@ -156,6 +156,7 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
         get generalHelpButton() { return document.getElementById('display-help'); }
         get saveAsUrlButton() { return document.getElementById('saveAsUrl'); }
         get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
+        get readOnlyCheckbox() { return document.getElementById('control-read-only-mode'); }
         get displayStatisticsButton() { return document.getElementById('display-statistics'); }
         get displayWorkerStatusButton() { return document.getElementById('display-worker-status'); }
         get versionInfo() { return document.getElementById('version'); }
@@ -225,9 +226,7 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
                     }
                 }
             }
-            const result = applyDefaults(settingsObj || {});
-            console.log("from ", settingsObj, "to ", result);
-            return result;
+            return applyDefaults(settingsObj || {});
         },
         set: (newSettings) => {
             settingsObj = newSettings;
@@ -236,7 +235,6 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         setDefaults: (newDefaultSettings, newOverrideSettings) => {
             defaultSettings = newDefaultSettings;
             overrideSettings = newOverrideSettings;
-            console.log("changing defaults: ", defaultSettings, " overrides: ", overrideSettings);
         },
         getEditorContents: () => settings.get().editorContents,
         setEditorContents: (editorContents) => settings.set({ ...settings.get(), editorContents }),
@@ -288,6 +286,8 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         shouldHideSettingsPanel: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.hideSettingsPanel) !== null && _b !== void 0 ? _b : false; },
         setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
         shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
+        isReadOnlyMode: () => { var _a; return (_a = settings.get().readOnly) !== null && _a !== void 0 ? _a : false; },
+        setReadOnlyMode: (readOnly) => settings.set({ ...settings.get(), readOnly }),
     };
     exports.default = settings;
 });
@@ -14181,6 +14181,9 @@ define("ui/installASTEditor", ["require", "exports", "model/getEditorDefinitionP
                 syntaxHighlightingToggler: (langId) => {
                     // Do nothing
                 },
+                readOnlyToggler: (isReadOnly) => {
+                    // Not editable, nothing to do
+                },
                 registerModalEnv: (env) => {
                     (0, displayAstModal_3.default)({
                         ...env,
@@ -14471,6 +14474,14 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     settings_9.default.setEditorContents(newValue);
                     notifyLocalChangeListeners(adjusters);
                 };
+                const readOnlyCheckbox = uiElements.readOnlyCheckbox;
+                readOnlyCheckbox.checked = settings_9.default.isReadOnlyMode();
+                const readOnlyChangeListeners = {};
+                readOnlyCheckbox.oninput = (e) => {
+                    let readOnly = readOnlyCheckbox.checked;
+                    settings_9.default.setReadOnlyMode(readOnly);
+                    Object.values(readOnlyChangeListeners).forEach(cb => cb(readOnly));
+                };
                 let setLocalState = (value) => { };
                 let markText = () => ({});
                 let registerStickyMarker = (initialSpan) => ({
@@ -14516,6 +14527,10 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         markText = res.markText || markText;
                         if (res.registerModalEnv) {
                             modalEnvHolder.setRecv(res.registerModalEnv);
+                        }
+                        if (res.readOnlyToggler) {
+                            readOnlyChangeListeners['main-editor'] = (readOnly) => res.readOnlyToggler(readOnly);
+                            res.readOnlyToggler(settings_9.default.isReadOnlyMode());
                         }
                         if (res.themeToggler) {
                             themeChangeListeners['main-editor'] = (light) => res.themeToggler(light);
