@@ -73,9 +73,7 @@ const settings = {
         }
       }
     }
-    const result = applyDefaults(settingsObj || {});
-    console.log("from ", settingsObj, "to ", result);
-    return result;
+    return applyDefaults(settingsObj || {});
   },
   set: (newSettings: Settings) => {
     settingsObj = newSettings;
@@ -84,7 +82,6 @@ const settings = {
   setDefaults: (newDefaultSettings: Settings, newOverrideSettings: Settings) => {
     defaultSettings = newDefaultSettings;
     overrideSettings = newOverrideSettings;
-    console.log("changing defaults: ", defaultSettings, " overrides: ", overrideSettings);
   },
 
   getEditorContents: () => settings.get().editorContents,
@@ -149,6 +146,9 @@ const settings = {
   setShouldHideSettingsPanel: (shouldHide: boolean) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
 
   shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
+
+  isReadOnlyMode: () => settings.get().readOnly ?? false,
+  setReadOnlyMode: (readOnly: boolean) => settings.set({ ...settings.get(), readOnly }),
 };
 
 export default settings;

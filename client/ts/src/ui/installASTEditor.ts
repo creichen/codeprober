@@ -39,6 +39,9 @@ const installASTEditor = () => {
         syntaxHighlightingToggler: (langId) => {
           // Do nothing
         },
+        readOnlyToggler: (isReadOnly) => {
+          // Not editable, nothing to do
+        },
 
         registerModalEnv: (env) => {
           displayAstModal(

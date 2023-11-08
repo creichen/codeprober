@@ -153,6 +153,15 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
         notifyLocalChangeListeners(adjusters);
       };
 
+      const readOnlyCheckbox  = uiElements.readOnlyCheckbox;
+      readOnlyCheckbox.checked = settings.isReadOnlyMode();
+      const readOnlyChangeListeners: { [id: string]: (readOnly: boolean) => void } = {};
+      readOnlyCheckbox.oninput = (e) => {
+	let readOnly = readOnlyCheckbox.checked;
+	settings.setReadOnlyMode(readOnly);
+	Object.values(readOnlyChangeListeners).forEach(cb => cb(readOnly));
+      }
+
       let setLocalState = (value: string) => { };
       let markText: TextMarkFn = () => ({});
       let registerStickyMarker: (initialSpan: Span) => StickyMarker = (initialSpan) => ({
@@ -207,6 +216,10 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
           if (res.registerModalEnv) {
             modalEnvHolder.setRecv(res.registerModalEnv);
           }
+	  if (res.readOnlyToggler) {
+	    readOnlyChangeListeners['main-editor'] = (readOnly) => res.readOnlyToggler(readOnly);
+	    res.readOnlyToggler(settings.isReadOnlyMode());
+	  }
           if (res.themeToggler) {
             themeChangeListeners['main-editor'] = (light) => res.themeToggler(light);
             res.themeToggler(settings.isLightTheme());
