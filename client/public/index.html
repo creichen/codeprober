@@ -117,7 +117,13 @@
         </div>
         <div>
           <input type='checkbox' id='control-read-only-mode'></input>
-          <label for='control-read-only-mode'>Read-only mode</label>
+          <label for='control-read-only-mode'>Source read-only mode</label>
+        </div>
+        <div>
+          <input type='checkbox' id='control-change-tracking-mode'></input>
+          <label for='control-change-tracking-mode'>Source change-tracking mode</label>
+	  <br>
+          <button class="warning-button" id="revert-edits-button" onclick="revertEdits()" disabled>Undo all changes</button>
         </div>
         <div>
           <input type='checkbox' id='control-capture-stdout'></input>

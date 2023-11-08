@@ -157,6 +157,8 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
         get saveAsUrlButton() { return document.getElementById('saveAsUrl'); }
         get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
         get readOnlyCheckbox() { return document.getElementById('control-read-only-mode'); }
+        get changeTrackingCheckbox() { return document.getElementById('control-change-tracking-mode'); }
+        get revertEditsButton() { return document.getElementById('revert-edits-button'); }
         get displayStatisticsButton() { return document.getElementById('display-statistics'); }
         get displayWorkerStatusButton() { return document.getElementById('display-worker-status'); }
         get versionInfo() { return document.getElementById('version'); }
@@ -288,6 +290,10 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
         isReadOnlyMode: () => { var _a; return (_a = settings.get().readOnly) !== null && _a !== void 0 ? _a : false; },
         setReadOnlyMode: (readOnly) => settings.set({ ...settings.get(), readOnly }),
+        isChangeTrackingMode: () => { var _a; return (_a = settings.get().changeTracking) !== null && _a !== void 0 ? _a : false; },
+        setChangeTrackingMode: (changeTracking) => settings.set({ ...settings.get(), changeTracking }),
+        // Either change tracking mode or no read-only mode:
+        isEditingAllowed: () => settings.isChangeTrackingMode() || !settings.isReadOnlyMode()
     };
     exports.default = settings;
 });
@@ -14376,6 +14382,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
         settings_9.default.set({});
         location.reload();
     };
+    window.revertEdits = () => {
+        location.reload();
+    };
     // setTimeout(() => {
     //   console.log('d3:', d3)
     // }, 1000)
@@ -14471,17 +14480,34 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     }
                 }
                 const onChange = (newValue, adjusters) => {
-                    settings_9.default.setEditorContents(newValue);
+                    if (!settings_9.default.isChangeTrackingMode()) {
+                        settings_9.default.setEditorContents(newValue);
+                    }
+                    else {
+                        Object.values(changeTrackerListeners).forEach(cb => cb(newValue));
+                    }
                     notifyLocalChangeListeners(adjusters);
                 };
+                const readOnlyChangeListeners = {};
                 const readOnlyCheckbox = uiElements.readOnlyCheckbox;
                 readOnlyCheckbox.checked = settings_9.default.isReadOnlyMode();
-                const readOnlyChangeListeners = {};
                 readOnlyCheckbox.oninput = (e) => {
-                    let readOnly = readOnlyCheckbox.checked;
-                    settings_9.default.setReadOnlyMode(readOnly);
-                    Object.values(readOnlyChangeListeners).forEach(cb => cb(readOnly));
+                    let readOnlySet = readOnlyCheckbox.checked;
+                    settings_9.default.setReadOnlyMode(readOnlySet);
+                    let editingAllowed = settings_9.default.isEditingAllowed();
+                    Object.values(readOnlyChangeListeners).forEach(cb => cb(!editingAllowed));
                 };
+                const changeTrackingCheckbox = uiElements.changeTrackingCheckbox;
+                const revertEditsButton = uiElements.revertEditsButton;
+                changeTrackingCheckbox.checked = settings_9.default.isChangeTrackingMode();
+                changeTrackingCheckbox.oninput = (e) => {
+                    let changeTracking = changeTrackingCheckbox.checked;
+                    settings_9.default.setChangeTrackingMode(changeTracking);
+                    // change tracking affects whether we are read-only or not
+                    let editingAllowed = settings_9.default.isEditingAllowed();
+                    Object.values(readOnlyChangeListeners).forEach(cb => cb(!editingAllowed));
+                };
+                const changeTrackerListeners = {};
                 let setLocalState = (value) => { };
                 let markText = () => ({});
                 let registerStickyMarker = (initialSpan) => ({
@@ -14528,9 +14554,16 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         if (res.registerModalEnv) {
                             modalEnvHolder.setRecv(res.registerModalEnv);
                         }
+                        changeTrackerListeners['main-editor'] = (newEditorContents) => {
+                            let isModified = newEditorContents != settings_9.default.getEditorContents();
+                            uiElements.revertEditsButton.disabled = !isModified;
+                            window.revertEdits = () => {
+                                setLocalState(settings_9.default.getEditorContents() || getLocalState());
+                            };
+                        };
                         if (res.readOnlyToggler) {
                             readOnlyChangeListeners['main-editor'] = (readOnly) => res.readOnlyToggler(readOnly);
-                            res.readOnlyToggler(settings_9.default.isReadOnlyMode());
+                            res.readOnlyToggler(!settings_9.default.isEditingAllowed());
                         }
                         if (res.themeToggler) {
                             themeChangeListeners['main-editor'] = (light) => res.themeToggler(light);

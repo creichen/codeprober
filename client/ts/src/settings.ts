@@ -149,6 +149,12 @@ const settings = {
 
   isReadOnlyMode: () => settings.get().readOnly ?? false,
   setReadOnlyMode: (readOnly: boolean) => settings.set({ ...settings.get(), readOnly }),
+
+  isChangeTrackingMode: () => settings.get().changeTracking ?? false,
+  setChangeTrackingMode: (changeTracking: boolean) => settings.set({ ...settings.get(), changeTracking }),
+
+  // Either change tracking mode or no read-only mode:
+  isEditingAllowed: () => settings.isChangeTrackingMode() || !settings.isReadOnlyMode()
 };
 
 export default settings;

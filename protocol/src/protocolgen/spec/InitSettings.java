@@ -18,4 +18,5 @@ public class InitSettings extends Streamable {
 	public final Object hideSettingsPanel = opt(Boolean.class);
 	// probeWindowStates?: WindowState[];
 	public final Object readOnly = opt(Boolean.class);
+	public final Object changeTracking = opt(Boolean.class);
 }

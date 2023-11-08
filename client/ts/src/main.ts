@@ -38,6 +38,10 @@ window.clearUserSettings = () => {
   location.reload();
 }
 
+window.revertEdits = () => {
+  location.reload();
+}
+
 // setTimeout(() => {
 //   console.log('d3:', d3)
 
@@ -148,18 +152,35 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
       }
 
       const onChange = (newValue: string, adjusters?: LocationAdjuster[]) => {
-        settings.setEditorContents(newValue);
+	if (!settings.isChangeTrackingMode()) {
+          settings.setEditorContents(newValue);
+	} else {
+	  Object.values(changeTrackerListeners).forEach(cb => cb(newValue))
+	}
         notifyLocalChangeListeners(adjusters);
       };
 
+      const readOnlyChangeListeners: { [id: string]: (readOnly: boolean) => void } = {};
       const readOnlyCheckbox  = uiElements.readOnlyCheckbox;
       readOnlyCheckbox.checked = settings.isReadOnlyMode();
-      const readOnlyChangeListeners: { [id: string]: (readOnly: boolean) => void } = {};
       readOnlyCheckbox.oninput = (e) => {
-	let readOnly = readOnlyCheckbox.checked;
-	settings.setReadOnlyMode(readOnly);
-	Object.values(readOnlyChangeListeners).forEach(cb => cb(readOnly));
+	let readOnlySet = readOnlyCheckbox.checked;
+	settings.setReadOnlyMode(readOnlySet);
+	let editingAllowed = settings.isEditingAllowed();
+	Object.values(readOnlyChangeListeners).forEach(cb => cb(!editingAllowed));
       }
+
+      const changeTrackingCheckbox = uiElements.changeTrackingCheckbox;
+      const revertEditsButton = uiElements.revertEditsButton;
+      changeTrackingCheckbox.checked = settings.isChangeTrackingMode();
+      changeTrackingCheckbox.oninput = (e) => {
+	let changeTracking = changeTrackingCheckbox.checked;
+	settings.setChangeTrackingMode(changeTracking);
+	// change tracking affects whether we are read-only or not
+	let editingAllowed = settings.isEditingAllowed();
+	Object.values(readOnlyChangeListeners).forEach(cb => cb(!editingAllowed));
+      }
+      const changeTrackerListeners: { [id: string]: (newEditorContents: string) => void } = {};
 
       let setLocalState = (value: string) => { };
       let markText: TextMarkFn = () => ({});
@@ -215,9 +236,17 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
           if (res.registerModalEnv) {
             modalEnvHolder.setRecv(res.registerModalEnv);
           }
+	  changeTrackerListeners['main-editor'] = (newEditorContents) => {
+	    let isModified = newEditorContents != settings.getEditorContents();
+	    uiElements.revertEditsButton.disabled = !isModified;
+	    window.revertEdits = () => {
+	      setLocalState(settings.getEditorContents() || getLocalState());
+	    }
+	  }
+
 	  if (res.readOnlyToggler) {
 	    readOnlyChangeListeners['main-editor'] = (readOnly) => res.readOnlyToggler(readOnly);
-	    res.readOnlyToggler(settings.isReadOnlyMode());
+	    res.readOnlyToggler(!settings.isEditingAllowed());
 	  }
           if (res.themeToggler) {
             themeChangeListeners['main-editor'] = (light) => res.themeToggler(light);

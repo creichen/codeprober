@@ -56,6 +56,7 @@ interface ModalPosition { x: number, y: number };
 interface Window {
   RagQuery: (line: number, col: number, autoSelectRoot?: boolean) => void;
   displayHelp: (type: HelpType | 'probe-statistics' | 'worker-status') => void;
+  revertEdits: () => void;
   initCodeProber: () => void;
   MiniEditorMain: () => void;
   clearUserSettings: () => void;
