@@ -12,7 +12,7 @@ public class InitSettings extends Streamable {
 	public final Object positionRecoveryStrategy = opt(String.class);
 	public final Object astCacheStrategy = opt(String.class);
 	public final Object syntaxHighlighting = opt(fromTsEnum("SyntaxHighlightingLanguageId"));
-	public final Object mainArgsOverride = opt(nullable(arr(String.class)));
+	// public final Object mainArgsOverride = opt(nullable(arr(String.class)));
 	public final Object customFileSuffix = opt(nullable(String.class));
 	public final Object locationStyle = opt(nullable(fromTsEnum("TextSpanStyle")));
 	public final Object hideSettingsPanel = opt(Boolean.class);

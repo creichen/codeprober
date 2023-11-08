@@ -87,7 +87,8 @@ interface InitInfo {
   workerProcessCount?: number;
   disableVersionCheckerByDefault?: boolean;
   backingFile?: BackingFile;
-  initSettings?: InitSettings;
+  defaultSettings?: InitSettings;
+  overrideSettings?: InitSettings;
 }
 interface InitSettings {
   editorContents?: string;
@@ -100,7 +101,6 @@ interface InitSettings {
   positionRecoveryStrategy?: string;
   astCacheStrategy?: string;
   syntaxHighlighting?: SyntaxHighlightingLanguageId;
-  mainArgsOverride?: null | string[];
   customFileSuffix?: null | string;
   locationStyle?: null | TextSpanStyle;
   hideSettingsPanel?: boolean;
