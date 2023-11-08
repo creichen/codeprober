@@ -41,6 +41,8 @@ class UIElements {
   get saveAsUrlButton() { return document.getElementById('saveAsUrl') as HTMLButtonElement; }
   get darkModeCheckbox() { return document.getElementById('control-dark-mode') as HTMLInputElement; }
   get readOnlyCheckbox() { return document.getElementById('control-read-only-mode') as HTMLInputElement; }
+  get changeTrackingCheckbox() { return document.getElementById('control-change-tracking-mode') as HTMLInputElement; }
+  get revertEditsButton() { return document.getElementById('revert-edits-button') as HTMLButtonElement; }
   get displayStatisticsButton() { return document.getElementById('display-statistics') as HTMLButtonElement; }
   get displayWorkerStatusButton() { return document.getElementById('display-worker-status') as HTMLButtonElement; }
   get versionInfo() { return document.getElementById('version') as HTMLDivElement; }

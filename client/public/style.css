@@ -900,3 +900,20 @@ body[data-theme-light="true"] .minimizedProbeWindowOpener:hover:not(:active) {
 .inline-window-active > div > .node-ref {
   padding-left: 0.25rem;
 }
+
+.warning-button {
+    font-weight: bold;
+    border-width: 0.1ex 0.5ex 0.1ex;
+}
+
+.warning-button:disabled {
+    border-color: #444;
+    background: #555;
+    color: #444;
+}
+
+.warning-button:not(:disabled) {
+    border-color: #a0a;
+    background: #f8f;
+    color: black;
+}

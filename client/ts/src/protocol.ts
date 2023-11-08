@@ -109,6 +109,7 @@ interface InitSettings {
   locationStyle?: null | TextSpanStyle;
   hideSettingsPanel?: boolean;
   readOnly?: boolean;
+  changeTracking?: boolean;
 }
 interface ListNodesReq {
   type: "ListNodes";
