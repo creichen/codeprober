@@ -462,10 +462,10 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
         testManager,
         createJobId,
         getGlobalModalEnv: () => modalEnv,
-        minimize: (data) => {
+        minimize: (data, isDefault) => {
           const miniProbe = createMinimizedProbeModal(modalEnv, data.locator, data.property, data.nested, {
             showDiagnostics: data.showDiagnostics
-          });
+          }, isDefault);
           uiElements.minimizedProbeArea.appendChild(miniProbe.ui);
 
         }
@@ -564,7 +564,9 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
       }
       setTimeout(() => {
         try {
-          let windowStates: WindowState[] = settings.getProbeWindowStates();
+          let configWindowStates: WindowState[] = settings.getProbeWindowStates();
+	  let defaultProbes: WindowState[] = settings.getDefaultProbes();
+	  let windowStates = [...configWindowStates, ...defaultProbes];
           // let wsMatch: RegExpExecArray | null;
           // if ((wsMatch = /[?&]?ws=[^?&]+/.exec(location.search)) != null) {
           //   const trimmedSearch = wsMatch.index === 0
@@ -593,7 +595,8 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
                   createMutableLocator(data.locator),
                   data.property,
                   data.nested,
-                  { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight },
+		  { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight },
+		  state.isDefault
                 );
                 break;
               }
@@ -604,7 +607,7 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
                 break;
               }
               case 'minimized-probe': {
-                modalEnv.minimize(state.data.data);
+                modalEnv.minimize(state.data.data, state.isDefault);
                 break;
               }
               default: {

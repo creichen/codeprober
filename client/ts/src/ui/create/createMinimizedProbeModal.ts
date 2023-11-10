@@ -19,7 +19,8 @@ const createMinimizedProbeModal = (
   locator: NodeLocator,
   property: Property,
   nestedWindows: NestedWindows,
-  optionalArgs: OptionalArgs = {}
+  optionalArgs: OptionalArgs = {},
+  isDefault: boolean = false,
 ) => {
   const queryId = `minimized-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
   const localErrors: Diagnostic[] = [];
@@ -217,6 +218,7 @@ const createMinimizedProbeModal = (
   env.probeWindowStateSavers[queryId] = (target) => {
     target.push({
       modalPos: { x: 0, y: 0 },
+      isDefault,
       data: {
         type: 'minimized-probe',
         data: {

@@ -34,6 +34,7 @@ const displayProbeModal = (
   property: Property,
   nestedWindows: NestedWindows,
   optionalArgs: OptionalArgs = {},
+  isDefault: boolean = false,
 ) => {
   const queryId = `query-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
   const localDiagnostics: SourcedDiagnostic[] = [];
@@ -610,6 +611,7 @@ const displayProbeModal = (
       target.push({
         modalPos: queryWindow.getPos(),
         data: getWindowStateData(),
+	isDefault: isDefault,
       });
     };
     env.triggerWindowSave();

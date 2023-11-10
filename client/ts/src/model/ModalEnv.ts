@@ -31,7 +31,7 @@ interface ModalEnv {
   testManager: TestManager;
   createJobId: (updateHandler: (data: AsyncRpcUpdate) => void) => JobId;
   getGlobalModalEnv: () => ModalEnv;
-  minimize: (data: WindowStateDataProbe) => void;
+  minimize: (data: WindowStateDataProbe, isDefault?: boolean) => void;
 }
 
 export { JobId }

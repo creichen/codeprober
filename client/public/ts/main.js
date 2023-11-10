@@ -169,10 +169,53 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     }
     exports.default = UIElements;
 });
-define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElements"], function (require, exports, syntaxHighlighting_1, UIElements_1) {
+define("model/decodeDefaultProbes", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    // import WindowStateDataProbe from './WindowState';
+    // import WindowStateDataMinimized from './WindowState';
+    const decodeDefaultProbes = (encoding) => {
+        return (encoding.split(',')).flatMap((s) => {
+            const spec = decodeURI(s).split(':');
+            if (spec && spec.length > 1) {
+                const data = {
+                    type: 'probe',
+                    locator: {
+                        result: {
+                            external: false,
+                            depth: 0,
+                            start: 0,
+                            end: 0,
+                            type: spec[0]
+                        },
+                        steps: [],
+                    },
+                    property: { name: spec[1] },
+                    nested: {},
+                    showDiagnostics: true,
+                };
+                const min_data = {
+                    type: 'minimized-probe',
+                    data
+                };
+                const result = {
+                    modalPos: { x: 0, y: 0 },
+                    data: min_data,
+                    isDefault: true
+                };
+                return [result];
+            }
+            console.log("Invalid spec:", spec, 'from encoding:', encoding);
+            return [];
+        });
+    };
+    exports.default = decodeDefaultProbes;
+});
+define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElements", "model/decodeDefaultProbes"], function (require, exports, syntaxHighlighting_1, UIElements_1, decodeDefaultProbes_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     UIElements_1 = __importDefault(UIElements_1);
+    decodeDefaultProbes_1 = __importDefault(decodeDefaultProbes_1);
     let settingsObj = null;
     let defaultSettings = {};
     let overrideSettings = {};
@@ -254,11 +297,17 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         setPositionRecoveryStrategy: (positionRecoveryStrategy) => settings.set({ ...settings.get(), positionRecoveryStrategy }),
         getAstCacheStrategy: () => { var _a; return (_a = settings.get().astCacheStrategy) !== null && _a !== void 0 ? _a : 'PARTIAL'; },
         setAstCacheStrategy: (astCacheStrategy) => settings.set({ ...settings.get(), astCacheStrategy }),
+        getDefaultProbes: () => {
+            var _a;
+            const default_states = (_a = settings.get().defaultProbes) !== null && _a !== void 0 ? _a : "";
+            return (0, decodeDefaultProbes_1.default)(default_states);
+        },
         getProbeWindowStates: () => {
             var _a;
             const ret = (_a = settings.get().probeWindowStates) !== null && _a !== void 0 ? _a : [];
             return ret.map((item) => {
                 if (typeof item.data === 'undefined') {
+                    console.log('must upgrade');
                     // Older variant of this data, upgrade it
                     return {
                         modalPos: item.modalPos,
@@ -273,7 +322,8 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
                 return item;
             });
         },
-        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.get(), probeWindowStates }),
+        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.get(),
+            probeWindowStates: probeWindowStates.filter((w) => w.isDefault != true) }),
         getSyntaxHighlighting: () => { var _a; return (_a = settings.get().syntaxHighlighting) !== null && _a !== void 0 ? _a : 'java'; },
         setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.get(), syntaxHighlighting }),
         getMainArgsOverride: () => { var _a; return (_a = settings.get().mainArgsOverride) !== null && _a !== void 0 ? _a : null; },
@@ -11275,7 +11325,7 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
     displayProbeModal_4 = __importStar(displayProbeModal_4);
     startEndToSpan_8 = __importDefault(startEndToSpan_8);
     registerOnHover_4 = __importDefault(registerOnHover_4);
-    const createMinimizedProbeModal = (env, locator, property, nestedWindows, optionalArgs = {}) => {
+    const createMinimizedProbeModal = (env, locator, property, nestedWindows, optionalArgs = {}, isDefault = false) => {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         const queryId = `minimized-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
         const localErrors = [];
@@ -11454,6 +11504,7 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
         env.probeWindowStateSavers[queryId] = (target) => {
             target.push({
                 modalPos: { x: 0, y: 0 },
+                isDefault,
                 data: {
                     type: 'minimized-probe',
                     data: {
@@ -11530,7 +11581,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
     startEndToSpan_9 = __importDefault(startEndToSpan_9);
     const searchProbePropertyName = `m:NodesWithProperty`;
     exports.searchProbePropertyName = searchProbePropertyName;
-    const displayProbeModal = (env, modalPos, locator, property, nestedWindows, optionalArgs = {}) => {
+    const displayProbeModal = (env, modalPos, locator, property, nestedWindows, optionalArgs = {}, isDefault = false) => {
         var _a, _b;
         const queryId = `query-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
         const localDiagnostics = [];
@@ -12089,6 +12140,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
             target.push({
                 modalPos: queryWindow.getPos(),
                 data: getWindowStateData(),
+                isDefault: isDefault,
             });
         };
         env.triggerWindowSave();
@@ -14746,10 +14798,10 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                     testManager,
                     createJobId,
                     getGlobalModalEnv: () => modalEnv,
-                    minimize: (data) => {
+                    minimize: (data, isDefault) => {
                         const miniProbe = (0, createMinimizedProbeModal_2.default)(modalEnv, data.locator, data.property, data.nested, {
                             showDiagnostics: data.showDiagnostics
-                        });
+                        }, isDefault);
                         uiElements.minimizedProbeArea.appendChild(miniProbe.ui);
                     }
                 };
@@ -14827,7 +14879,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                 };
                 setTimeout(() => {
                     try {
-                        let windowStates = settings_9.default.getProbeWindowStates();
+                        let configWindowStates = settings_9.default.getProbeWindowStates();
+                        let defaultProbes = settings_9.default.getDefaultProbes();
+                        let windowStates = [...configWindowStates, ...defaultProbes];
                         // let wsMatch: RegExpExecArray | null;
                         // if ((wsMatch = /[?&]?ws=[^?&]+/.exec(location.search)) != null) {
                         //   const trimmedSearch = wsMatch.index === 0
@@ -14850,7 +14904,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                             switch (state.data.type) {
                                 case 'probe': {
                                     const data = state.data;
-                                    (0, displayProbeModal_6.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_9.createMutableLocator)(data.locator), data.property, data.nested, { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight });
+                                    (0, displayProbeModal_6.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_9.createMutableLocator)(data.locator), data.property, data.nested, { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight }, state.isDefault);
                                     break;
                                 }
                                 case 'ast': {
@@ -14860,7 +14914,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                                     break;
                                 }
                                 case 'minimized-probe': {
-                                    modalEnv.minimize(state.data.data);
+                                    modalEnv.minimize(state.data.data, state.isDefault);
                                     break;
                                 }
                                 default: {

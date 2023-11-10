@@ -2,6 +2,7 @@ import { getAppropriateFileSuffix } from "./model/syntaxHighlighting";
 import WindowState from './model/WindowState';
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import UIElements from './ui/UIElements';
+import decodeDefaultProbes from './model/decodeDefaultProbes';
 import { InitSettings } from "./protocol";
 
 
@@ -105,11 +106,17 @@ const settings = {
   getAstCacheStrategy: () => settings.get().astCacheStrategy ?? 'PARTIAL',
   setAstCacheStrategy: (astCacheStrategy: string) => settings.set({ ...settings.get(), astCacheStrategy }),
 
+  getDefaultProbes:(): WindowState[] => {
+    const default_states = settings.get().defaultProbes ?? "";
+    return decodeDefaultProbes(default_states);
+  },
+
   getProbeWindowStates: (): WindowState[] => {
     const ret = settings.get().probeWindowStates ?? [];
 
     return ret.map((item) => {
       if (typeof item.data === 'undefined') {
+	console.log('must upgrade');
         // Older variant of this data, upgrade it
         return {
           modalPos: item.modalPos,
@@ -124,7 +131,8 @@ const settings = {
       return item;
     });
   },
-  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(), probeWindowStates }),
+  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(),
+									     probeWindowStates: probeWindowStates.filter((w) => w.isDefault != true) }),
 
   getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'java',
   setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.get(), syntaxHighlighting }),

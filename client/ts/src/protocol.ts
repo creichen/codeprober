@@ -110,6 +110,7 @@ interface InitSettings {
   hideSettingsPanel?: boolean;
   readOnly?: boolean;
   changeTracking?: boolean;
+  defaultProbes?: string;
 }
 interface ListNodesReq {
   type: "ListNodes";

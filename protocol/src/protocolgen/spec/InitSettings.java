@@ -19,4 +19,5 @@ public class InitSettings extends Streamable {
 	// probeWindowStates?: WindowState[];
 	public final Object readOnly = opt(Boolean.class);
 	public final Object changeTracking = opt(Boolean.class);
+	public final Object defaultProbes = opt(String.class); // e.g. "ast.Program:globalErrors,*:localReport"
 }

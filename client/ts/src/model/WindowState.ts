@@ -24,9 +24,10 @@ type WindowStateData = WindowStateDataProbe | WindowStateDataAst | WindowStateDa
 interface WindowState {
   modalPos: ModalPosition;
   data: WindowStateData;
+  isDefault?: boolean; // Default windows are not part of the (saved) settings
 }
 
 type NestedWindows = { [key: string]: WindowState[] };
 
-export { WindowStateData, WindowStateDataProbe, WindowStateDataAst, NestedWindows };
+export { WindowStateData, WindowStateDataProbe, WindowStateDataAst, NestedWindows, WindowStateDataMinimized };
 export default WindowState;
