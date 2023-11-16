@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +47,7 @@ public class GenSettings {
 			wr.write("package protocolgen;\n");
 			wr.write("public class TsSrcEnums {\n");
 			wr.write("\tstatic {\n");
-			for (String etype : decls.type_env.keySet()) {
+			for (String etype : new TreeSet<>(decls.type_env.keySet())) {
 				TSEnum ts_enum = decls.type_env.get(etype);
 				String options = ts_enum.options.stream()
 					.map(s -> "\"" + s + "\"")
@@ -57,18 +58,6 @@ public class GenSettings {
 					 + ts_enum.quotedSrcFile() + ", new String[] {" + options + "});\n");
 			}
 			wr.write("\t}\n");
-			// wr.write("\tpublic static T get(String s) {\n");
-			// wr.write("\t\tT v = TsSrcEnums.enums.get(s);\n");
-			// wr.write("\t\tif (null == v) { throw new RuntimeException(\"Unknown TS enum type: \"+s);\n");
-			// wr.write("\t\treturn v;\n");
-			// wr.write("\t}");
-			// wr.write("\tpublic static class E {\n");
-			// wr.write("\t\tpublic final String filename;\n");
-			// wr.write("\t\tpublic final String[] options;\n");
-			// wr.write("\t\tpublic TsEnum(String filename, String[] options) {\n");
-			// wr.write("\t\t\tthis.filename = filename; this.options = options;\n");
-			// wr.write("\t\t}\n");
-			// wr.write("\t}\n");
 			wr.write("}\n");
 		} catch (IOException exn) {
 			exn.printStackTrace();
