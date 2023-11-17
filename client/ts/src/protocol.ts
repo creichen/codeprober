@@ -111,6 +111,7 @@ interface InitSettings {
   readOnly?: boolean;
   changeTracking?: boolean;
   defaultProbes?: string;
+  disableUI?: string;
 }
 interface ListNodesReq {
   type: "ListNodes";

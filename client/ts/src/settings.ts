@@ -137,6 +137,8 @@ const settings = {
   getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'java',
   setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.get(), syntaxHighlighting }),
 
+  getDisableUI: () => (settings.get().disableUI ?? '').split(',').filter(s => s),
+
   getMainArgsOverride: () => settings.get().mainArgsOverride ?? null,
   setMainArgsOverride: (mainArgsOverride: string[] | null) => settings.set({ ...settings.get(), mainArgsOverride }),
 

@@ -127,45 +127,88 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class UIElements {
+        constructor() {
+            this._registry = {};
+            this._disabled = {};
+        }
+        disable(name) {
+            this._disabled[name] = true;
+            console.log('Disabling:', name);
+            if (name in this._registry) {
+                const elt = this._registry[name].parentElement;
+                if (elt) {
+                    console.log(' -> disabling:', elt);
+                    elt.style.display = 'none';
+                }
+            }
+        }
+        enable(name) {
+            this._disabled[name] = false;
+            if (name in this._registry) {
+                const elt = this._registry[name].parentElement;
+                if (elt) {
+                    console.log(' -> enabling:', elt);
+                    elt.style.display = 'block';
+                }
+            }
+        }
+        getElt(name) {
+            let elt = document.getElementById(name);
+            if (elt) {
+                this._registry[name] = elt;
+                if (name in this._disabled) {
+                    if (this._disabled[name]) {
+                        this.disable(name); // updates the element's style
+                    }
+                    else {
+                        this.enable(name);
+                    }
+                }
+            }
+            else {
+                console.warn('No such element: "' + name + '"');
+            }
+            return elt;
+        }
         // Use lazy getters since the dom elements haven't been loaded
         // by the time this script initially runs.
-        get positionRecoverySelector() { return document.getElementById('control-position-recovery-strategy'); }
-        get positionRecoveryHelpButton() { return document.getElementById('control-position-recovery-strategy-help'); }
-        get astCacheStrategySelector() { return document.getElementById('ast-cache-strategy'); }
-        get astCacheStrategyHelpButton() { return document.getElementById('control-ast-cache-strategy-help'); }
-        get syntaxHighlightingSelector() { return document.getElementById('syntax-highlighting'); }
-        get syntaxHighlightingHelpButton() { return document.getElementById('control-syntax-highlighting-help'); }
-        get shouldOverrideMainArgsCheckbox() { return document.getElementById('control-should-override-main-args'); }
-        get configureMainArgsOverrideButton() { return document.getElementById('configure-main-args'); }
-        get mainArgsOverrideHelpButton() { return document.getElementById('main-args-override-help'); }
-        get shouldCustomizeFileSuffixCheckbox() { return document.getElementById('control-customize-file-suffix'); }
-        get configureCustomFileSuffixButton() { return document.getElementById('customize-file-suffix'); }
-        get customFileSuffixHelpButton() { return document.getElementById('customize-file-suffix-help'); }
-        get showAllPropertiesCheckbox() { return document.getElementById('control-show-all-properties'); }
-        get showAllPropertiesHelpButton() { return document.getElementById('show-all-properties-help'); }
-        get duplicateProbeCheckbox() { return document.getElementById('control-duplicate-probe-on-attr'); }
-        get duplicateProbeHelpButton() { return document.getElementById('duplicate-probe-on-attr-help'); }
-        get captureStdoutCheckbox() { return document.getElementById('control-capture-stdout'); }
-        get captureStdoutHelpButton() { return document.getElementById('capture-stdout-help'); }
-        get captureTracesCheckbox() { return document.getElementById('control-capture-traces'); }
-        get captureTracesHelpButton() { return document.getElementById('capture-traces-help'); }
-        get autoflushTracesCheckbox() { return document.getElementById('control-autoflush-traces'); }
-        get autoflushTracesContainer() { return document.getElementById('container-autoflush-traces'); }
-        get locationStyleSelector() { return document.getElementById('location-style'); }
-        get locationStyleHelpButton() { return document.getElementById('control-location-style-help'); }
-        get generalHelpButton() { return document.getElementById('display-help'); }
-        get saveAsUrlButton() { return document.getElementById('saveAsUrl'); }
-        get darkModeCheckbox() { return document.getElementById('control-dark-mode'); }
-        get readOnlyCheckbox() { return document.getElementById('control-read-only-mode'); }
-        get changeTrackingCheckbox() { return document.getElementById('control-change-tracking-mode'); }
-        get revertEditsButton() { return document.getElementById('revert-edits-button'); }
-        get displayStatisticsButton() { return document.getElementById('display-statistics'); }
-        get displayWorkerStatusButton() { return document.getElementById('display-worker-status'); }
-        get versionInfo() { return document.getElementById('version'); }
-        get settingsHider() { return document.getElementById('settings-hider'); }
-        get settingsRevealer() { return document.getElementById('settings-revealer'); }
-        get showTests() { return document.getElementById('show-tests'); }
-        get minimizedProbeArea() { return document.getElementById('minimized-probe-area'); }
+        get positionRecoverySelector() { return this.getElt('control-position-recovery-strategy'); }
+        get positionRecoveryHelpButton() { return this.getElt('control-position-recovery-strategy-help'); }
+        get astCacheStrategySelector() { return this.getElt('ast-cache-strategy'); }
+        get astCacheStrategyHelpButton() { return this.getElt('control-ast-cache-strategy-help'); }
+        get syntaxHighlightingSelector() { return this.getElt('syntax-highlighting'); }
+        get syntaxHighlightingHelpButton() { return this.getElt('control-syntax-highlighting-help'); }
+        get shouldOverrideMainArgsCheckbox() { return this.getElt('control-should-override-main-args'); }
+        get configureMainArgsOverrideButton() { return this.getElt('configure-main-args'); }
+        get mainArgsOverrideHelpButton() { return this.getElt('main-args-override-help'); }
+        get shouldCustomizeFileSuffixCheckbox() { return this.getElt('control-customize-file-suffix'); }
+        get configureCustomFileSuffixButton() { return this.getElt('customize-file-suffix'); }
+        get customFileSuffixHelpButton() { return this.getElt('customize-file-suffix-help'); }
+        get showAllPropertiesCheckbox() { return this.getElt('control-show-all-properties'); }
+        get showAllPropertiesHelpButton() { return this.getElt('show-all-properties-help'); }
+        get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr'); }
+        get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help'); }
+        get captureStdoutCheckbox() { return this.getElt('control-capture-stdout'); }
+        get captureStdoutHelpButton() { return this.getElt('capture-stdout-help'); }
+        get captureTracesCheckbox() { return this.getElt('control-capture-traces'); }
+        get captureTracesHelpButton() { return this.getElt('capture-traces-help'); }
+        get autoflushTracesCheckbox() { return this.getElt('control-autoflush-traces'); }
+        get autoflushTracesContainer() { return this.getElt('container-autoflush-traces'); }
+        get locationStyleSelector() { return this.getElt('location-style'); }
+        get locationStyleHelpButton() { return this.getElt('control-location-style-help'); }
+        get generalHelpButton() { return this.getElt('display-help'); }
+        get saveAsUrlButton() { return this.getElt('saveAsUrl'); }
+        get darkModeCheckbox() { return this.getElt('control-dark-mode'); }
+        get readOnlyCheckbox() { return this.getElt('control-read-only-mode'); }
+        get changeTrackingCheckbox() { return this.getElt('control-change-tracking-mode'); }
+        get revertEditsButton() { return this.getElt('revert-edits-button'); }
+        get displayStatisticsButton() { return this.getElt('display-statistics'); }
+        get displayWorkerStatusButton() { return this.getElt('display-worker-status'); }
+        get versionInfo() { return this.getElt('version'); }
+        get settingsHider() { return this.getElt('settings-hider'); }
+        get settingsRevealer() { return this.getElt('settings-revealer'); }
+        get showTests() { return this.getElt('show-tests'); }
+        get minimizedProbeArea() { return this.getElt('minimized-probe-area'); }
     }
     exports.default = UIElements;
 });
@@ -326,6 +369,7 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
             probeWindowStates: probeWindowStates.filter((w) => w.isDefault != true) }),
         getSyntaxHighlighting: () => { var _a; return (_a = settings.get().syntaxHighlighting) !== null && _a !== void 0 ? _a : 'java'; },
         setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.get(), syntaxHighlighting }),
+        getDisableUI: () => { var _a; return ((_a = settings.get().disableUI) !== null && _a !== void 0 ? _a : '').split(',').filter(s => s); },
         getMainArgsOverride: () => { var _a; return (_a = settings.get().mainArgsOverride) !== null && _a !== void 0 ? _a : null; },
         setMainArgsOverride: (mainArgsOverride) => settings.set({ ...settings.get(), mainArgsOverride }),
         getCustomFileSuffix: () => { var _a; return (_a = settings.get().customFileSuffix) !== null && _a !== void 0 ? _a : null; },
@@ -14505,6 +14549,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                 console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
                 rootElem.style.display = "grid";
                 settings_9.default.setDefaults(defaultSettings || {}, overrideSettings || {});
+                settings_9.default.getDisableUI().forEach((s) => uiElements.disable(s));
                 if (backingFile) {
                     settings_9.default.setEditorContents(backingFile.value);
                     const inputLabel = document.querySelector('#input-header > span');

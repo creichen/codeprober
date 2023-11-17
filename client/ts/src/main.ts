@@ -135,6 +135,7 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
       rootElem.style.display = "grid";
       settings.setDefaults(defaultSettings || {},
 			   overrideSettings || {});
+      settings.getDisableUI().forEach((s:string) => uiElements.disable(s));
 
       if (backingFile) {
         settings.setEditorContents(backingFile.value);
