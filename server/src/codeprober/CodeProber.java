@@ -59,6 +59,7 @@ public class CodeProber {
 	public static void main(String[] mainArgs) throws IOException {
 		System.out.println("Starting server, version: " + VersionInfo.getInstance().toString() + "..");
 		final ParsedArgs parsedArgs = ParsedArgs.parse(mainArgs);
+		BackingFileSettings.init(parsedArgs);
 
 		final SessionLogger sessionLogger = SessionLogger.init();
 		if (sessionLogger != null) {
@@ -85,8 +86,12 @@ public class CodeProber {
 				System.exit(1);
 			}
 			System.out.println("Using backing file " + backingFile);
-			System.out.println(
+			if (BackingFileSettings.isReadOnly()) {
+				System.out.println("Using backing file in read-only mode.");
+			} else {
+				System.out.println(
 					"CAUTION: Any edits made inside CodeProber will immediately be saved to that file. Make sure important source files are in git.");
+			}
 			if (!backingFile.exists()) {
 				System.out.println("Backing file doesn't exist, initializing to an empty file");
 				backingFile.createNewFile();

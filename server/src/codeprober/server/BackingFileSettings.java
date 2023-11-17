@@ -11,8 +11,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import codeprober.util.FileMonitor;
+import codeprober.util.ParsedArgs;
 
 public class BackingFileSettings {
+	public static void init(ParsedArgs args) {
+		if (args.overrideSettings != null
+		    && args.overrideSettings.readOnly != null) {
+			BackingFileSettings.readOnly = args.overrideSettings.readOnly;
+		}
+	}
+
 
 	public static File getRealFileToBeUsedInRequests() {
 		final String path = System.getProperty("cpr.backing_file");
@@ -46,6 +54,9 @@ public class BackingFileSettings {
 	}
 
 	public static void write(String inputText) throws IOException {
+		if (BackingFileSettings.isReadOnly()) {
+			return;
+		}
 		final File backingFile = getRealFileToBeUsedInRequests();
 		if (backingFile == null) {
 			System.out.println("No backing file configured, ignoring backing file write");
@@ -65,8 +76,13 @@ public class BackingFileSettings {
 		}
 	}
 
+	private static boolean readOnly = false;
 	private static AtomicBoolean ignoreChanges = new AtomicBoolean();
 	private static AtomicLong lastModifiedThreshold = new AtomicLong();
+
+	public static boolean isReadOnly() {
+		return BackingFileSettings.readOnly;
+	}
 
 	public static void monitorBackingFileChanges(final Runnable callback) {
 		final File backingFile = getRealFileToBeUsedInRequests();
