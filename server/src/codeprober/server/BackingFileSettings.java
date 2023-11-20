@@ -27,6 +27,9 @@ public class BackingFileSettings {
 		if (path == null) {
 			return null;
 		}
+		if (BackingFileSettings.isReadOnly()) {
+			return null;
+		}
 		final File file = new File(path).getAbsoluteFile();
 		final File parent = file.getParentFile();
 		if (parent == null || !parent.exists()) {
