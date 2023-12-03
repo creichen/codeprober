@@ -40,7 +40,7 @@ window.saveStateAsUrl = () => {
 }
 
 const settings = {
-  get: (): Settings => {
+  getWithoutDefaults: (): Settings => {
     if (!settingsObj) {
       let settingsMatch: RegExpExecArray | null;
       if ((settingsMatch = /[?&]settings=[^?&]+/.exec(location.search)) != null) {
@@ -74,7 +74,10 @@ const settings = {
         }
       }
     }
-    return applyDefaults(settingsObj || {});
+    return settingsObj || {};
+  },
+  get: (): Settings => {
+    return applyDefaults(settings.getWithoutDefaults());
   },
   set: (newSettings: Settings) => {
     settingsObj = newSettings;
@@ -86,25 +89,25 @@ const settings = {
   },
 
   getEditorContents: () => settings.get().editorContents,
-  setEditorContents: (editorContents: string) => settings.set({ ...settings.get(), editorContents }),
+  setEditorContents: (editorContents: string) => settings.set({ ...settings.getWithoutDefaults(), editorContents }),
 
   isLightTheme: () => settings.get().lightTheme ?? false,
-  setLightTheme: (lightTheme: boolean) => settings.set({ ...settings.get(), lightTheme }),
+  setLightTheme: (lightTheme: boolean) => settings.set({ ...settings.getWithoutDefaults(), lightTheme }),
 
   shouldDuplicateProbeOnAttrClick: () => settings.get().duplicateProbeOnAttrClick ?? true,
-  setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick: boolean) => settings.set({ ...settings.get(), duplicateProbeOnAttrClick }),
+  setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick: boolean) => settings.set({ ...settings.getWithoutDefaults(), duplicateProbeOnAttrClick }),
   shouldCaptureStdio: () => settings.get().captureStdio ?? true,
-  setShouldCaptureStdio: (captureStdio: boolean) => settings.set({ ...settings.get(), captureStdio }),
+  setShouldCaptureStdio: (captureStdio: boolean) => settings.set({ ...settings.getWithoutDefaults(), captureStdio }),
   shouldCaptureTraces: () => settings.get().captureTraces ?? false,
-  setShouldCaptureTraces: (captureTraces: boolean) => settings.set({ ...settings.get(), captureTraces }),
+  setShouldCaptureTraces: (captureTraces: boolean) => settings.set({ ...settings.getWithoutDefaults(), captureTraces }),
   shouldAutoflushTraces: () => settings.get().autoflushTraces ?? true,
-  setShouldAutoflushTraces: (autoflushTraces: boolean) => settings.set({ ...settings.get(), autoflushTraces }),
+  setShouldAutoflushTraces: (autoflushTraces: boolean) => settings.set({ ...settings.getWithoutDefaults(), autoflushTraces }),
 
   getPositionRecoveryStrategy: () => settings.get().positionRecoveryStrategy ?? 'ALTERNATE_PARENT_CHILD',
-  setPositionRecoveryStrategy: (positionRecoveryStrategy: string) => settings.set({ ...settings.get(), positionRecoveryStrategy }),
+  setPositionRecoveryStrategy: (positionRecoveryStrategy: string) => settings.set({ ...settings.getWithoutDefaults(), positionRecoveryStrategy }),
 
   getAstCacheStrategy: () => settings.get().astCacheStrategy ?? 'PARTIAL',
-  setAstCacheStrategy: (astCacheStrategy: string) => settings.set({ ...settings.get(), astCacheStrategy }),
+  setAstCacheStrategy: (astCacheStrategy: string) => settings.set({ ...settings.getWithoutDefaults(), astCacheStrategy }),
 
   getDefaultProbes:(): WindowState[] => {
     const default_states = settings.get().defaultProbes ?? "";
@@ -131,37 +134,37 @@ const settings = {
       return item;
     });
   },
-  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(),
+  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.getWithoutDefaults(),
 									     probeWindowStates: probeWindowStates.filter((w) => w.isDefault != true) }),
 
   getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'java',
-  setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.get(), syntaxHighlighting }),
+  setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.getWithoutDefaults(), syntaxHighlighting }),
 
   getDisableUI: () => (settings.get().disableUI ?? '').split(',').filter(s => s),
 
   getMainArgsOverride: () => settings.get().mainArgsOverride ?? null,
-  setMainArgsOverride: (mainArgsOverride: string[] | null) => settings.set({ ...settings.get(), mainArgsOverride }),
+  setMainArgsOverride: (mainArgsOverride: string[] | null) => settings.set({ ...settings.getWithoutDefaults(), mainArgsOverride }),
 
   getCustomFileSuffix: () => settings.get().customFileSuffix ?? null,
-  setCustomFileSuffix: (customFileSuffix: string | null) => settings.set({ ...settings.get(), customFileSuffix }),
+  setCustomFileSuffix: (customFileSuffix: string | null) => settings.set({ ...settings.getWithoutDefaults(), customFileSuffix }),
   getCurrentFileSuffix: (): string => settings.getCustomFileSuffix() ?? `.${getAppropriateFileSuffix(settings.getSyntaxHighlighting())}`,
 
   shouldShowAllProperties: () => settings.get().showAllProperties ?? false,
-  setShouldShowAllProperties: (showAllProperties: boolean) => settings.set({ ...settings.get(), showAllProperties }),
+  setShouldShowAllProperties: (showAllProperties: boolean) => settings.set({ ...settings.getWithoutDefaults(), showAllProperties }),
 
   getLocationStyle: () => settings.get().locationStyle ?? 'full',
-  setLocationStyle: (locationStyle: TextSpanStyle | null) => settings.set({ ...settings.get(), locationStyle }),
+  setLocationStyle: (locationStyle: TextSpanStyle | null) => settings.set({ ...settings.getWithoutDefaults(), locationStyle }),
 
   shouldHideSettingsPanel: () => settings.get()?.hideSettingsPanel ?? false,
-  setShouldHideSettingsPanel: (shouldHide: boolean) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
+  setShouldHideSettingsPanel: (shouldHide: boolean) => settings.set({ ...settings.getWithoutDefaults(), hideSettingsPanel: shouldHide }),
 
   shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
 
   isReadOnlyMode: () => settings.get().readOnly ?? false,
-  setReadOnlyMode: (readOnly: boolean) => settings.set({ ...settings.get(), readOnly }),
+  setReadOnlyMode: (readOnly: boolean) => settings.set({ ...settings.getWithoutDefaults(), readOnly }),
 
   isChangeTrackingMode: () => settings.get().changeTracking ?? false,
-  setChangeTrackingMode: (changeTracking: boolean) => settings.set({ ...settings.get(), changeTracking }),
+  setChangeTrackingMode: (changeTracking: boolean) => settings.set({ ...settings.getWithoutDefaults(), changeTracking }),
 
   // Either change tracking mode or no read-only mode:
   isEditingAllowed: () => settings.isChangeTrackingMode() || !settings.isReadOnlyMode()

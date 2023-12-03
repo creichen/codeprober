@@ -282,7 +282,7 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         btn.style.border = '1px solid green';
     };
     const settings = {
-        get: () => {
+        getWithoutDefaults: () => {
             if (!settingsObj) {
                 let settingsMatch;
                 if ((settingsMatch = /[?&]settings=[^?&]+/.exec(location.search)) != null) {
@@ -314,7 +314,10 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
                     }
                 }
             }
-            return applyDefaults(settingsObj || {});
+            return settingsObj || {};
+        },
+        get: () => {
+            return applyDefaults(settings.getWithoutDefaults());
         },
         set: (newSettings) => {
             settingsObj = newSettings;
@@ -325,21 +328,21 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
             overrideSettings = newOverrideSettings;
         },
         getEditorContents: () => settings.get().editorContents,
-        setEditorContents: (editorContents) => settings.set({ ...settings.get(), editorContents }),
+        setEditorContents: (editorContents) => settings.set({ ...settings.getWithoutDefaults(), editorContents }),
         isLightTheme: () => { var _a; return (_a = settings.get().lightTheme) !== null && _a !== void 0 ? _a : false; },
-        setLightTheme: (lightTheme) => settings.set({ ...settings.get(), lightTheme }),
+        setLightTheme: (lightTheme) => settings.set({ ...settings.getWithoutDefaults(), lightTheme }),
         shouldDuplicateProbeOnAttrClick: () => { var _a; return (_a = settings.get().duplicateProbeOnAttrClick) !== null && _a !== void 0 ? _a : true; },
-        setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick) => settings.set({ ...settings.get(), duplicateProbeOnAttrClick }),
+        setShouldDuplicateProbeOnAttrClick: (duplicateProbeOnAttrClick) => settings.set({ ...settings.getWithoutDefaults(), duplicateProbeOnAttrClick }),
         shouldCaptureStdio: () => { var _a; return (_a = settings.get().captureStdio) !== null && _a !== void 0 ? _a : true; },
-        setShouldCaptureStdio: (captureStdio) => settings.set({ ...settings.get(), captureStdio }),
+        setShouldCaptureStdio: (captureStdio) => settings.set({ ...settings.getWithoutDefaults(), captureStdio }),
         shouldCaptureTraces: () => { var _a; return (_a = settings.get().captureTraces) !== null && _a !== void 0 ? _a : false; },
-        setShouldCaptureTraces: (captureTraces) => settings.set({ ...settings.get(), captureTraces }),
+        setShouldCaptureTraces: (captureTraces) => settings.set({ ...settings.getWithoutDefaults(), captureTraces }),
         shouldAutoflushTraces: () => { var _a; return (_a = settings.get().autoflushTraces) !== null && _a !== void 0 ? _a : true; },
-        setShouldAutoflushTraces: (autoflushTraces) => settings.set({ ...settings.get(), autoflushTraces }),
+        setShouldAutoflushTraces: (autoflushTraces) => settings.set({ ...settings.getWithoutDefaults(), autoflushTraces }),
         getPositionRecoveryStrategy: () => { var _a; return (_a = settings.get().positionRecoveryStrategy) !== null && _a !== void 0 ? _a : 'ALTERNATE_PARENT_CHILD'; },
-        setPositionRecoveryStrategy: (positionRecoveryStrategy) => settings.set({ ...settings.get(), positionRecoveryStrategy }),
+        setPositionRecoveryStrategy: (positionRecoveryStrategy) => settings.set({ ...settings.getWithoutDefaults(), positionRecoveryStrategy }),
         getAstCacheStrategy: () => { var _a; return (_a = settings.get().astCacheStrategy) !== null && _a !== void 0 ? _a : 'PARTIAL'; },
-        setAstCacheStrategy: (astCacheStrategy) => settings.set({ ...settings.get(), astCacheStrategy }),
+        setAstCacheStrategy: (astCacheStrategy) => settings.set({ ...settings.getWithoutDefaults(), astCacheStrategy }),
         getDefaultProbes: () => {
             var _a;
             const default_states = (_a = settings.get().defaultProbes) !== null && _a !== void 0 ? _a : "";
@@ -365,27 +368,27 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
                 return item;
             });
         },
-        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.get(),
+        setProbeWindowStates: (probeWindowStates) => settings.set({ ...settings.getWithoutDefaults(),
             probeWindowStates: probeWindowStates.filter((w) => w.isDefault != true) }),
         getSyntaxHighlighting: () => { var _a; return (_a = settings.get().syntaxHighlighting) !== null && _a !== void 0 ? _a : 'java'; },
-        setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.get(), syntaxHighlighting }),
+        setSyntaxHighlighting: (syntaxHighlighting) => settings.set({ ...settings.getWithoutDefaults(), syntaxHighlighting }),
         getDisableUI: () => { var _a; return ((_a = settings.get().disableUI) !== null && _a !== void 0 ? _a : '').split(',').filter(s => s); },
         getMainArgsOverride: () => { var _a; return (_a = settings.get().mainArgsOverride) !== null && _a !== void 0 ? _a : null; },
-        setMainArgsOverride: (mainArgsOverride) => settings.set({ ...settings.get(), mainArgsOverride }),
+        setMainArgsOverride: (mainArgsOverride) => settings.set({ ...settings.getWithoutDefaults(), mainArgsOverride }),
         getCustomFileSuffix: () => { var _a; return (_a = settings.get().customFileSuffix) !== null && _a !== void 0 ? _a : null; },
-        setCustomFileSuffix: (customFileSuffix) => settings.set({ ...settings.get(), customFileSuffix }),
+        setCustomFileSuffix: (customFileSuffix) => settings.set({ ...settings.getWithoutDefaults(), customFileSuffix }),
         getCurrentFileSuffix: () => { var _a; return (_a = settings.getCustomFileSuffix()) !== null && _a !== void 0 ? _a : `.${(0, syntaxHighlighting_1.getAppropriateFileSuffix)(settings.getSyntaxHighlighting())}`; },
         shouldShowAllProperties: () => { var _a; return (_a = settings.get().showAllProperties) !== null && _a !== void 0 ? _a : false; },
-        setShouldShowAllProperties: (showAllProperties) => settings.set({ ...settings.get(), showAllProperties }),
+        setShouldShowAllProperties: (showAllProperties) => settings.set({ ...settings.getWithoutDefaults(), showAllProperties }),
         getLocationStyle: () => { var _a; return (_a = settings.get().locationStyle) !== null && _a !== void 0 ? _a : 'full'; },
-        setLocationStyle: (locationStyle) => settings.set({ ...settings.get(), locationStyle }),
+        setLocationStyle: (locationStyle) => settings.set({ ...settings.getWithoutDefaults(), locationStyle }),
         shouldHideSettingsPanel: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.hideSettingsPanel) !== null && _b !== void 0 ? _b : false; },
-        setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
+        setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.getWithoutDefaults(), hideSettingsPanel: shouldHide }),
         shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
         isReadOnlyMode: () => { var _a; return (_a = settings.get().readOnly) !== null && _a !== void 0 ? _a : false; },
-        setReadOnlyMode: (readOnly) => settings.set({ ...settings.get(), readOnly }),
+        setReadOnlyMode: (readOnly) => settings.set({ ...settings.getWithoutDefaults(), readOnly }),
         isChangeTrackingMode: () => { var _a; return (_a = settings.get().changeTracking) !== null && _a !== void 0 ? _a : false; },
-        setChangeTrackingMode: (changeTracking) => settings.set({ ...settings.get(), changeTracking }),
+        setChangeTrackingMode: (changeTracking) => settings.set({ ...settings.getWithoutDefaults(), changeTracking }),
         // Either change tracking mode or no read-only mode:
         isEditingAllowed: () => settings.isChangeTrackingMode() || !settings.isReadOnlyMode()
     };
