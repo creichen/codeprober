@@ -28,6 +28,7 @@ import codeprober.protocol.data.BackingFile;
 import codeprober.protocol.data.InitInfo;
 import codeprober.protocol.data.protocolgen_spec_InitInfo_1;
 import codeprober.util.ParsedArgs;
+import codeprober.util.SessionLogger;
 import codeprober.util.VersionInfo;
 
 public class WebSocketServer {
@@ -148,7 +149,7 @@ public class WebSocketServer {
 	}
 
 	static void handleRequest(Socket socket, ParsedArgs args, ServerToClientMessagePusher msgPusher,
-			Function<ClientRequest, JSONObject> onQuery, AtomicBoolean connectionIsAlive)
+			Function<ClientRequest, JSONObject> onQuery, AtomicBoolean connectionIsAlive, SessionLogger logger)
 			throws IOException, NoSuchAlgorithmException {
 		final InputStream in = socket.getInputStream();
 		@SuppressWarnings("resource")
@@ -157,11 +158,11 @@ public class WebSocketServer {
 		if (WebServer.handleAuthCookieRelatedRequest(data, socket.getInetAddress(), socket.getOutputStream())) {
 			return;
 		}
-		handleRequestWithPreparsedData(socket, args, msgPusher, onQuery, connectionIsAlive, data);
+		handleRequestWithPreparsedData(socket, args, msgPusher, onQuery, connectionIsAlive, data, logger);
 	}
 
 	static void handleRequestWithPreparsedData(Socket socket, ParsedArgs args, ServerToClientMessagePusher msgPusher,
-			Function<ClientRequest, JSONObject> onQuery, AtomicBoolean connectionIsAlive, String data)
+			Function<ClientRequest, JSONObject> onQuery, AtomicBoolean connectionIsAlive, String data, SessionLogger logger)
 			throws IOException, NoSuchAlgorithmException {
 		final InputStream in = socket.getInputStream();
 		final OutputStream out = socket.getOutputStream();
@@ -195,6 +196,11 @@ public class WebSocketServer {
 				msgPusher.addChangeListener(onJarChange);
 				final Runnable cleanup = () -> msgPusher.removeChangeListener(onJarChange);
 
+				if (logger != null) {
+					logger.log(new JSONObject() //
+							.put("t", "ClientConnected") //
+							.put("p", "ws"));
+				}
 				writeWsMessage(out, getInitMsg(args).toJSON().toString());
 
 				final Consumer<AsyncRpcUpdate> asyncMessageWriter = asyncMsg -> {
@@ -340,7 +346,7 @@ public class WebSocketServer {
 	}
 
 	public static void start(ParsedArgs args, ServerToClientMessagePusher msgPusher,
-			Function<ClientRequest, JSONObject> onQuery, Runnable onSomeClientDisconnected) {
+			Function<ClientRequest, JSONObject> onQuery, Runnable onSomeClientDisconnected, SessionLogger logger) {
 		final int port = getPort();
 		try (ServerSocket server = new ServerSocket(port, 0, null)) {
 			livePort = server.getLocalPort();
@@ -351,7 +357,7 @@ public class WebSocketServer {
 				new Thread(() -> {
 					final AtomicBoolean connectionIsAlive = new AtomicBoolean(true);
 					try {
-						handleRequest(s, args, msgPusher, onQuery, connectionIsAlive);
+						handleRequest(s, args, msgPusher, onQuery, connectionIsAlive, logger);
 					} catch (IOException | NoSuchAlgorithmException e) {
 						System.out.println("Error while handling request");
 						e.printStackTrace();
