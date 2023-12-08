@@ -41,7 +41,7 @@ public class SessionLogger {
 	private static final int AUTO_FLUSH_EVENT_COUNTER = 128;
 	private static final int AUTO_FLUSH_IDLE_TIME_MS = 10_000;
 	private static final String PREFS_KEY_PERSISTENT_LOG_FILE = "cpr-session-log-path";
-	private static final boolean LOG_TO_SINGLE_FILE_BY_DEFAULT = false;
+	private static final boolean LOG_TO_SINGLE_FILE_BY_DEFAULT = true;
 	// Stop after 32 MB
 	private static long AUTO_STOP_DATA_THRESHOLD = 32 * 1024 * 1024;
 
