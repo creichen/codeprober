@@ -14839,6 +14839,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                                 (0, runBgProbe_1.default)(modalEnv, { result: { start: 0, end: 0, type: '<ROOT>', depth: 0 }, steps: [] }, { name: kv.slice(needle.length), });
                             }
                         });
+                        notifyLocalChangeListeners();
                     });
                 }
                 else {

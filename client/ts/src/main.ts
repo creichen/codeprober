@@ -267,6 +267,7 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
               );
             }
           });
+	  notifyLocalChangeListeners();
         })
 
       } else {
