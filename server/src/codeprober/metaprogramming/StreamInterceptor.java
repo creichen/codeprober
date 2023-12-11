@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 public abstract class StreamInterceptor extends PrintStream {
+	public static boolean SUPPRESS_STDERR_STDOUT = false;
 
 	private static class StreamInterceptorImpl extends OutputStream {
 
@@ -31,6 +32,8 @@ public abstract class StreamInterceptor extends PrintStream {
 			if (Thread.currentThread() != threadFilter) {
 				prev.write(b);
 				return;
+			} else if (!SUPPRESS_STDERR_STDOUT) {
+			    	prev.write(b);
 			}
 			if (b == '\n') {
 				consume(true);

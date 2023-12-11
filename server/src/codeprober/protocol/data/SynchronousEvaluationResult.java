@@ -12,18 +12,22 @@ public class SynchronousEvaluationResult implements codeprober.util.JsonUtil.ToJ
   public final long listNodesTime;
   public final long listPropertiesTime;
   public final java.util.List<Diagnostic> errors;
+  public final java.util.List<EdgeDiagnostic> edgeDiagnostics;
   public final java.util.List<PropertyArg> args;
   public final NodeLocator locator;
-  public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors, java.util.List<PropertyArg> args) {
-    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, errors, args, null);
+  public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors, java.util.List<EdgeDiagnostic> edgeDiagnostics, java.util.List<PropertyArg> args) {
+    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, errors, edgeDiagnostics, args, null);
+  }
+  public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors, java.util.List<EdgeDiagnostic> edgeDiagnostics) {
+    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, errors, edgeDiagnostics, null, null);
   }
   public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors) {
-    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, errors, null, null);
+    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, errors, null, null, null);
   }
   public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime) {
-    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, null, null, null);
+    this(body, totalTime, parseTime, createLocatorTime, applyLocatorTime, attrEvalTime, listNodesTime, listPropertiesTime, null, null, null, null);
   }
-  public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors, java.util.List<PropertyArg> args, NodeLocator locator) {
+  public SynchronousEvaluationResult(java.util.List<RpcBodyLine> body, long totalTime, long parseTime, long createLocatorTime, long applyLocatorTime, long attrEvalTime, long listNodesTime, long listPropertiesTime, java.util.List<Diagnostic> errors, java.util.List<EdgeDiagnostic> edgeDiagnostics, java.util.List<PropertyArg> args, NodeLocator locator) {
     this.body = body;
     this.totalTime = totalTime;
     this.parseTime = parseTime;
@@ -33,6 +37,7 @@ public class SynchronousEvaluationResult implements codeprober.util.JsonUtil.ToJ
     this.listNodesTime = listNodesTime;
     this.listPropertiesTime = listPropertiesTime;
     this.errors = errors;
+    this.edgeDiagnostics = edgeDiagnostics;
     this.args = args;
     this.locator = locator;
   }
@@ -48,6 +53,7 @@ public class SynchronousEvaluationResult implements codeprober.util.JsonUtil.ToJ
     , obj.getLong("listNodesTime")
     , obj.getLong("listPropertiesTime")
     , obj.has("errors") ? (codeprober.util.JsonUtil.<Diagnostic>mapArr(obj.getJSONArray("errors"), (arr, idx) -> Diagnostic.fromJSON(arr.getJSONObject(idx)))) : null
+    , obj.has("edgeDiagnostics") ? (codeprober.util.JsonUtil.<EdgeDiagnostic>mapArr(obj.getJSONArray("edgeDiagnostics"), (arr, idx) -> EdgeDiagnostic.fromJSON(arr.getJSONObject(idx)))) : null
     , obj.has("args") ? (codeprober.util.JsonUtil.<PropertyArg>mapArr(obj.getJSONArray("args"), (arr, idx) -> PropertyArg.fromJSON(arr.getJSONObject(idx)))) : null
     , obj.has("locator") ? (NodeLocator.fromJSON(obj.getJSONObject("locator"))) : null
     );
@@ -63,6 +69,7 @@ public class SynchronousEvaluationResult implements codeprober.util.JsonUtil.ToJ
     _ret.put("listNodesTime", listNodesTime);
     _ret.put("listPropertiesTime", listPropertiesTime);
     if (errors != null) _ret.put("errors", new org.json.JSONArray(errors.stream().<Object>map(x->x.toJSON()).collect(java.util.stream.Collectors.toList())));
+    if (edgeDiagnostics != null) _ret.put("edgeDiagnostics", new org.json.JSONArray(edgeDiagnostics.stream().<Object>map(x->x.toJSON()).collect(java.util.stream.Collectors.toList())));
     if (args != null) _ret.put("args", new org.json.JSONArray(args.stream().<Object>map(x->x.toJSON()).collect(java.util.stream.Collectors.toList())));
     if (locator != null) _ret.put("locator", locator.toJSON());
     return _ret;

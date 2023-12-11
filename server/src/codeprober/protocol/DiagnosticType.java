@@ -21,4 +21,16 @@ public enum DiagnosticType {
 			return null;
 		}
 	}
+
+	public boolean isEdge() {
+	    switch (this) {
+	    case LINE_PP:
+	    case LINE_AA:
+	    case LINE_AP:
+	    case LINE_PA:
+		return true;
+	    default:
+		return false;
+	    }
+	}
 }

@@ -58,7 +58,7 @@ public class TracingBuilder implements Consumer<Object[]> {
 				result = NULL_RESULT;
 			} else {
 				final List<RpcBodyLine> lines = new ArrayList<>();
-				EncodeResponseValue.encodeTyped(info, lines, new ArrayList<>(), value, new HashSet<>());
+				EncodeResponseValue.encodeTyped(info, lines, new ArrayList<>(), new ArrayList<>(), value, new HashSet<>());
 				result = lines.size() == 1 ? lines.get(0) : RpcBodyLine.fromArr(lines);
 			}
 			return new Tracing(locator, property, dependencies.stream() //

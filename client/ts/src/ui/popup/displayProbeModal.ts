@@ -20,6 +20,8 @@ import { createDiagnosticSource } from '../create/createMinimizedProbeModal';
 import evaluateProperty, { OngoingPropertyEvaluation } from '../../network/evaluateProperty';
 import { assertUnreachable } from '../../hacks';
 import startEndToSpan from '../startEndToSpan';
+import Edge from '../../model/edgeDiagnostic';
+import NodeLocatorElementBuilder from '../NodeLocatorElementBuilder';
 
 const searchProbePropertyName = `m:NodesWithProperty`;
 
@@ -403,7 +405,21 @@ const displayProbeModal = (
             let shouldRefreshMarkers = localDiagnostics.length > 0;
             localDiagnostics.length = 0;
 
-            localDiagnostics.push(...(parsed.errors ?? []).map((err): SourcedDiagnostic => {
+	    console.log("displayModal: local errors: ", (parsed.errors ?? []));
+	    let local_errors = parsed.errors ?? [];
+	    let edge_table = null;
+	    const nodeEltBuilder = new NodeLocatorElementBuilder(env);
+	    for (const edgeDiag of (parsed.edgeDiagnostics ?? [])) {
+	      if (edge_table == null) {
+		edge_table = Edge.createEdgeTable(nodeEltBuilder);
+	      }
+	      const edge = new Edge(edgeDiag);
+	      console.log("edgediag: ", edge);
+	      local_errors.push(edge.diagnostic);
+	      edge.appendToTable(edge_table);
+	    }
+
+            localDiagnostics.push(...local_errors.map((err): SourcedDiagnostic => {
               return ({ ...err, source: createDiagnosticSource(locator.get(), property) });
             }));
             // parsed.errors?.forEach(({severity, start: errStart, end: errEnd, msg }) => {
@@ -428,6 +444,10 @@ const displayProbeModal = (
             }
             const titleRow = createTitle();
             root.append(titleRow);
+
+	    if (edge_table) {
+	      root.appendChild(edge_table.head);
+	    }
 
             const enableExpander = true;
             // const enableExpander = body.length >= 1 && (body[0].type === 'node' || (

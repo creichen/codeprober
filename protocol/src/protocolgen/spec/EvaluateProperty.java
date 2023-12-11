@@ -41,6 +41,7 @@ public class EvaluateProperty extends Rpc {
 		public final Object listNodesTime = Long.class;
 		public final Object listPropertiesTime = Long.class;
 		public final Object errors = opt(arr(Diagnostic.class));
+		public final Object edgeDiagnostics = opt(arr(EdgeDiagnostic.class));
 		public final Object args = opt(arr(PropertyArg.class));
 		public final Object locator = opt(NodeLocator.class);
 	}

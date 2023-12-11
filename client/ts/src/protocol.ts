@@ -35,6 +35,13 @@ interface Diagnostic {
   end: number;
   msg: string;
 }
+interface EdgeDiagnostic {
+  type: ('ERROR'| 'WARNING'| 'INFO'| 'HINT'| 'LINE_PP'| 'LINE_AA'| 'LINE_AP'| 'LINE_PA');
+  startNode: NodeLocator;
+  endNode: NodeLocator;
+  edgeInfo: string;
+  style: string;
+}
 interface EvaluatePropertyReq {
   type: "EvaluateProperty";
   src: ParsingRequestData;
@@ -271,6 +278,7 @@ interface SynchronousEvaluationResult {
   listNodesTime: number;
   listPropertiesTime: number;
   errors?: Diagnostic[];
+  edgeDiagnostics?: EdgeDiagnostic[];
   args?: PropertyArg[];
   locator?: NodeLocator;
 }
@@ -368,6 +376,7 @@ export {
  , CompleteReq
  , CompleteRes
  , Diagnostic
+ , EdgeDiagnostic
  , EvaluatePropertyReq
  , EvaluatePropertyRes
  , FNStep

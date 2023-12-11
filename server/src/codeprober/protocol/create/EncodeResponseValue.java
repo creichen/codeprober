@@ -13,14 +13,56 @@ import codeprober.locator.CreateLocator;
 import codeprober.metaprogramming.InvokeProblem;
 import codeprober.metaprogramming.Reflect;
 import codeprober.protocol.data.Diagnostic;
+import codeprober.protocol.DiagnosticType;
+import codeprober.protocol.data.EdgeDiagnostic;
 import codeprober.protocol.data.HighlightableMessage;
 import codeprober.protocol.data.NodeLocator;
 import codeprober.protocol.data.RpcBodyLine;
 import codeprober.util.MagicStdoutMessageParser;
 
 public class EncodeResponseValue {
+	private static Pattern HLHOVER_PATTERN = Pattern.compile("HLHOVER@(\\d+);(\\d+)");
 
-	public static void encodeTyped(AstInfo info, List<RpcBodyLine> out, List<Diagnostic> diagnostics, Object value,
+	private static NodeLocator getNodeLocator(AstInfo info, Object value) {
+		if (info.baseAstClazz.isInstance(value)) {
+			return CreateLocator.fromNode(info, new AstNode(value));
+		}
+		return null;
+	}
+
+	private static EdgeDiagnostic getEdgeDiagnostic(AstInfo info, DiagnosticType diag_ty,
+							String diag_style, Object value) {
+		try {
+			Object edge_diag_obj =  Reflect.invoke0(value, "cpr_getEdgeDiagnostic");
+			if (edge_diag_obj instanceof Object[]
+			    && ((Object[]) edge_diag_obj).length >= 3) {
+				Object[] spec = (Object[]) edge_diag_obj;
+				NodeLocator lhs = EncodeResponseValue.getNodeLocator(info, spec[0]);
+				String edgeInfo = (String) spec[1];
+				NodeLocator rhs = EncodeResponseValue.getNodeLocator(info, spec[2]);
+				if (lhs != null && rhs != null) {
+					return new EdgeDiagnostic(diag_ty,
+								  lhs,
+								  rhs,
+								  edgeInfo,
+								  diag_style);
+				} else {
+					System.err.println(value.getClass() + ".cpr_getEdgeDiagnostic() did not return array of [ASTNode, String, ASTNode]");
+					return null;
+				}
+			}
+			System.err.println(value.getClass() + ".cpr_getEdgeDiagnostic() did not return Object[3]");
+			// fall through
+		} catch (InvokeProblem __) {
+			// fall through
+		} catch (ClassCastException __) {
+			System.err.println(value.getClass() + ".cpr_getEdgeDiagnostic() did not return array of [ASTNode, String, ASTNode]");
+			// fall through
+		}
+		return null;
+	}
+
+	public static void encodeTyped(AstInfo info, List<RpcBodyLine> out, List<Diagnostic> diagnostics, List<EdgeDiagnostic> edgeDiagnostics, Object value,
 			HashSet<Object> alreadyVisitedNodes) {
 		if (value == null) {
 			out.add(RpcBodyLine.fromPlain("null"));
@@ -31,35 +73,47 @@ public class EncodeResponseValue {
 			final Object diagnosticValue = Reflect.invoke0(value, "cpr_getDiagnostic");
 			if (diagnosticValue != null) {
 				if (diagnosticValue instanceof String) {
+					boolean specialDiagnosticBody;
+					Object preferredView;
+					try {
+						preferredView = Reflect.invoke0(value, "cpr_getOutput");
+						specialDiagnosticBody = true;
+					} catch (InvokeProblem e) {
+						preferredView = diagnosticValue;
+						specialDiagnosticBody = false;
+					}
+
 					final String diagStr = (String) diagnosticValue;
 					if (diagStr.startsWith("HLHOVER@")) {
-						final Matcher matcher = Pattern.compile("HLHOVER@(\\d+);(\\d+)").matcher(diagStr);
+						final Matcher matcher = HLHOVER_PATTERN.matcher(diagStr);
 						if (!matcher.matches()) {
 							System.err.println("Invalid HLHOVER string '" + diagnosticValue + "'");
 						} else {
 							final int start = Integer.parseInt(matcher.group(1));
 							final int end = Integer.parseInt(matcher.group(2));
-							boolean addToString = true;
-							try {
-								Object preferredView = Reflect.invoke0(value, "cpr_getOutput");
-								out.add(RpcBodyLine.fromHighlightMsg(
-										new HighlightableMessage(start, end, preferredView.toString())));
-								addToString = false;
-								return;
-							} catch (InvokeProblem e) {
-								// Fall down to default view
-							}
-							if (addToString) {
-								out.add(RpcBodyLine
-										.fromHighlightMsg(new HighlightableMessage(start, end, value.toString())));
-							}
+
+							out.add(RpcBodyLine
+								.fromHighlightMsg(new HighlightableMessage(start, end, preferredView.toString())));
+
 						}
 					} else {
+						// Diagnostic string, but not HLHover?
 
 //					if (((String) diagnosticValue).startsWith("))
-						final Diagnostic d = MagicStdoutMessageParser.parse(diagStr);
+						Diagnostic d = MagicStdoutMessageParser.parse(diagStr);
 						if (d != null) {
-							diagnostics.add(d);
+							if (d.type.isEdge()) {
+								EdgeDiagnostic ed = EncodeResponseValue.getEdgeDiagnostic(
+									info, d.type, d.msg, value);
+								if (ed != null) {
+									edgeDiagnostics.add(ed);
+									d = null;
+									return;
+								}
+							}
+							if (d != null) {
+								diagnostics.add(d);
+							}
 						} else {
 							System.err.println("Invalid diagnostic string '" + diagnosticValue + "'");
 						}
@@ -88,7 +142,7 @@ public class EncodeResponseValue {
 				try {
 					Object preferredView = Reflect.invoke0(node.underlyingAstNode, "cpr_getOutput");
 					alreadyVisitedNodes.add(node.underlyingAstNode);
-					encodeTyped(info, out, diagnostics, preferredView, alreadyVisitedNodes);
+					encodeTyped(info, out, diagnostics, edgeDiagnostics, preferredView, alreadyVisitedNodes);
 					return;
 				} catch (InvokeProblem e) {
 					// Fall down to default view
@@ -110,7 +164,7 @@ public class EncodeResponseValue {
 							alreadyVisitedNodes.add(node.underlyingAstNode);
 							out.add(RpcBodyLine.fromPlain("List contents [" + numEntries + "]:"));
 							for (AstNode child : node.getChildren(info)) {
-								encodeTyped(info, out, diagnostics, child, alreadyVisitedNodes);
+								encodeTyped(info, out, diagnostics, edgeDiagnostics, child, alreadyVisitedNodes);
 							}
 						}
 						return;
@@ -139,7 +193,7 @@ public class EncodeResponseValue {
 				try {
 					Object preferredView = Reflect.invoke0(value, "cpr_getOutput");
 					alreadyVisitedNodes.add(value);
-					encodeTyped(info, out, diagnostics, preferredView, alreadyVisitedNodes);
+					encodeTyped(info, out, diagnostics, edgeDiagnostics, preferredView, alreadyVisitedNodes);
 					return;
 				} catch (InvokeProblem e) {
 					// Fall down to default view
@@ -157,7 +211,7 @@ public class EncodeResponseValue {
 			final List<RpcBodyLine> indent = new ArrayList<>();
 			Iterable<?> iter = (Iterable<?>) value;
 			for (Object o : iter) {
-				encodeTyped(info, indent, diagnostics, o, alreadyVisitedNodes);
+				encodeTyped(info, indent, diagnostics, edgeDiagnostics, o, alreadyVisitedNodes);
 			}
 			out.add(RpcBodyLine.fromArr(indent));
 			return;
@@ -171,7 +225,7 @@ public class EncodeResponseValue {
 			final List<RpcBodyLine> indent = new ArrayList<>();
 			Iterator<?> iter = (Iterator<?>) value;
 			while (iter.hasNext()) {
-				encodeTyped(info, indent, diagnostics, iter.next(), alreadyVisitedNodes);
+				encodeTyped(info, indent, diagnostics, edgeDiagnostics, iter.next(), alreadyVisitedNodes);
 			}
 			out.add(RpcBodyLine.fromArr(indent));
 			return;
@@ -185,7 +239,7 @@ public class EncodeResponseValue {
 
 			final List<RpcBodyLine> indent = new ArrayList<>();
 			for (Object child : (Object[]) value) {
-				encodeTyped(info, indent, diagnostics, child, alreadyVisitedNodes);
+				encodeTyped(info, indent, diagnostics, edgeDiagnostics, child, alreadyVisitedNodes);
 			}
 			out.add(RpcBodyLine.fromArr(indent));
 			return;

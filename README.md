@@ -90,6 +90,66 @@ Example invocation where some of these are set:
 PORT=8005 WEB_RESOURCES_OVERRIDE=client/public/ java -jar code-prober.jar /path/to/your/compiler/or/analyzer.jar
 ```
 
+### Probe Result Visualisation
+
+To tweak how CodeProber visualises events, they can implement a method
+`cpr_getOutput()`, which may return objects, arrays, or collections
+that are then suitably visualised.
+
+
+The method `String cpr_getDiagnostic()` allows hoverable diagnostics and drawing edges.
+If the `cpr_getDiagnostic()` method returns a string that matches one of the following formats,
+it can generates *overlay markings* in the code editor:
+
+| `ERR@S;E;MSG`         | Show a red squiggly line from `S` to `E` with a hover for `MSG` |
+| `WARN@S;E;MSG`        | Like `ERR`, but yellow                                          |
+| `INFO@S;E;MSG`        | Like `ERR`, but blue                                            |
+| `HINT@S;E;MSG`        | Show three dots near `S` with a hover for `MSG`                 |
+| `LINE-PP@S;E;COLOR`   | Draw line from `S` to `E` in colour `COLOR`                     |
+| `LINE-PA@S;E;COLOR`   | Draw arrow from `S` to `E` in colour `COLOR`                    |
+| `LINE-AP@S;E;COLOR`   | Draw arrow from `E` to `S` in colour `COLOR`                    |
+| `LINE-AA@S;E;COLOR`   | Draw double-headed arrow between `S` and `E` in colour `COLOR`  |
+
+- Locations S and E have the format `line << 12 | column`, with the topmost `line` and the leftmost `column` being `1`.
+- `COLOR` is an RGBA quadruple in the format `#RGBA`  (Other CSS colours may be supported).
+- `STYLE` specifications must refer to client style specifications, see below.
+
+### Possibly unsupported- to check
+
+The following might not be supported in the current version of CodeProber:
+
+| `STYLE@S;E;S1,...,Sn` | Appply styles S1 through Sn to the area between `S` and `E`     |
+
+Alternatively, the method can (instead of a string) return a `String[]` with the above four elements, in the same order.
+
+#### [Probably unsupported] Custom Visualistion
+
+Objects exposed by the AST under analysis can additionally provide a
+method `public String cpr_getMarker()` to expose the above custom
+stylings when probed.  The stylings will only appear while the probe is active.
+This can be useful e.g. to visualise parts of a graph on demand.
+
+When a CodeProber probe exposes an `Iterable` object, CodeProber
+serialises all elements in the `Iterable` separately and recursively
+(eliminating cycles), displaying elemnt per line.  To group multiple
+elements on one line, the `Iterable` can provide a method
+`public boolean cpr_singleLine() { return true; }`
+
+#### [Probably unsupported] Client Style Specifications
+
+To use STYLE specifications, the analyser-or-compiler jar file's main class must export a field
+`public static String[] CodeProber_report_styles`.  Each element in the array can define
+a style for `STYLE` overlay markings, by following the format
+
+- `S={CSS}`
+- `S#light={CSS}`
+- `S#dark={CSS}`
+
+where `S` is the name of the style and `{CSS}` is a Cascading Stylesheets style definition block.
+CodeProber will automatically rename the style `S`, so it cannot be used elsewhere.
+The styles `S#light` and `S#dark` override the "light mode" and "dark mode" variants of the style,
+respectively.
+
 ## Troubleshooting
 
 CodeProber should run on any OS on Java 8 and above. However, sometimes things don't work as they should. This section has some known issues and their workarounds.

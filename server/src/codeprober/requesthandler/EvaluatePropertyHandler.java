@@ -24,6 +24,7 @@ import codeprober.metaprogramming.StdIoInterceptor;
 import codeprober.metaprogramming.StreamInterceptor;
 import codeprober.protocol.create.EncodeResponseValue;
 import codeprober.protocol.data.Diagnostic;
+import codeprober.protocol.data.EdgeDiagnostic;
 import codeprober.protocol.data.EvaluatePropertyReq;
 import codeprober.protocol.data.EvaluatePropertyRes;
 import codeprober.protocol.data.NodeLocator;
@@ -137,6 +138,7 @@ public class EvaluatePropertyHandler {
 //		final long parseTime = System.nanoTime() - requestTime;
 
 		final List<Diagnostic> diagnostics = new ArrayList<>();
+		final List<EdgeDiagnostic> edgeDiagnostics = new ArrayList<>();
 		final List<RpcBodyLine> body = new ArrayList<>();
 		final AtomicReference<NodeLocator> newLocator = new AtomicReference<>(null);
 		final AtomicReference<List<PropertyArg>> updatedArgsPtr = new AtomicReference<>();
@@ -318,7 +320,7 @@ public class EvaluatePropertyHandler {
 								// Hacky dot support
 								body.add(RpcBodyLine.fromDotGraph(((String) value).substring("@@DOT:".length())));
 							} else {
-								EncodeResponseValue.encodeTyped(parsed.info, body, diagnostics, value, new HashSet<>());
+								EncodeResponseValue.encodeTyped(parsed.info, body, diagnostics, edgeDiagnostics, value, new HashSet<>());
 							}
 						} finally {
 							CreateLocator.setMergeMethod(LocatorMergeMethod.DEFAULT_METHOD);
@@ -400,6 +402,7 @@ public class EvaluatePropertyHandler {
 				BenchmarkTimer.LIST_NODES.getAccumulatedNano(), //
 				BenchmarkTimer.LIST_PROPERTIES.getAccumulatedNano(), //
 				diagnostics, //
+				edgeDiagnostics,
 				updatedArgsPtr.get(), //
 				newLocator.get() //
 		)));

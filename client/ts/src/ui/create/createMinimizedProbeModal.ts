@@ -9,6 +9,7 @@ import { Diagnostic, NodeLocator, Property, RpcBodyLine, StopJobReq, StopJobRes 
 import displayProbeModal, { searchProbePropertyName } from '../popup/displayProbeModal';
 import startEndToSpan from '../startEndToSpan';
 import registerOnHover from './registerOnHover';
+import Edge from '../../model/edgeDiagnostic';
 
 interface OptionalArgs {
   showDiagnostics?: boolean;
@@ -94,7 +95,16 @@ const createMinimizedProbeModal = (
         }
 
         const newErrors: Diagnostic[] = [];
-        newErrors.push(...resp.errors ?? []);
+	let local_errors = resp.errors ?? [];
+
+	console.log("minimized: local errors: ", (resp.errors ?? []));
+	for (const edgeDiag of (resp.edgeDiagnostics ?? [])) {
+	  const edge = new Edge(edgeDiag);
+	  console.log("edgediag: ", edge);
+	  local_errors.push(edge.diagnostic);
+	}
+        newErrors.push(...local_errors);
+
 
         const handleLines = async (relatedProp: Property, lines: RpcBodyLine[], nests: NestedWindows) => {
           const nestedRequests: (() => Promise<void>)[] = [];

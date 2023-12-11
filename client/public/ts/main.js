@@ -10245,44 +10245,60 @@ define("dependencies/graphviz/graphviz", ["require", "exports"], function (requi
     selection.prototype.graphviz = selection_graphviz;
     selection.prototype.selectWithoutDataPropagation = selection_selectWithoutDataPropagation;
 });
-define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNodeLocator", "ui/create/createTextSpanIndicator", "ui/create/registerNodeSelector", "ui/create/registerOnHover", "ui/trimTypeName", "ui/popup/displayAttributeModal", "dependencies/graphviz/graphviz", "hacks", "ui/startEndToSpan"], function (require, exports, UpdatableNodeLocator_3, createTextSpanIndicator_5, registerNodeSelector_2, registerOnHover_3, trimTypeName_3, displayAttributeModal_3, graphviz_1, hacks_3, startEndToSpan_6) {
+define("ui/NodeLocatorElementBuilder", ["require", "exports", "model/UpdatableNodeLocator", "ui/create/createTextSpanIndicator", "ui/create/registerOnHover", "ui/create/registerNodeSelector", "ui/popup/displayAttributeModal", "ui/trimTypeName"], function (require, exports, UpdatableNodeLocator_3, createTextSpanIndicator_5, registerOnHover_3, registerNodeSelector_2, displayAttributeModal_3, trimTypeName_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     createTextSpanIndicator_5 = __importDefault(createTextSpanIndicator_5);
-    registerNodeSelector_2 = __importDefault(registerNodeSelector_2);
     registerOnHover_3 = __importDefault(registerOnHover_3);
-    trimTypeName_3 = __importDefault(trimTypeName_3);
+    registerNodeSelector_2 = __importDefault(registerNodeSelector_2);
     displayAttributeModal_3 = __importDefault(displayAttributeModal_3);
-    startEndToSpan_6 = __importDefault(startEndToSpan_6);
-    const getCommonStreamArgWhitespacePrefix = (line) => {
-        if (Array.isArray(line)) {
-            return Math.min(...line.map(getCommonStreamArgWhitespacePrefix));
+    trimTypeName_3 = __importDefault(trimTypeName_3);
+    class NodeLocatorElementBuilder {
+        constructor(env, encoding = {}) {
+            this._enableNodeExpander = true;
+            this._decorators = [];
+            this._env = env;
+            this._encoding = encoding;
         }
-        if (line && typeof line === 'object') {
-            switch (line.type) {
-                case 'streamArg': {
-                    const v = line.value;
-                    return v.length - v.trimStart().length;
-                }
-            }
+        get encoding() {
+            return this._encoding;
         }
-        return Number.MAX_SAFE_INTEGER;
-    };
-    const encodeRpcBodyLines = (env, body, extras = {}) => {
-        let needCapturedStreamArgExplanation = false;
-        let localDisableNodeExpander = false;
-        const createNodeNode = (target, locator, nestingLevel, bodyPath, includePositionIndicator = true) => {
+        get env() {
+            return this._env;
+        }
+        get nodeExpanderEnabled() {
+            return this._enableNodeExpander;
+        }
+        disableNodeExpander() {
+            this._enableNodeExpander = false;
+        }
+        enableNodeExpander() {
+            this._enableNodeExpander = true;
+        }
+        addDecorator(decorator) {
+            this._decorators.push(decorator);
+        }
+        span(locator) {
             const { start, end, type, label } = locator.result;
-            const container = document.createElement('div');
-            container.classList.add('node-ref');
-            if (extras.decorator) {
-                applyDecoratorClass(container, nestingLevel <= 1, extras.decorator(bodyPath));
-            }
-            // container.appendChild(document.createTextNode(`area:${JSON.stringify(bodyPath)}`));
-            const span = {
+            return {
                 lineStart: (start >>> 12), colStart: (start & 0xFFF),
                 lineEnd: (end >>> 12), colEnd: (end & 0xFFF),
             };
+        }
+        buildElement(locator, nestingLevel = 0, bodyPath = [], includePositionIndicator = true) {
+            const { start, end, type, label } = locator.result;
+            const container = document.createElement('div');
+            const env = this.env;
+            const encoding = this.encoding;
+            let result = container;
+            container.classList.add('node-ref');
+            if (this.encoding.decorator) {
+                for (const decorator of this._decorators) {
+                    decorator(container, nestingLevel <= 1, this.encoding.decorator(bodyPath));
+                }
+            }
+            // container.appendChild(document.createTextNode(`area:${JSON.stringify(bodyPath)}`));
+            const span = this.span(locator);
             const typeNode = document.createElement('span');
             typeNode.classList.add('syntax-type');
             typeNode.innerText = label !== null && label !== void 0 ? label : (0, trimTypeName_3.default)(type);
@@ -10300,7 +10316,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
             container.style.display = 'inline';
             (0, registerOnHover_3.default)(container, on => {
                 var _a, _b;
-                if (!on || ((_b = (_a = extras.lateInteractivityEnabledChecker) === null || _a === void 0 ? void 0 : _a.call(extras)) !== null && _b !== void 0 ? _b : true)) {
+                if (!on || ((_b = (_a = encoding.lateInteractivityEnabledChecker) === null || _a === void 0 ? void 0 : _a.call(encoding)) !== null && _b !== void 0 ? _b : true)) {
                     env.updateSpanHighlight(on ? span : null);
                     container.style.cursor = 'default';
                     container.classList.add('clickHighlightOnHover');
@@ -10313,17 +10329,17 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
             container.onmousedown = (e) => {
                 e.stopPropagation();
             };
-            if (!extras.disableNodeSelectors) {
+            if (!encoding.disableNodeSelectors) {
                 (0, registerNodeSelector_2.default)(container, () => locator);
             }
             container.addEventListener('click', (e) => {
                 var _a, _b;
-                if ((_b = (_a = extras.lateInteractivityEnabledChecker) === null || _a === void 0 ? void 0 : _a.call(extras)) !== null && _b !== void 0 ? _b : true) {
+                if ((_b = (_a = encoding.lateInteractivityEnabledChecker) === null || _a === void 0 ? void 0 : _a.call(encoding)) !== null && _b !== void 0 ? _b : true) {
                     e.preventDefault();
                     (0, displayAttributeModal_3.default)(env.getGlobalModalEnv(), null, (0, UpdatableNodeLocator_3.createMutableLocator)(locator));
                 }
             });
-            if (!localDisableNodeExpander && extras.nodeLocatorExpanderHandler) {
+            if (this.nodeExpanderEnabled && encoding.nodeLocatorExpanderHandler) {
                 // if (existing) {
                 //   if (existing.parentElement) existing.parentElement.removeChild(existing);
                 //   target.appendChild(existing);
@@ -10333,7 +10349,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                 middleContainer.style.flexDirection = 'row';
                 container.style.display = 'flex';
                 middleContainer.appendChild(container);
-                if (!extras.disableInlineExpansionButton) {
+                if (!encoding.disableInlineExpansionButton) {
                     const expander = document.createElement('div');
                     expander.innerText = `▼`;
                     expander.style.marginLeft = '0.25rem';
@@ -10343,7 +10359,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                         e.stopPropagation();
                     };
                     middleContainer.appendChild(expander);
-                    const clickHandler = extras.nodeLocatorExpanderHandler.onClick;
+                    const clickHandler = encoding.nodeLocatorExpanderHandler.onClick;
                     expander.onclick = () => clickHandler({
                         locator,
                         locatorRoot: outerContainer,
@@ -10357,7 +10373,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                 // outerContainer.style.marginBottom = '0.125rem';
                 outerContainer.style.flexDirection = 'column';
                 outerContainer.appendChild(middleContainer);
-                const existingExpansionArea = extras.nodeLocatorExpanderHandler.getReusableExpansionArea(bodyPath);
+                const existingExpansionArea = encoding.nodeLocatorExpanderHandler.getReusableExpansionArea(bodyPath);
                 if (existingExpansionArea) {
                     if (existingExpansionArea.parentElement) {
                         existingExpansionArea.parentElement.removeChild(existingExpansionArea);
@@ -10365,17 +10381,51 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                 }
                 const expansionArea = existingExpansionArea !== null && existingExpansionArea !== void 0 ? existingExpansionArea : document.createElement('div');
                 outerContainer.appendChild(expansionArea);
-                target.appendChild(outerContainer);
-                extras.nodeLocatorExpanderHandler.onCreate({
+                encoding.nodeLocatorExpanderHandler.onCreate({
                     locator,
                     locatorRoot: outerContainer,
                     expansionArea,
                     path: bodyPath,
                     isFresh: !existingExpansionArea,
                 });
+                result = outerContainer;
             }
             else {
-                target.appendChild(container);
+                result = container;
+            }
+            return result;
+        }
+    }
+    exports.default = NodeLocatorElementBuilder;
+});
+define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNodeLocator", "ui/create/registerOnHover", "ui/popup/displayAttributeModal", "dependencies/graphviz/graphviz", "hacks", "ui/startEndToSpan", "ui/NodeLocatorElementBuilder"], function (require, exports, UpdatableNodeLocator_4, registerOnHover_4, displayAttributeModal_4, graphviz_1, hacks_3, startEndToSpan_6, NodeLocatorElementBuilder_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    registerOnHover_4 = __importDefault(registerOnHover_4);
+    displayAttributeModal_4 = __importDefault(displayAttributeModal_4);
+    startEndToSpan_6 = __importDefault(startEndToSpan_6);
+    NodeLocatorElementBuilder_1 = __importDefault(NodeLocatorElementBuilder_1);
+    const getCommonStreamArgWhitespacePrefix = (line) => {
+        if (Array.isArray(line)) {
+            return Math.min(...line.map(getCommonStreamArgWhitespacePrefix));
+        }
+        if (line && typeof line === 'object') {
+            switch (line.type) {
+                case 'streamArg': {
+                    const v = line.value;
+                    return v.length - v.trimStart().length;
+                }
+            }
+        }
+        return Number.MAX_SAFE_INTEGER;
+    };
+    const encodeRpcBodyLines = (env, body, extras = {}) => {
+        let needCapturedStreamArgExplanation = false;
+        let nodeLocatorEltBuilder = new NodeLocatorElementBuilder_1.default(env, extras);
+        const createNodeNode = (target, locator, nestingLevel, bodyPath, includePositionIndicator = true) => {
+            const elt = nodeLocatorEltBuilder.buildElement(locator, nestingLevel, bodyPath, includePositionIndicator);
+            if (elt != null) {
+                target.appendChild(elt);
             }
         };
         const appliedDecoratorResultsTrackers = [];
@@ -10398,6 +10448,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                     break;
             }
         };
+        nodeLocatorEltBuilder.addDecorator(applyDecoratorClass);
         const streamArgPrefix = Math.min(...body.map(getCommonStreamArgWhitespacePrefix));
         const encodeDotVal = (dotVal) => {
             const holder = document.createElement('div');
@@ -10451,7 +10502,7 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                         const node = document.createElement('span');
                         const span = (0, startEndToSpan_6.default)(plainHoverSpan.start, plainHoverSpan.end);
                         node.classList.add('highlightOnHover');
-                        (0, registerOnHover_3.default)(node, hovering => {
+                        (0, registerOnHover_4.default)(node, hovering => {
                             env.updateSpanHighlight(hovering ? span : null);
                         });
                         node.innerText = trimmed;
@@ -10586,12 +10637,12 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                                 e.stopImmediatePropagation();
                             };
                             const span = (0, startEndToSpan_6.default)(tr.node.result.start, tr.node.result.end);
-                            (0, registerOnHover_3.default)(summaryPartNode, isHovering => {
+                            (0, registerOnHover_4.default)(summaryPartNode, isHovering => {
                                 env.updateSpanHighlight(isHovering ? span : null);
                             });
                             summaryPartNode.onclick = (e) => {
                                 e.preventDefault();
-                                (0, displayAttributeModal_3.default)(env.getGlobalModalEnv(), null, (0, UpdatableNodeLocator_3.createMutableLocator)(tr.node));
+                                (0, displayAttributeModal_4.default)(env.getGlobalModalEnv(), null, (0, UpdatableNodeLocator_4.createMutableLocator)(tr.node));
                             };
                             const summaryPartAttr = document.createElement('span');
                             summaryPartAttr.classList.add('syntax-attr');
@@ -10698,9 +10749,9 @@ define("ui/popup/encodeRpcBodyLines", ["require", "exports", "model/UpdatableNod
                             dst.appendChild(det);
                         }
                     };
-                    localDisableNodeExpander = true;
+                    nodeLocatorEltBuilder.disableNodeExpander();
                     encodeTrace(line.value, bodyPath, true, target);
-                    localDisableNodeExpander = false;
+                    nodeLocatorEltBuilder.enableNodeExpander();
                     break;
                 }
                 default: {
@@ -10984,13 +11035,13 @@ define("ui/popup/displayTestAdditionModal", ["require", "exports", "ui/create/cr
     };
     exports.default = displayTestAdditionModal;
 });
-define("ui/renderProbeModalTitleLeft", ["require", "exports", "ui/create/createTextSpanIndicator", "ui/create/registerNodeSelector", "ui/popup/displayArgModal", "ui/popup/displayAttributeModal", "ui/popup/displayProbeModal", "ui/popup/formatAttr", "ui/startEndToSpan", "ui/trimTypeName"], function (require, exports, createTextSpanIndicator_6, registerNodeSelector_3, displayArgModal_2, displayAttributeModal_4, displayProbeModal_3, formatAttr_3, startEndToSpan_7, trimTypeName_4) {
+define("ui/renderProbeModalTitleLeft", ["require", "exports", "ui/create/createTextSpanIndicator", "ui/create/registerNodeSelector", "ui/popup/displayArgModal", "ui/popup/displayAttributeModal", "ui/popup/displayProbeModal", "ui/popup/formatAttr", "ui/startEndToSpan", "ui/trimTypeName"], function (require, exports, createTextSpanIndicator_6, registerNodeSelector_3, displayArgModal_2, displayAttributeModal_5, displayProbeModal_3, formatAttr_3, startEndToSpan_7, trimTypeName_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     createTextSpanIndicator_6 = __importDefault(createTextSpanIndicator_6);
     registerNodeSelector_3 = __importDefault(registerNodeSelector_3);
     displayArgModal_2 = __importDefault(displayArgModal_2);
-    displayAttributeModal_4 = __importDefault(displayAttributeModal_4);
+    displayAttributeModal_5 = __importDefault(displayAttributeModal_5);
     formatAttr_3 = __importStar(formatAttr_3);
     startEndToSpan_7 = __importDefault(startEndToSpan_7);
     trimTypeName_4 = __importDefault(trimTypeName_4);
@@ -11033,11 +11084,11 @@ define("ui/renderProbeModalTitleLeft", ["require", "exports", "ui/create/createT
                     }
                 }
                 if (env.duplicateOnAttr() != e.shiftKey) {
-                    (0, displayAttributeModal_4.default)(env, null, locator.isMutable() ? locator.createMutableClone() : locator, { initialFilter });
+                    (0, displayAttributeModal_5.default)(env, null, locator.isMutable() ? locator.createMutableClone() : locator, { initialFilter });
                 }
                 else {
                     close === null || close === void 0 ? void 0 : close();
-                    (0, displayAttributeModal_4.default)(env, getWindowPos(), locator, { initialFilter });
+                    (0, displayAttributeModal_5.default)(env, getWindowPos(), locator, { initialFilter });
                 }
                 e.stopPropagation();
             };
@@ -11361,14 +11412,110 @@ define("network/evaluateProperty", ["require", "exports"], function (require, ex
     };
     exports.default = evaluateProperty;
 });
-define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adjustLocator", "model/findLocatorWithNestingPath", "model/UpdatableNodeLocator", "network/evaluateProperty", "ui/popup/displayProbeModal", "ui/startEndToSpan", "ui/create/registerOnHover"], function (require, exports, adjustLocator_2, findLocatorWithNestingPath_2, UpdatableNodeLocator_4, evaluateProperty_1, displayProbeModal_4, startEndToSpan_8, registerOnHover_4) {
+define("model/edgeDiagnostic", ["require", "exports", "ui/create/registerOnHover"], function (require, exports, registerOnHover_5) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    registerOnHover_5 = __importDefault(registerOnHover_5);
+    class Edge {
+        constructor(ed) {
+            this.data = ed;
+        }
+        get startNode() {
+            return this.data.startNode;
+        }
+        get endNode() {
+            return this.data.endNode;
+        }
+        get start() {
+            return this.startNode.result.start;
+        }
+        get end() {
+            return this.endNode.result.end;
+        }
+        get style() {
+            return this.data.style;
+        }
+        get styleNoAlpha() {
+            const style = this.style;
+            if (style && style.length > 1 && style[0] == '#') {
+                if (style.length == 5) {
+                    // #RGBA:  trim last hex digit (alpha)
+                    return style.substring(0, 4);
+                }
+                if (style.length == 9) {
+                    // #RRGGBBAA:  trim last two hex digits (alpha)
+                    return style.substring(0, 7);
+                }
+            }
+            return style;
+        }
+        get diagnostic() {
+            return { type: this.data.type,
+                start: this.start,
+                end: this.end,
+                msg: this.data.style };
+        }
+        /**
+         * The table is not yet appended to anything.  You have to append table.head to make it visible.
+         */
+        appendToTable({ builder, head, body }) {
+            const row = document.createElement('TR');
+            const l = document.createElement('TD');
+            l.append(builder.buildElement(this.data.startNode));
+            const m = document.createElement('TD');
+            const arrow = document.createElement('SPAN');
+            m.append(arrow);
+            arrow.style.fontFamily = 'monospace';
+            arrow.style.color = this.styleNoAlpha;
+            arrow.append(document.createTextNode(this.data.edgeInfo));
+            const r = document.createElement('TD');
+            r.append(builder.buildElement(this.data.endNode));
+            row.append(l);
+            row.append(m);
+            row.append(r);
+            body.append(row);
+            (0, registerOnHover_5.default)(m, on => {
+                var _a, _b, _c, _d, _e, _f;
+                if (!on || ((_c = (_b = (_a = builder.encoding).lateInteractivityEnabledChecker) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : true)) {
+                    const span = builder.span(this.endNode);
+                    builder.env.updateSpanHighlight(on ? span : null);
+                }
+                // Highlight table elements
+                for (const container of [l, m, r]) {
+                    if (!on || ((_f = (_e = (_d = builder.encoding).lateInteractivityEnabledChecker) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : true)) {
+                        container.style.cursor = 'default';
+                        container.classList.add('clickHighlightOnHover');
+                    }
+                    else {
+                        container.style.cursor = 'not-allowed';
+                        container.classList.remove('clickHighlightOnHover');
+                    }
+                }
+            });
+        }
+        /**
+         * The table is not yet appended to anything.  You have to append table.head to make it visible.
+         */
+        static createEdgeTable(builder) {
+            const head = document.createElement('TABLE');
+            const body = document.createElement('TBODY');
+            head.appendChild(body);
+            return { builder: builder,
+                head: head,
+                body: body };
+        }
+    }
+    exports.default = Edge;
+});
+define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adjustLocator", "model/findLocatorWithNestingPath", "model/UpdatableNodeLocator", "network/evaluateProperty", "ui/popup/displayProbeModal", "ui/startEndToSpan", "ui/create/registerOnHover", "model/edgeDiagnostic"], function (require, exports, adjustLocator_2, findLocatorWithNestingPath_2, UpdatableNodeLocator_5, evaluateProperty_1, displayProbeModal_4, startEndToSpan_8, registerOnHover_6, edgeDiagnostic_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.createDiagnosticSource = void 0;
     evaluateProperty_1 = __importDefault(evaluateProperty_1);
     displayProbeModal_4 = __importStar(displayProbeModal_4);
     startEndToSpan_8 = __importDefault(startEndToSpan_8);
-    registerOnHover_4 = __importDefault(registerOnHover_4);
+    registerOnHover_6 = __importDefault(registerOnHover_6);
+    edgeDiagnostic_1 = __importDefault(edgeDiagnostic_1);
     const createMinimizedProbeModal = (env, locator, property, nestedWindows, optionalArgs = {}, isDefault = false) => {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         const queryId = `minimized-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
@@ -11413,7 +11560,7 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
             }
             loading = true;
             (async () => {
-                var _a;
+                var _a, _b, _c;
                 const src = env.createParsingRequestData();
                 const rootEvalProp = (0, evaluateProperty_1.default)(env, {
                     captureStdout: false,
@@ -11436,7 +11583,14 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
                     return;
                 }
                 const newErrors = [];
-                newErrors.push(...(_a = resp.errors) !== null && _a !== void 0 ? _a : []);
+                let local_errors = (_a = resp.errors) !== null && _a !== void 0 ? _a : [];
+                console.log("minimized: local errors: ", ((_b = resp.errors) !== null && _b !== void 0 ? _b : []));
+                for (const edgeDiag of ((_c = resp.edgeDiagnostics) !== null && _c !== void 0 ? _c : [])) {
+                    const edge = new edgeDiagnostic_1.default(edgeDiag);
+                    console.log("edgediag: ", edge);
+                    local_errors.push(edge.diagnostic);
+                }
+                newErrors.push(...local_errors);
                 const handleLines = async (relatedProp, lines, nests) => {
                     const nestedRequests = [];
                     Object.entries((0, findLocatorWithNestingPath_2.findAllLocatorsWithinNestingPath)(lines)).forEach(([unprefixedPath, nestedLocator]) => {
@@ -11562,13 +11716,13 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
             });
         };
         env.triggerWindowSave();
-        (0, registerOnHover_4.default)(clickableUi, (on) => env.updateSpanHighlight((on && !locator.result.external) ? (0, startEndToSpan_8.default)(locator.result.start, locator.result.end) : null));
+        (0, registerOnHover_6.default)(clickableUi, (on) => env.updateSpanHighlight((on && !locator.result.external) ? (0, startEndToSpan_8.default)(locator.result.start, locator.result.end) : null));
         clickableUi.onclick = (e) => {
             if (!e.shiftKey && ui.parentElement) {
                 ui.parentElement.removeChild(ui);
             }
             env.updateSpanHighlight(null);
-            (0, displayProbeModal_4.default)(env, null, (0, UpdatableNodeLocator_4.createMutableLocator)(locator), property, nestedWindows, { showDiagnostics });
+            (0, displayProbeModal_4.default)(env, null, (0, UpdatableNodeLocator_5.createMutableLocator)(locator), property, nestedWindows, { showDiagnostics });
             cleanup();
         };
         const squigglyCheckboxWrapper = createSquigglyCheckbox({
@@ -11606,7 +11760,7 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
     exports.createDiagnosticSource = createDiagnosticSource;
     exports.default = createMinimizedProbeModal;
 });
-define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "model/adjustLocator", "ui/popup/displayHelp", "ui/popup/encodeRpcBodyLines", "ui/create/createStickyHighlightController", "ui/popup/displayTestAdditionModal", "ui/renderProbeModalTitleLeft", "settings", "ui/popup/displayAttributeModal", "ui/popup/displayAstModal", "ui/create/createInlineWindowManager", "model/UpdatableNodeLocator", "ui/create/createMinimizedProbeModal", "network/evaluateProperty", "hacks", "ui/startEndToSpan"], function (require, exports, createLoadingSpinner_4, createModalTitle_6, adjustLocator_3, displayHelp_3, encodeRpcBodyLines_3, createStickyHighlightController_2, displayTestAdditionModal_1, renderProbeModalTitleLeft_1, settings_4, displayAttributeModal_5, displayAstModal_2, createInlineWindowManager_1, UpdatableNodeLocator_5, createMinimizedProbeModal_1, evaluateProperty_2, hacks_4, startEndToSpan_9) {
+define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "model/adjustLocator", "ui/popup/displayHelp", "ui/popup/encodeRpcBodyLines", "ui/create/createStickyHighlightController", "ui/popup/displayTestAdditionModal", "ui/renderProbeModalTitleLeft", "settings", "ui/popup/displayAttributeModal", "ui/popup/displayAstModal", "ui/create/createInlineWindowManager", "model/UpdatableNodeLocator", "ui/create/createMinimizedProbeModal", "network/evaluateProperty", "hacks", "ui/startEndToSpan", "model/edgeDiagnostic", "ui/NodeLocatorElementBuilder"], function (require, exports, createLoadingSpinner_4, createModalTitle_6, adjustLocator_3, displayHelp_3, encodeRpcBodyLines_3, createStickyHighlightController_2, displayTestAdditionModal_1, renderProbeModalTitleLeft_1, settings_4, displayAttributeModal_6, displayAstModal_2, createInlineWindowManager_1, UpdatableNodeLocator_6, createMinimizedProbeModal_1, evaluateProperty_2, hacks_4, startEndToSpan_9, edgeDiagnostic_2, NodeLocatorElementBuilder_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.searchProbePropertyName = void 0;
@@ -11618,11 +11772,13 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
     displayTestAdditionModal_1 = __importDefault(displayTestAdditionModal_1);
     renderProbeModalTitleLeft_1 = __importDefault(renderProbeModalTitleLeft_1);
     settings_4 = __importDefault(settings_4);
-    displayAttributeModal_5 = __importDefault(displayAttributeModal_5);
+    displayAttributeModal_6 = __importDefault(displayAttributeModal_6);
     displayAstModal_2 = __importDefault(displayAstModal_2);
     createInlineWindowManager_1 = __importDefault(createInlineWindowManager_1);
     evaluateProperty_2 = __importDefault(evaluateProperty_2);
     startEndToSpan_9 = __importDefault(startEndToSpan_9);
+    edgeDiagnostic_2 = __importDefault(edgeDiagnostic_2);
+    NodeLocatorElementBuilder_2 = __importDefault(NodeLocatorElementBuilder_2);
     const searchProbePropertyName = `m:NodesWithProperty`;
     exports.searchProbePropertyName = searchProbePropertyName;
     const displayProbeModal = (env, modalPos, locator, property, nestedWindows, optionalArgs = {}, isDefault = false) => {
@@ -11934,7 +12090,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                 };
                 doFetch()
                     .then((parsed) => {
-                    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+                    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
                     loading = false;
                     if (parsed === 'stopped') {
                         refreshOnDone = false;
@@ -11978,16 +12134,29 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                             root.removeChild(root.firstChild);
                         let shouldRefreshMarkers = localDiagnostics.length > 0;
                         localDiagnostics.length = 0;
-                        localDiagnostics.push(...((_a = parsed.errors) !== null && _a !== void 0 ? _a : []).map((err) => {
+                        console.log("displayModal: local errors: ", ((_a = parsed.errors) !== null && _a !== void 0 ? _a : []));
+                        let local_errors = (_b = parsed.errors) !== null && _b !== void 0 ? _b : [];
+                        let edge_table = null;
+                        const nodeEltBuilder = new NodeLocatorElementBuilder_2.default(env);
+                        for (const edgeDiag of ((_c = parsed.edgeDiagnostics) !== null && _c !== void 0 ? _c : [])) {
+                            if (edge_table == null) {
+                                edge_table = edgeDiagnostic_2.default.createEdgeTable(nodeEltBuilder);
+                            }
+                            const edge = new edgeDiagnostic_2.default(edgeDiag);
+                            console.log("edgediag: ", edge);
+                            local_errors.push(edge.diagnostic);
+                            edge.appendToTable(edge_table);
+                        }
+                        localDiagnostics.push(...local_errors.map((err) => {
                             return ({ ...err, source: (0, createMinimizedProbeModal_1.createDiagnosticSource)(locator.get(), property) });
                         }));
                         // parsed.errors?.forEach(({severity, start: errStart, end: errEnd, msg }) => {
                         //   localErrors.push({ severity, errStart, errEnd, msg });
                         // })
                         const updatedArgs = parsed.args;
-                        if (updatedArgs && updatedArgs.length === ((_b = property.args) === null || _b === void 0 ? void 0 : _b.length)) {
+                        if (updatedArgs && updatedArgs.length === ((_d = property.args) === null || _d === void 0 ? void 0 : _d.length)) {
                             shouldRefreshMarkers = true;
-                            (_c = property.args) === null || _c === void 0 ? void 0 : _c.forEach((arg, argIdx) => {
+                            (_e = property.args) === null || _e === void 0 ? void 0 : _e.forEach((arg, argIdx) => {
                                 arg.type = updatedArgs[argIdx].type;
                                 // arg.detail = updatedArgs[argIdx].detail;
                                 arg.value = updatedArgs[argIdx].value;
@@ -12003,6 +12172,9 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                         }
                         const titleRow = createTitle();
                         root.append(titleRow);
+                        if (edge_table) {
+                            root.appendChild(edge_table.head);
+                        }
                         const enableExpander = true;
                         // const enableExpander = body.length >= 1 && (body[0].type === 'node' || (
                         //   body[0].type === 'arr' && body[0].value.length >= 1 && body[0].value[0].type === 'node'
@@ -12011,10 +12183,10 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                             const message = document.createElement('div');
                             message.style.padding = '0.25rem';
                             let tail = '';
-                            if (((_e = (_d = property.args) === null || _d === void 0 ? void 0 : _d.length) !== null && _e !== void 0 ? _e : 0) >= 2) {
-                                tail = ` that match the predicate${`${(_g = (_f = property.args) === null || _f === void 0 ? void 0 : _f[1]) === null || _g === void 0 ? void 0 : _g.value}`.includes(',') ? 's' : ''}`;
+                            if (((_g = (_f = property.args) === null || _f === void 0 ? void 0 : _f.length) !== null && _g !== void 0 ? _g : 0) >= 2) {
+                                tail = ` that match the predicate${`${(_j = (_h = property.args) === null || _h === void 0 ? void 0 : _h[1]) === null || _j === void 0 ? void 0 : _j.value}`.includes(',') ? 's' : ''}`;
                             }
-                            message.innerText = `Found no nodes implementing '${(_j = (_h = property.args) === null || _h === void 0 ? void 0 : _h[0]) === null || _j === void 0 ? void 0 : _j.value}'${tail}`;
+                            message.innerText = `Found no nodes implementing '${(_l = (_k = property.args) === null || _k === void 0 ? void 0 : _k[0]) === null || _l === void 0 ? void 0 : _l.value}'${tail}`;
                             message.style.fontStyle = 'italic';
                             root.appendChild(message);
                         }
@@ -12029,7 +12201,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                                 onCreate: ({ locator, locatorRoot, expansionArea, path: nestId, isFresh }) => {
                                     var _a, _b, _c;
                                     areasToKeep.add(JSON.stringify(nestId));
-                                    const updLocator = (_a = inlineWindowManager.getPreviouslyAssociatedLocator(nestId)) !== null && _a !== void 0 ? _a : (0, UpdatableNodeLocator_5.createMutableLocator)(locator);
+                                    const updLocator = (_a = inlineWindowManager.getPreviouslyAssociatedLocator(nestId)) !== null && _a !== void 0 ? _a : (0, UpdatableNodeLocator_6.createMutableLocator)(locator);
                                     updLocator.set(locator);
                                     const area = inlineWindowManager.getArea(nestId, locatorRoot, expansionArea, updLocator, queryWindow.bumpIntoScreen);
                                     const nestedEnv = area.getNestedModalEnv(env);
@@ -12037,7 +12209,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                                     const nests = nestedWindows[encodedId];
                                     if (nests) {
                                         delete nestedWindows[encodedId];
-                                        const immutLoc = (0, UpdatableNodeLocator_5.createImmutableLocator)(updLocator);
+                                        const immutLoc = (0, UpdatableNodeLocator_6.createImmutableLocator)(updLocator);
                                         nests.forEach(nest => {
                                             switch (nest.data.type) {
                                                 case 'probe': {
@@ -12056,7 +12228,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                                     if (isFresh && property.name === searchProbePropertyName) {
                                         const nestedPropName = (_c = (_b = property.args) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.value;
                                         if (nestedPropName !== '' && !(nests === null || nests === void 0 ? void 0 : nests.some((nest) => nest.data.type === 'probe' && nest.data.property.name === nestedPropName))) {
-                                            displayProbeModal(nestedEnv, null, (0, UpdatableNodeLocator_5.createImmutableLocator)(updLocator), { name: nestedPropName }, {});
+                                            displayProbeModal(nestedEnv, null, (0, UpdatableNodeLocator_6.createImmutableLocator)(updLocator), { name: nestedPropName }, {});
                                         }
                                     }
                                 },
@@ -12069,7 +12241,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                                     prevLocator.set(locator);
                                     const area = inlineWindowManager.getArea(nestId, locatorRoot, expansionArea, prevLocator, queryWindow.bumpIntoScreen);
                                     const nestedEnv = area.getNestedModalEnv(env);
-                                    (0, displayAttributeModal_5.default)(nestedEnv, null, (0, UpdatableNodeLocator_5.createImmutableLocator)(prevLocator));
+                                    (0, displayAttributeModal_6.default)(nestedEnv, null, (0, UpdatableNodeLocator_6.createImmutableLocator)(prevLocator));
                                     env.triggerWindowSave();
                                 },
                             }) : undefined,
@@ -12192,13 +12364,13 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
     };
     exports.default = displayProbeModal;
 });
-define("ui/popup/displayRagModal", ["require", "exports", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "ui/popup/displayAttributeModal", "ui/create/registerOnHover", "ui/create/showWindow", "ui/create/registerNodeSelector", "ui/popup/encodeRpcBodyLines", "ui/trimTypeName", "model/UpdatableNodeLocator"], function (require, exports, createLoadingSpinner_5, createModalTitle_7, displayAttributeModal_6, registerOnHover_5, showWindow_4, registerNodeSelector_4, encodeRpcBodyLines_4, trimTypeName_5, UpdatableNodeLocator_6) {
+define("ui/popup/displayRagModal", ["require", "exports", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "ui/popup/displayAttributeModal", "ui/create/registerOnHover", "ui/create/showWindow", "ui/create/registerNodeSelector", "ui/popup/encodeRpcBodyLines", "ui/trimTypeName", "model/UpdatableNodeLocator"], function (require, exports, createLoadingSpinner_5, createModalTitle_7, displayAttributeModal_7, registerOnHover_7, showWindow_4, registerNodeSelector_4, encodeRpcBodyLines_4, trimTypeName_5, UpdatableNodeLocator_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     createLoadingSpinner_5 = __importDefault(createLoadingSpinner_5);
     createModalTitle_7 = __importDefault(createModalTitle_7);
-    displayAttributeModal_6 = __importDefault(displayAttributeModal_6);
-    registerOnHover_5 = __importDefault(registerOnHover_5);
+    displayAttributeModal_7 = __importDefault(displayAttributeModal_7);
+    registerOnHover_7 = __importDefault(registerOnHover_7);
     showWindow_4 = __importDefault(showWindow_4);
     registerNodeSelector_4 = __importDefault(registerNodeSelector_4);
     encodeRpcBodyLines_4 = __importDefault(encodeRpcBodyLines_4);
@@ -12277,13 +12449,13 @@ define("ui/popup/displayRagModal", ["require", "exports", "ui/create/createLoadi
                             node.style.borderTop = '1px solid gray';
                         }
                         node.innerText = `${label !== null && label !== void 0 ? label : (0, trimTypeName_5.default)(type)}${start === 0 && end === 0 ? ` ⚠️<No position>` : ''}`;
-                        (0, registerOnHover_5.default)(node, on => env.updateSpanHighlight(on ? span : null));
+                        (0, registerOnHover_7.default)(node, on => env.updateSpanHighlight(on ? span : null));
                         node.onmousedown = (e) => { e.stopPropagation(); };
                         (0, registerNodeSelector_4.default)(node, () => locator);
                         node.onclick = () => {
                             cleanup();
                             env.updateSpanHighlight(null);
-                            (0, displayAttributeModal_6.default)(env, popup.getPos(), (0, UpdatableNodeLocator_6.createMutableLocator)(locator));
+                            (0, displayAttributeModal_7.default)(env, popup.getPos(), (0, UpdatableNodeLocator_7.createMutableLocator)(locator));
                         };
                         rowsContainer.appendChild(node);
                     });
@@ -13068,7 +13240,7 @@ define("model/runBgProbe", ["require", "exports", "settings"], function (require
     };
     exports.default = runInvisibleProbe;
 });
-define("ui/popup/displayTestDiffModal", ["require", "exports", "model/test/rpcBodyToAssertionLine", "model/UpdatableNodeLocator", "settings", "ui/create/createInlineWindowManager", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "ui/create/showWindow", "ui/renderProbeModalTitleLeft", "ui/UIElements", "ui/popup/displayHelp", "ui/popup/displayProbeModal", "ui/popup/encodeRpcBodyLines"], function (require, exports, rpcBodyToAssertionLine_2, UpdatableNodeLocator_7, settings_7, createInlineWindowManager_2, createLoadingSpinner_6, createModalTitle_10, showWindow_7, renderProbeModalTitleLeft_2, UIElements_2, displayHelp_4, displayProbeModal_5, encodeRpcBodyLines_5) {
+define("ui/popup/displayTestDiffModal", ["require", "exports", "model/test/rpcBodyToAssertionLine", "model/UpdatableNodeLocator", "settings", "ui/create/createInlineWindowManager", "ui/create/createLoadingSpinner", "ui/create/createModalTitle", "ui/create/showWindow", "ui/renderProbeModalTitleLeft", "ui/UIElements", "ui/popup/displayHelp", "ui/popup/displayProbeModal", "ui/popup/encodeRpcBodyLines"], function (require, exports, rpcBodyToAssertionLine_2, UpdatableNodeLocator_8, settings_7, createInlineWindowManager_2, createLoadingSpinner_6, createModalTitle_10, showWindow_7, renderProbeModalTitleLeft_2, UIElements_2, displayHelp_4, displayProbeModal_5, encodeRpcBodyLines_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     settings_7 = __importDefault(settings_7);
@@ -13373,7 +13545,7 @@ define("ui/popup/displayTestDiffModal", ["require", "exports", "model/test/rpcBo
                                                         if (relatedNests.length === 0) {
                                                             return;
                                                         }
-                                                        const wrappedLocator = (0, UpdatableNodeLocator_7.createImmutableLocator)((0, UpdatableNodeLocator_7.createMutableLocator)(locator));
+                                                        const wrappedLocator = (0, UpdatableNodeLocator_8.createImmutableLocator)((0, UpdatableNodeLocator_8.createMutableLocator)(locator));
                                                         const area = lhsInlineWindowManager.getArea(path, locatorRoot, expansionArea, wrappedLocator, queryWindow.bumpIntoScreen);
                                                         // const env = area.getNestedModalEnv(modal)
                                                         relatedNests.forEach((nest, nestIdx) => {
@@ -13447,7 +13619,7 @@ define("ui/popup/displayTestDiffModal", ["require", "exports", "model/test/rpcBo
                                                 if (relatedNests.length === 0) {
                                                     return;
                                                 }
-                                                const wrappedLocator = (0, UpdatableNodeLocator_7.createImmutableLocator)((0, UpdatableNodeLocator_7.createMutableLocator)(locator));
+                                                const wrappedLocator = (0, UpdatableNodeLocator_8.createImmutableLocator)((0, UpdatableNodeLocator_8.createMutableLocator)(locator));
                                                 const area = rhsInlineWindowManager.getArea(path, locatorRoot, expansionArea, wrappedLocator, queryWindow.bumpIntoScreen);
                                                 // const env = area.getNestedModalEnv(modal)
                                                 relatedNests.forEach((nest, nestIdx) => {
@@ -13585,7 +13757,7 @@ define("ui/popup/displayTestDiffModal", ["require", "exports", "model/test/rpcBo
                                         //   //   }
                                         //   // })
                                         //   })
-                                        (0, displayProbeModal_5.default)(env, null, (0, UpdatableNodeLocator_7.createMutableLocator)(locator), property, nestedTestToProbeData({
+                                        (0, displayProbeModal_5.default)(env, null, (0, UpdatableNodeLocator_8.createMutableLocator)(locator), property, nestedTestToProbeData({
                                             path: [],
                                             expectedOutput: testCase.expectedOutput,
                                             nestedProperties: testCase.nestedProperties,
@@ -14238,7 +14410,7 @@ define("model/getEditorDefinitionPlace", ["require", "exports"], function (requi
     const getEditorDefinitionPlace = () => window;
     exports.default = getEditorDefinitionPlace;
 });
-define("ui/installASTEditor", ["require", "exports", "model/getEditorDefinitionPlace", "model/UpdatableNodeLocator", "settings", "ui/popup/displayAstModal", "ui/UIElements"], function (require, exports, getEditorDefinitionPlace_1, UpdatableNodeLocator_8, settings_8, displayAstModal_3, UIElements_3) {
+define("ui/installASTEditor", ["require", "exports", "model/getEditorDefinitionPlace", "model/UpdatableNodeLocator", "settings", "ui/popup/displayAstModal", "ui/UIElements"], function (require, exports, getEditorDefinitionPlace_1, UpdatableNodeLocator_9, settings_8, displayAstModal_3, UIElements_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     getEditorDefinitionPlace_1 = __importDefault(getEditorDefinitionPlace_1);
@@ -14299,7 +14471,7 @@ define("ui/installASTEditor", ["require", "exports", "model/getEditorDefinitionP
                                 refresh: render
                             };
                         },
-                    }, null, (0, UpdatableNodeLocator_8.createMutableLocator)({
+                    }, null, (0, UpdatableNodeLocator_9.createMutableLocator)({
                         result: { type: '<ROOT>', start: 0, end: 0, depth: 0 },
                         steps: []
                     }), 'downwards', {
@@ -14436,14 +14608,14 @@ define("model/teal", ["require", "exports"], function (require, exports) {
     };
     exports.tealInit = tealInit;
 });
-define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/runBgProbe", "model/cullingTaskSubmitterFactory", "ui/popup/displayAstModal", "model/test/TestManager", "ui/popup/displayTestSuiteListModal", "ui/popup/displayWorkerStatus", "ui/create/showWindow", "model/UpdatableNodeLocator", "hacks", "ui/create/createMinimizedProbeModal", "model/getEditorDefinitionPlace", "ui/installASTEditor", "ui/configureCheckboxWithHiddenCheckbox", "model/teal"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_6, displayRagModal_1, displayHelp_5, displayAttributeModal_7, settings_9, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_4, showVersionInfo_1, runBgProbe_1, cullingTaskSubmitterFactory_2, displayAstModal_4, TestManager_1, displayTestSuiteListModal_1, displayWorkerStatus_1, showWindow_11, UpdatableNodeLocator_9, hacks_5, createMinimizedProbeModal_2, getEditorDefinitionPlace_2, installASTEditor_1, configureCheckboxWithHiddenCheckbox_1, teal_1) {
+define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/displayProbeModal", "ui/popup/displayRagModal", "ui/popup/displayHelp", "ui/popup/displayAttributeModal", "settings", "model/StatisticsCollectorImpl", "ui/popup/displayStatistics", "ui/popup/displayMainArgsOverrideModal", "model/syntaxHighlighting", "createWebsocketHandler", "ui/configureCheckboxWithHiddenButton", "ui/UIElements", "ui/showVersionInfo", "model/runBgProbe", "model/cullingTaskSubmitterFactory", "ui/popup/displayAstModal", "model/test/TestManager", "ui/popup/displayTestSuiteListModal", "ui/popup/displayWorkerStatus", "ui/create/showWindow", "model/UpdatableNodeLocator", "hacks", "ui/create/createMinimizedProbeModal", "model/getEditorDefinitionPlace", "ui/installASTEditor", "ui/configureCheckboxWithHiddenCheckbox", "model/teal"], function (require, exports, addConnectionCloseNotice_1, displayProbeModal_6, displayRagModal_1, displayHelp_5, displayAttributeModal_8, settings_9, StatisticsCollectorImpl_1, displayStatistics_1, displayMainArgsOverrideModal_1, syntaxHighlighting_2, createWebsocketHandler_1, configureCheckboxWithHiddenButton_1, UIElements_4, showVersionInfo_1, runBgProbe_1, cullingTaskSubmitterFactory_2, displayAstModal_4, TestManager_1, displayTestSuiteListModal_1, displayWorkerStatus_1, showWindow_11, UpdatableNodeLocator_10, hacks_5, createMinimizedProbeModal_2, getEditorDefinitionPlace_2, installASTEditor_1, configureCheckboxWithHiddenCheckbox_1, teal_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     addConnectionCloseNotice_1 = __importDefault(addConnectionCloseNotice_1);
     displayProbeModal_6 = __importDefault(displayProbeModal_6);
     displayRagModal_1 = __importDefault(displayRagModal_1);
     displayHelp_5 = __importDefault(displayHelp_5);
-    displayAttributeModal_7 = __importDefault(displayAttributeModal_7);
+    displayAttributeModal_8 = __importDefault(displayAttributeModal_8);
     settings_9 = __importDefault(settings_9);
     StatisticsCollectorImpl_1 = __importDefault(StatisticsCollectorImpl_1);
     displayStatistics_1 = __importDefault(displayStatistics_1);
@@ -14547,6 +14719,9 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
             const initHandler = (info) => {
                 const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, defaultSettings, overrideSettings } = info;
                 console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
+                console.log('bfile', backingFile);
+                console.log('settings', defaultSettings);
+                console.log('override', overrideSettings);
                 rootElem.style.display = "grid";
                 settings_9.default.setDefaults(defaultSettings || {}, overrideSettings || {});
                 settings_9.default.getDisableUI().forEach((s) => uiElements.disable(s));
@@ -14949,11 +15124,11 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                             switch (state.data.type) {
                                 case 'probe': {
                                     const data = state.data;
-                                    (0, displayProbeModal_6.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_9.createMutableLocator)(data.locator), data.property, data.nested, { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight }, state.isDefault);
+                                    (0, displayProbeModal_6.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_10.createMutableLocator)(data.locator), data.property, data.nested, { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight }, state.isDefault);
                                     break;
                                 }
                                 case 'ast': {
-                                    (0, displayAstModal_4.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_9.createMutableLocator)(state.data.locator), state.data.direction, {
+                                    (0, displayAstModal_4.default)(modalEnv, state.modalPos, (0, UpdatableNodeLocator_10.createMutableLocator)(state.data.locator), state.data.direction, {
                                         initialTransform: state.data.transform,
                                     });
                                     break;
@@ -14976,7 +15151,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                 window.RagQuery = (line, col, autoSelectRoot) => {
                     if (autoSelectRoot) {
                         const node = { type: '<ROOT>', start: (line << 12) + col - 1, end: (line << 12) + col + 1, depth: 0 };
-                        (0, displayAttributeModal_7.default)(modalEnv, null, (0, UpdatableNodeLocator_9.createMutableLocator)({ result: node, steps: [] }));
+                        (0, displayAttributeModal_8.default)(modalEnv, null, (0, UpdatableNodeLocator_10.createMutableLocator)({ result: node, steps: [] }));
                     }
                     else {
                         (0, displayRagModal_1.default)(modalEnv, line, col);
