@@ -49,8 +49,8 @@ public class SessionLogger {
 	}
 
 	private static File getLoggingDir() {
-		final String dirProp = System.getProperty("cpr.session_logger_dir");
-		if (dirProp == null) {
+		final String dirProp = System.getProperty("cpr.session_logger_dir", "logs");
+		if (dirProp == null || dirProp.equals("")) {
 			return null;
 		}
 		final File dir = new File(dirProp);
