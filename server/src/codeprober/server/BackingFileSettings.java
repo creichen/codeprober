@@ -21,13 +21,9 @@ public class BackingFileSettings {
 		}
 	}
 
-
-	public static File getRealFileToBeUsedInRequests() {
+	public static File getRealFileToRead() {
 		final String path = System.getProperty("cpr.backing_file");
 		if (path == null) {
-			return null;
-		}
-		if (BackingFileSettings.isReadOnly()) {
 			return null;
 		}
 		final File file = new File(path).getAbsoluteFile();
@@ -39,8 +35,16 @@ public class BackingFileSettings {
 		return file;
 	}
 
+	public static File getRealFileToWrite() {
+		File file = BackingFileSettings.getRealFileToRead();
+		if (BackingFileSettings.isReadOnly()) {
+			return null;
+		}
+		return file;
+	}
+
 	public static String readBackingFileContents() {
-		final File backingFile = getRealFileToBeUsedInRequests();
+		final File backingFile = getRealFileToRead();
 		if (backingFile == null || !backingFile.exists()) {
 			System.out.println("No backing file - cannot get backing file contents");
 			return null;
@@ -60,7 +64,7 @@ public class BackingFileSettings {
 		if (BackingFileSettings.isReadOnly()) {
 			return;
 		}
-		final File backingFile = getRealFileToBeUsedInRequests();
+		final File backingFile = getRealFileToWrite();
 		if (backingFile == null) {
 			System.out.println("No backing file configured, ignoring backing file write");
 			return;
@@ -88,7 +92,7 @@ public class BackingFileSettings {
 	}
 
 	public static void monitorBackingFileChanges(final Runnable callback) {
-		final File backingFile = getRealFileToBeUsedInRequests();
+		final File backingFile = getRealFileToRead();
 		if (backingFile == null) {
 			System.out.println("No backing file configured, not going to monitor it for changes");
 			return;

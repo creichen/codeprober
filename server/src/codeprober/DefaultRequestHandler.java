@@ -157,7 +157,7 @@ public class DefaultRequestHandler implements JsonRequestHandler {
 			if (existing != null) {
 				return existing;
 			}
-			final File backingFile = BackingFileSettings.getRealFileToBeUsedInRequests();
+			final File backingFile = BackingFileSettings.getRealFileToWrite();
 			if (backingFile != null) {
 				try {
 					BackingFileSettings.write(inputText);

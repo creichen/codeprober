@@ -75,7 +75,7 @@ public class CodeProber {
 		flog(Arrays.toString(mainArgs));
 
 		final ServerToClientMessagePusher msgPusher = new ServerToClientMessagePusher();
-		final File backingFile = BackingFileSettings.getRealFileToBeUsedInRequests();
+		final File backingFile = BackingFileSettings.getRealFileToRead();
 		if (backingFile != null) {
 			if (parsedArgs.concurrencyMode != ConcurrencyMode.DISABLED) {
 				System.err

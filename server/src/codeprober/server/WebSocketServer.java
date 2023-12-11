@@ -122,7 +122,7 @@ public class WebSocketServer {
 		final boolean disableVersionCheckerByDefault = "true"
 				.equals(System.getenv("DISABLE_VERISON_CHECKER_BY_DEFAULT"));
 
-		final File backingFile = BackingFileSettings.getRealFileToBeUsedInRequests();
+		final File backingFile = BackingFileSettings.getRealFileToRead();
 		String backingFileContents = null;
 		if (backingFile != null) {
 			if (!backingFile.exists()) {
