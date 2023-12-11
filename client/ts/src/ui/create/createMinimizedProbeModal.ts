@@ -97,10 +97,8 @@ const createMinimizedProbeModal = (
         const newErrors: Diagnostic[] = [];
 	let local_errors = resp.errors ?? [];
 
-	console.log("minimized: local errors: ", (resp.errors ?? []));
 	for (const edgeDiag of (resp.edgeDiagnostics ?? [])) {
 	  const edge = new Edge(edgeDiag);
-	  console.log("edgediag: ", edge);
 	  local_errors.push(edge.diagnostic);
 	}
         newErrors.push(...local_errors);

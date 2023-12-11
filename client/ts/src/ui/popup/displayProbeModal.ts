@@ -405,7 +405,6 @@ const displayProbeModal = (
             let shouldRefreshMarkers = localDiagnostics.length > 0;
             localDiagnostics.length = 0;
 
-	    console.log("displayModal: local errors: ", (parsed.errors ?? []));
 	    let local_errors = parsed.errors ?? [];
 	    let edge_table = null;
 	    const nodeEltBuilder = new NodeLocatorElementBuilder(env);
@@ -414,7 +413,6 @@ const displayProbeModal = (
 		edge_table = Edge.createEdgeTable(nodeEltBuilder);
 	      }
 	      const edge = new Edge(edgeDiag);
-	      console.log("edgediag: ", edge);
 	      local_errors.push(edge.diagnostic);
 	      edge.appendToTable(edge_table);
 	    }

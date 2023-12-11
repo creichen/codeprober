@@ -133,11 +133,11 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
         }
         disable(name) {
             this._disabled[name] = true;
-            console.log('Disabling:', name);
+            //console.log('Disabling:', name)
             if (name in this._registry) {
                 const elt = this._registry[name].parentElement;
                 if (elt) {
-                    console.log(' -> disabling:', elt);
+                    //console.log(' -> disabling:', elt)
                     elt.style.display = 'none';
                 }
             }
@@ -147,7 +147,7 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
             if (name in this._registry) {
                 const elt = this._registry[name].parentElement;
                 if (elt) {
-                    console.log(' -> enabling:', elt);
+                    //console.log(' -> enabling:', elt)
                     elt.style.display = 'block';
                 }
             }
@@ -11560,7 +11560,7 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
             }
             loading = true;
             (async () => {
-                var _a, _b, _c;
+                var _a, _b;
                 const src = env.createParsingRequestData();
                 const rootEvalProp = (0, evaluateProperty_1.default)(env, {
                     captureStdout: false,
@@ -11584,10 +11584,8 @@ define("ui/create/createMinimizedProbeModal", ["require", "exports", "model/adju
                 }
                 const newErrors = [];
                 let local_errors = (_a = resp.errors) !== null && _a !== void 0 ? _a : [];
-                console.log("minimized: local errors: ", ((_b = resp.errors) !== null && _b !== void 0 ? _b : []));
-                for (const edgeDiag of ((_c = resp.edgeDiagnostics) !== null && _c !== void 0 ? _c : [])) {
+                for (const edgeDiag of ((_b = resp.edgeDiagnostics) !== null && _b !== void 0 ? _b : [])) {
                     const edge = new edgeDiagnostic_1.default(edgeDiag);
-                    console.log("edgediag: ", edge);
                     local_errors.push(edge.diagnostic);
                 }
                 newErrors.push(...local_errors);
@@ -12090,7 +12088,7 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                 };
                 doFetch()
                     .then((parsed) => {
-                    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+                    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
                     loading = false;
                     if (parsed === 'stopped') {
                         refreshOnDone = false;
@@ -12134,16 +12132,14 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                             root.removeChild(root.firstChild);
                         let shouldRefreshMarkers = localDiagnostics.length > 0;
                         localDiagnostics.length = 0;
-                        console.log("displayModal: local errors: ", ((_a = parsed.errors) !== null && _a !== void 0 ? _a : []));
-                        let local_errors = (_b = parsed.errors) !== null && _b !== void 0 ? _b : [];
+                        let local_errors = (_a = parsed.errors) !== null && _a !== void 0 ? _a : [];
                         let edge_table = null;
                         const nodeEltBuilder = new NodeLocatorElementBuilder_2.default(env);
-                        for (const edgeDiag of ((_c = parsed.edgeDiagnostics) !== null && _c !== void 0 ? _c : [])) {
+                        for (const edgeDiag of ((_b = parsed.edgeDiagnostics) !== null && _b !== void 0 ? _b : [])) {
                             if (edge_table == null) {
                                 edge_table = edgeDiagnostic_2.default.createEdgeTable(nodeEltBuilder);
                             }
                             const edge = new edgeDiagnostic_2.default(edgeDiag);
-                            console.log("edgediag: ", edge);
                             local_errors.push(edge.diagnostic);
                             edge.appendToTable(edge_table);
                         }
@@ -12154,9 +12150,9 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                         //   localErrors.push({ severity, errStart, errEnd, msg });
                         // })
                         const updatedArgs = parsed.args;
-                        if (updatedArgs && updatedArgs.length === ((_d = property.args) === null || _d === void 0 ? void 0 : _d.length)) {
+                        if (updatedArgs && updatedArgs.length === ((_c = property.args) === null || _c === void 0 ? void 0 : _c.length)) {
                             shouldRefreshMarkers = true;
-                            (_e = property.args) === null || _e === void 0 ? void 0 : _e.forEach((arg, argIdx) => {
+                            (_d = property.args) === null || _d === void 0 ? void 0 : _d.forEach((arg, argIdx) => {
                                 arg.type = updatedArgs[argIdx].type;
                                 // arg.detail = updatedArgs[argIdx].detail;
                                 arg.value = updatedArgs[argIdx].value;
@@ -12183,10 +12179,10 @@ define("ui/popup/displayProbeModal", ["require", "exports", "ui/create/createLoa
                             const message = document.createElement('div');
                             message.style.padding = '0.25rem';
                             let tail = '';
-                            if (((_g = (_f = property.args) === null || _f === void 0 ? void 0 : _f.length) !== null && _g !== void 0 ? _g : 0) >= 2) {
-                                tail = ` that match the predicate${`${(_j = (_h = property.args) === null || _h === void 0 ? void 0 : _h[1]) === null || _j === void 0 ? void 0 : _j.value}`.includes(',') ? 's' : ''}`;
+                            if (((_f = (_e = property.args) === null || _e === void 0 ? void 0 : _e.length) !== null && _f !== void 0 ? _f : 0) >= 2) {
+                                tail = ` that match the predicate${`${(_h = (_g = property.args) === null || _g === void 0 ? void 0 : _g[1]) === null || _h === void 0 ? void 0 : _h.value}`.includes(',') ? 's' : ''}`;
                             }
-                            message.innerText = `Found no nodes implementing '${(_l = (_k = property.args) === null || _k === void 0 ? void 0 : _k[0]) === null || _l === void 0 ? void 0 : _l.value}'${tail}`;
+                            message.innerText = `Found no nodes implementing '${(_k = (_j = property.args) === null || _j === void 0 ? void 0 : _j[0]) === null || _k === void 0 ? void 0 : _k.value}'${tail}`;
                             message.style.fontStyle = 'italic';
                             root.appendChild(message);
                         }
@@ -13181,10 +13177,11 @@ define("ui/showVersionInfo", ["require", "exports", "model/repositoryUrl"], func
     };
     exports.default = showVersionInfo;
 });
-define("model/runBgProbe", ["require", "exports", "settings"], function (require, exports, settings_6) {
+define("model/runBgProbe", ["require", "exports", "settings", "model/edgeDiagnostic"], function (require, exports, settings_6, edgeDiagnostic_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     settings_6 = __importDefault(settings_6);
+    edgeDiagnostic_3 = __importDefault(edgeDiagnostic_3);
     const runInvisibleProbe = (env, locator, property) => {
         const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
         const localErrors = [];
@@ -13209,7 +13206,7 @@ define("model/runBgProbe", ["require", "exports", "settings"], function (require
                 // No need to capture tracing information in background probes
             })
                 .then((rawResp) => {
-                var _a;
+                var _a, _b;
                 if (rawResp.response.type === 'job') {
                     throw new Error(`Got concurrent response for non-concurrent request`);
                 }
@@ -13217,6 +13214,9 @@ define("model/runBgProbe", ["require", "exports", "settings"], function (require
                 const prevLen = localErrors.length;
                 localErrors.length = 0;
                 localErrors.push(...((_a = res.errors) !== null && _a !== void 0 ? _a : []));
+                for (const edgeDiag of ((_b = res.edgeDiagnostics) !== null && _b !== void 0 ? _b : [])) {
+                    localErrors.push((new edgeDiagnostic_3.default(edgeDiag)).diagnostic);
+                }
                 if (prevLen !== 0 || localErrors.length !== 0) {
                     env.updateMarkers();
                 }

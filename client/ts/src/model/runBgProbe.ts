@@ -1,6 +1,7 @@
 import { Property, Diagnostic, EvaluatePropertyReq, EvaluatePropertyRes, NodeLocator } from '../protocol';
 import settings from '../settings';
 import ModalEnv from './ModalEnv';
+import Edge from './edgeDiagnostic';
 
 const runInvisibleProbe = (env: ModalEnv, locator: NodeLocator, property: Property) => {
   const id = `invisible-probe-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
@@ -35,6 +36,9 @@ const runInvisibleProbe = (env: ModalEnv, locator: NodeLocator, property: Proper
         const prevLen = localErrors.length;
         localErrors.length = 0;
         localErrors.push(...(res.errors ?? []));
+	for (const edgeDiag of (res.edgeDiagnostics ?? [])) {
+	  localErrors.push((new Edge(edgeDiag)).diagnostic);
+	}
         if (prevLen !== 0 || localErrors.length !== 0) {
           env.updateMarkers();
         }

@@ -5,11 +5,11 @@ class UIElements {
 
   disable(name: string): void {
     this._disabled[name] = true;
-    console.log('Disabling:', name)
+    //console.log('Disabling:', name)
     if (name in this._registry) {
       const elt = this._registry[name].parentElement;
       if (elt) {
-	console.log(' -> disabling:', elt)
+	//console.log(' -> disabling:', elt)
 	elt.style.display = 'none';
       }
     }
@@ -20,7 +20,7 @@ class UIElements {
     if (name in this._registry) {
       const elt = this._registry[name].parentElement;
       if (elt) {
-	console.log(' -> enabling:', elt)
+	//console.log(' -> enabling:', elt)
 	elt.style.display = 'block';
       }
     }
