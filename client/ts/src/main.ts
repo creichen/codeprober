@@ -132,9 +132,6 @@ const doMain = (wsPort: number | 'ws-over-http' | { type: 'codespaces-compat', '
     const initHandler = (info: InitInfo) => {
       const { version: { clean, hash, buildTimeSeconds }, changeBufferTime, workerProcessCount, disableVersionCheckerByDefault, backingFile, defaultSettings, overrideSettings } = info;
       console.log('onInit, buffer:', changeBufferTime, 'workerProcessCount:', workerProcessCount);
-      console.log('bfile', backingFile);
-      console.log('settings', defaultSettings);
-      console.log('override', overrideSettings);
       rootElem.style.display = "grid";
       settings.setDefaults(defaultSettings || {},
 			   overrideSettings || {});
