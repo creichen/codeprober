@@ -11468,7 +11468,7 @@ define("model/edgeDiagnostic", ["require", "exports", "ui/create/registerOnHover
             const m = document.createElement('TD');
             const arrow = document.createElement('SPAN');
             m.append(arrow);
-            arrow.style.fontFamily = 'monospace';
+            arrow.className = 'edge-diagnostic-arrow';
             arrow.style.color = this.styleNoAlpha;
             arrow.append(document.createTextNode(this.data.edgeInfo));
             const r = document.createElement('TD');

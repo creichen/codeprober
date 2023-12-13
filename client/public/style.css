@@ -917,3 +917,11 @@ body[data-theme-light="true"] .minimizedProbeWindowOpener:hover:not(:active) {
     background: #f8f;
     color: black;
 }
+
+.edge-diagnostic-arrow {
+    /* font-family: monospace; */
+    font-weight: bolder;
+    text-stroke: 1px rgba(0,0,0, 0.25);
+    -webkit-text-stroke: 1px rgba(0,0,0, 0.25);
+}
+
