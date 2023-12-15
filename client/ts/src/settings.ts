@@ -158,6 +158,9 @@ const settings = {
   shouldHideSettingsPanel: () => settings.get()?.hideSettingsPanel ?? false,
   setShouldHideSettingsPanel: (shouldHide: boolean) => settings.set({ ...settings.getWithoutDefaults(), hideSettingsPanel: shouldHide }),
 
+  shouldGroupPropertiesByAspect: () => settings.get()?.groupPropertiesByAspect ?? false,
+  setShouldGroupPropertiesByAspect: (shouldHide: boolean) => settings.set({ ...settings.get(), groupPropertiesByAspect: shouldHide }),
+
   shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
 
   isReadOnlyMode: () => settings.get().readOnly ?? false,

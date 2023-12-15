@@ -22,58 +22,62 @@ public class InitSettings implements codeprober.util.JsonUtil.ToJsonable {
   public final Boolean changeTracking;
   public final String defaultProbes;
   public final String disableUI;
+  public final Boolean groupPropertiesByAspect;
+  public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly, Boolean changeTracking, String defaultProbes, String disableUI) {
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, changeTracking, defaultProbes, disableUI, null);
+  }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly, Boolean changeTracking, String defaultProbes) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, changeTracking, defaultProbes, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, changeTracking, defaultProbes, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly, Boolean changeTracking) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, changeTracking, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, changeTracking, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, readOnly, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, hideSettingsPanel, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, locationStyle, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, customFileSuffix, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, syntaxHighlighting, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, astCacheStrategy, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, positionRecoveryStrategy, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, showAllProperties, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, duplicateProbeOnAttrClick, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, autoflushTraces, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces) {
-    this(editorContents, lightTheme, captureStdio, captureTraces, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, captureTraces, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio) {
-    this(editorContents, lightTheme, captureStdio, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, captureStdio, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents, Boolean lightTheme) {
-    this(editorContents, lightTheme, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, lightTheme, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings(String editorContents) {
-    this(editorContents, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(editorContents, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
   public InitSettings() {
-    this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
-  public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly, Boolean changeTracking, String defaultProbes, String disableUI) {
+  public InitSettings(String editorContents, Boolean lightTheme, Boolean captureStdio, Boolean captureTraces, Boolean autoflushTraces, Boolean duplicateProbeOnAttrClick, Boolean showAllProperties, String positionRecoveryStrategy, String astCacheStrategy, String syntaxHighlighting, String customFileSuffix, String locationStyle, Boolean hideSettingsPanel, Boolean readOnly, Boolean changeTracking, String defaultProbes, String disableUI, Boolean groupPropertiesByAspect) {
     this.editorContents = editorContents;
     this.lightTheme = lightTheme;
     this.captureStdio = captureStdio;
@@ -91,6 +95,7 @@ public class InitSettings implements codeprober.util.JsonUtil.ToJsonable {
     this.changeTracking = changeTracking;
     this.defaultProbes = defaultProbes;
     this.disableUI = disableUI;
+    this.groupPropertiesByAspect = groupPropertiesByAspect;
   }
 
   public static InitSettings fromJSON(JSONObject obj) {
@@ -112,6 +117,7 @@ public class InitSettings implements codeprober.util.JsonUtil.ToJsonable {
     , obj.has("changeTracking") ? (obj.getBoolean("changeTracking")) : null
     , obj.has("defaultProbes") ? (obj.getString("defaultProbes")) : null
     , obj.has("disableUI") ? (obj.getString("disableUI")) : null
+    , obj.has("groupPropertiesByAspect") ? (obj.getBoolean("groupPropertiesByAspect")) : null
     );
   }
   public JSONObject toJSON() {
@@ -133,6 +139,7 @@ public class InitSettings implements codeprober.util.JsonUtil.ToJsonable {
     if (changeTracking != null) _ret.put("changeTracking", changeTracking);
     if (defaultProbes != null) _ret.put("defaultProbes", defaultProbes);
     if (disableUI != null) _ret.put("disableUI", disableUI);
+    if (groupPropertiesByAspect != null) _ret.put("groupPropertiesByAspect", groupPropertiesByAspect);
     return _ret;
   }
 }

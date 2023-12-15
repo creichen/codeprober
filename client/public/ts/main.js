@@ -188,6 +188,8 @@ define("ui/UIElements", ["require", "exports"], function (require, exports) {
         get showAllPropertiesHelpButton() { return this.getElt('show-all-properties-help'); }
         get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr'); }
         get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help'); }
+        get groupPropertiesByAspectCheckbox() { return this.getElt('control-group-properties-by-aspect'); }
+        get groupPropertiesByAspectButton() { return this.getElt('group-properties-by-aspect-help'); }
         get captureStdoutCheckbox() { return this.getElt('control-capture-stdout'); }
         get captureStdoutHelpButton() { return this.getElt('capture-stdout-help'); }
         get captureTracesCheckbox() { return this.getElt('control-capture-traces'); }
@@ -386,6 +388,8 @@ define("settings", ["require", "exports", "model/syntaxHighlighting", "ui/UIElem
         setLocationStyle: (locationStyle) => settings.set({ ...settings.getWithoutDefaults(), locationStyle }),
         shouldHideSettingsPanel: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.hideSettingsPanel) !== null && _b !== void 0 ? _b : false; },
         setShouldHideSettingsPanel: (shouldHide) => settings.set({ ...settings.getWithoutDefaults(), hideSettingsPanel: shouldHide }),
+        shouldGroupPropertiesByAspect: () => { var _a, _b; return (_b = (_a = settings.get()) === null || _a === void 0 ? void 0 : _a.groupPropertiesByAspect) !== null && _b !== void 0 ? _b : false; },
+        setShouldGroupPropertiesByAspect: (shouldHide) => settings.set({ ...settings.get(), groupPropertiesByAspect: shouldHide }),
         shouldEnableTesting: () => window.location.search.includes('enableTesting=true'),
         isReadOnlyMode: () => { var _a; return (_a = settings.get().readOnly) !== null && _a !== void 0 ? _a : false; },
         setReadOnlyMode: (readOnly) => settings.set({ ...settings.getWithoutDefaults(), readOnly }),
@@ -1182,6 +1186,7 @@ define("ui/popup/displayHelp", ["require", "exports", "model/repositoryUrl", "ui
         'customize-file-suffix': 'Temp file suffix',
         'property-list-usage': 'Property list help',
         'show-all-properties': 'Show all properties',
+        'group-properties-by-aspect': 'Group properties',
         'duplicate-probe-on-attr': 'Duplicate probe',
         'capture-stdout': 'Capture stdout',
         'capture-traces': 'Capture traces',
@@ -1588,6 +1593,12 @@ aspect MagicOutputDemo {
                 `There is potentially a very large amount of functions shown is you check this box, which can be annoying.`,
                 `In addition, some of the non-standard functions might cause mutations (like 'setChild(int, ..)'), which can cause undefined behavior when used in this tool.`,
                 `In general, we recommend you keep this box unchecked, and only occasionally re-check it.`,
+            ];
+            case 'group-properties-by-aspect': return [
+                `Check this to group and filter property names by their containing aspect file.`,
+                `This affects the dialog where you select a property, i.e after you've selected an AST node.`,
+                ``,
+                `This is only applicable for JastAdd tools.`
             ];
             case 'duplicate-probe-on-attr': return [
                 `When you have created a probe, you can click the property name to create a new probe on the same node, but with a different property.`,
@@ -3754,7 +3765,23 @@ define("ui/popup/displayAttributeModal", ["require", "exports", "ui/create/creat
                     root.appendChild((0, encodeRpcBodyLines_2.default)(env, state.body));
                 }
                 else {
-                    const attrs = state.attrs;
+                    let attrs = state.attrs;
+                    const groupByAspect = settings_3.default.shouldGroupPropertiesByAspect();
+                    if (groupByAspect && attrs) {
+                        attrs = [...attrs].sort((a, b) => {
+                            if (!!a.astChildName != !!b.astChildName) {
+                                return a.astChildName ? -1 : 1;
+                            }
+                            if (!!a.aspect != !!b.aspect) {
+                                return a.aspect ? -1 : 1;
+                            }
+                            if (a.aspect) {
+                                const cmp = a.aspect.localeCompare(b.aspect || '', 'en-GB');
+                                return cmp || (0, formatAttr_2.default)(a).localeCompare((0, formatAttr_2.default)(b), 'en-GB');
+                            }
+                            return 0;
+                        });
+                    }
                     let resortList = () => { };
                     let submit = () => { };
                     const nodesList = [];
@@ -3813,11 +3840,19 @@ define("ui/popup/displayAttributeModal", ["require", "exports", "ui/create/creat
                             if (!reg) {
                                 return !!attr.astChildName;
                             }
-                            // const formatted =
-                            return reg.test((0, formatAttr_2.default)(attr)) || (attr.astChildName && reg.test(attr.astChildName));
+                            const combinedName = `${(groupByAspect ? (attr.aspect || 'No Aspect') : '')} ${attr.astChildName || ''} ${(0, formatAttr_2.default)(attr)}`;
+                            return reg.test(combinedName);
                         };
-                        const matches = attrs.filter(match);
-                        const misses = attrs.filter(a => !match(a));
+                        const matches = [];
+                        const misses = [];
+                        attrs.forEach(prop => {
+                            if (match(prop)) {
+                                matches.push(prop);
+                            }
+                            else {
+                                misses.push(prop);
+                            }
+                        });
                         const showProbe = (attr) => {
                             cleanup();
                             if (!attr.args || attr.args.length === 0) {
@@ -3833,7 +3868,23 @@ define("ui/popup/displayAttributeModal", ["require", "exports", "ui/create/creat
                                 }
                             }
                         };
+                        const addAspectLabels = groupByAspect && attrs.some(attr => !!attr.aspect);
+                        let lastAspect = '';
                         const buildNode = (attr, borderTop, highlight) => {
+                            if (addAspectLabels) {
+                                const newAspect = attr.aspect || '';
+                                if (newAspect !== lastAspect) {
+                                    // console
+                                    const head = document.createElement('p');
+                                    head.style.marginBottom = '0';
+                                    head.style.marginTop = '0.5rem';
+                                    head.style.fontSize = '0.75rem';
+                                    head.classList.add('syntax-type');
+                                    head.innerText = newAspect || 'No Aspect';
+                                    sortedAttrs.appendChild(head);
+                                    lastAspect = newAspect;
+                                }
+                            }
                             const node = document.createElement('div');
                             const ourNodeIndex = nodesList.length;
                             nodesList.push(node);
@@ -3918,6 +3969,7 @@ define("ui/popup/displayAttributeModal", ["require", "exports", "ui/create/creat
                             sep.classList.add('search-list-separator');
                             sortedAttrs.appendChild(sep);
                         }
+                        lastAspect = '';
                         misses.forEach((attr, idx) => buildNode(attr, idx > 0, !matches.length && misses.length === 1));
                     };
                     resortList();
@@ -14892,6 +14944,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                 setupSimpleCheckbox(uiElements.captureTracesCheckbox, settings_9.default.shouldCaptureTraces(), cb => settings_9.default.setShouldCaptureTraces(cb));
                 setupSimpleCheckbox(uiElements.duplicateProbeCheckbox, settings_9.default.shouldDuplicateProbeOnAttrClick(), cb => settings_9.default.setShouldDuplicateProbeOnAttrClick(cb));
                 setupSimpleCheckbox(uiElements.showAllPropertiesCheckbox, settings_9.default.shouldShowAllProperties(), cb => settings_9.default.setShouldShowAllProperties(cb));
+                setupSimpleCheckbox(uiElements.groupPropertiesByAspectCheckbox, settings_9.default.shouldGroupPropertiesByAspect(), cb => settings_9.default.setShouldGroupPropertiesByAspect(cb));
                 const setupSimpleSelector = (input, initial, update) => {
                     input.value = initial;
                     input.oninput = () => { update(input.value); notifyLocalChangeListeners(); };
@@ -15093,6 +15146,7 @@ define("main", ["require", "exports", "ui/addConnectionCloseNotice", "ui/popup/d
                         case 'main-args-override': return common('main-args-override', uiElements.mainArgsOverrideHelpButton);
                         case 'customize-file-suffix': return common('customize-file-suffix', uiElements.customFileSuffixHelpButton);
                         case 'show-all-properties': return common('show-all-properties', uiElements.showAllPropertiesHelpButton);
+                        case 'group-properties-by-aspect': return common('group-properties-by-aspect', uiElements.groupPropertiesByAspectButton);
                         case 'duplicate-probe-on-attr': return common('duplicate-probe-on-attr', uiElements.duplicateProbeHelpButton);
                         case 'capture-stdout': return common('capture-stdout', uiElements.captureStdoutHelpButton);
                         case 'capture-traces': return common('capture-traces', uiElements.captureTracesHelpButton);
