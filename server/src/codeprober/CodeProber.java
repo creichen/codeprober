@@ -77,7 +77,9 @@ public class CodeProber {
 		final ServerToClientMessagePusher msgPusher = new ServerToClientMessagePusher();
 		final File backingFile = BackingFileSettings.getRealFileToRead();
 		if (backingFile != null) {
-			if (parsedArgs.concurrencyMode != ConcurrencyMode.DISABLED) {
+			if (parsedArgs.concurrencyMode != ConcurrencyMode.DISABLED
+			     && (parsedArgs.workerProcessCount > 1
+				 || BackingFileSettings.getRealFileToWrite() != null)) {
 				System.err
 						.println("Illegal mix of backing files and concurrency modes, you can only use one at a time.");
 				System.err.println(
