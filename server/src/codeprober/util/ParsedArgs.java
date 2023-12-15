@@ -83,6 +83,7 @@ public class ParsedArgs {
 			}
 		}
 		System.out.println("\nTo override user settings, use '--force-X' instead of '--X'.");
+		System.out.println("\n--default-probes takes a comma-separated list of the form <nodetype>:<attr>[:<visibility>], where <visibility> can be 'on' (default) or 'off'\n");
 	}
 
 	public static ParsedArgs parse(String[] args) {

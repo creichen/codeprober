@@ -6,6 +6,8 @@ import { WindowStateData, WindowStateDataProbe, WindowStateDataAst, NestedWindow
 const decodeDefaultProbes = (encoding: string) : WindowState[] => {
   return (encoding.split(',')).flatMap((s : string) => {
     const spec = decodeURI(s).split(':');
+    const show = spec && (spec.length <= 2
+                       || spec[2] !== 'off');
     if (spec && spec.length > 1) {
       const data : WindowStateDataProbe = {
 	type: 'probe',
@@ -21,7 +23,7 @@ const decodeDefaultProbes = (encoding: string) : WindowState[] => {
 	},
 	property: { name: spec[1] },
 	nested: {},
-	showDiagnostics: true,
+	showDiagnostics: show,
       };
       const min_data : WindowStateDataMinimized = {
 	type: 'minimized-probe',

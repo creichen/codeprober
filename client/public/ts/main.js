@@ -220,6 +220,8 @@ define("model/decodeDefaultProbes", ["require", "exports"], function (require, e
     const decodeDefaultProbes = (encoding) => {
         return (encoding.split(',')).flatMap((s) => {
             const spec = decodeURI(s).split(':');
+            const show = spec && (spec.length <= 2
+                || spec[2] !== 'off');
             if (spec && spec.length > 1) {
                 const data = {
                     type: 'probe',
@@ -235,7 +237,7 @@ define("model/decodeDefaultProbes", ["require", "exports"], function (require, e
                     },
                     property: { name: spec[1] },
                     nested: {},
-                    showDiagnostics: true,
+                    showDiagnostics: show,
                 };
                 const min_data = {
                     type: 'minimized-probe',
