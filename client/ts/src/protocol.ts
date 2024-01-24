@@ -119,6 +119,7 @@ interface InitSettings {
   changeTracking?: boolean;
   defaultProbes?: string;
   disableUI?: string;
+  groupPropertiesByAspect?: boolean;
 }
 interface ListNodesReq {
   type: "ListNodes";
@@ -207,6 +208,7 @@ interface Property {
   name: string;
   args?: PropertyArg[];
   astChildName?: string;
+  aspect?: string;
 }
 type PropertyArg = (
     { type: 'string'; value: string; }

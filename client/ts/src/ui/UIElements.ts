@@ -68,6 +68,9 @@ class UIElements {
   get duplicateProbeCheckbox() { return this.getElt('control-duplicate-probe-on-attr') as HTMLInputElement; }
   get duplicateProbeHelpButton() { return this.getElt('duplicate-probe-on-attr-help') as HTMLButtonElement; }
 
+  get groupPropertiesByAspectCheckbox() { return this.getElt('control-group-properties-by-aspect') as HTMLInputElement; }
+  get groupPropertiesByAspectButton() { return this.getElt('group-properties-by-aspect-help') as HTMLButtonElement; }
+
   get captureStdoutCheckbox() { return this.getElt('control-capture-stdout') as HTMLInputElement; }
   get captureStdoutHelpButton() { return this.getElt('capture-stdout-help') as HTMLButtonElement; }
 

@@ -21,4 +21,5 @@ public class InitSettings extends Streamable {
 	public final Object changeTracking = opt(Boolean.class);
 	public final Object defaultProbes = opt(String.class); // e.g. "ast.Program:globalErrors,*:localReport"
 	public final Object disableUI = opt(String.class); // e.g. "syntax-highlighting,location-style""
+	public final Object groupPropertiesByAspect = opt(Boolean.class);
 }
