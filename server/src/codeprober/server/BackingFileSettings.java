@@ -36,10 +36,10 @@ public class BackingFileSettings {
 	}
 
 	public static File getRealFileToWrite() {
-		File file = BackingFileSettings.getRealFileToRead();
 		if (BackingFileSettings.isReadOnly()) {
 			return null;
 		}
+		File file = BackingFileSettings.getRealFileToRead();
 		return file;
 	}
 
