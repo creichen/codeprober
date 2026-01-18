@@ -165,7 +165,7 @@ const settings = {
   },
   setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(), probeWindowStates }),
 
-  getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'java',
+  getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'teal',
   setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.get(), syntaxHighlighting }),
 
   getMainArgsOverride: () => settings.get().mainArgsOverride ?? null,
@@ -184,7 +184,7 @@ const settings = {
   getTextProbeStyle: () => settings.get().textProbeStyle ?? 'angle-brackets',
   setTextProbeStyle: (textProbeStyle: TextProbeStyle | null) => settings.set({ ...settings.get(), textProbeStyle }),
 
-  shouldHideSettingsPanel: () => settings.get()?.hideSettingsPanel ?? false,
+  shouldHideSettingsPanel: () => settings.get()?.hideSettingsPanel ?? true,
   setShouldHideSettingsPanel: (shouldHide: boolean) => settings.set({ ...settings.get(), hideSettingsPanel: shouldHide }),
 
   shouldGroupPropertiesByAspect: () => settings.get()?.groupPropertiesByAspect ?? true,
