@@ -284,12 +284,15 @@ const createFileListManager = (
       });
       children.forEach((child, childIdx) => {
         if (!childRowsByName[child.name]) {
+          const readOnly = child.type == 'file' && child.value.readOnly();
           childRowsByName[child.name] = fileList.appendChild(createRow(
             workspace,
             child.type === 'dir'
               ? { type: 'directory', value: child.value }
               : { type: 'file', value: child.value },
-            child.name, path ? `${path}/${child.name}` : child.name,
+            child.name,
+            readOnly,
+            path ? `${path}/${child.name}` : child.name,
             setActive,
             performedTypedRpc,
           ));
@@ -315,6 +318,7 @@ const createRow = (
   workspace: WorkspaceInstance,
   kind: RowKind,
   label: string,
+  readOnly: boolean,
   path: string,
   setActive: (path: string, contents: CachedFileEntry, readOnly: boolean) => void,
   performedTypedRpc: ModalEnv['performTypedRpc'],
@@ -330,6 +334,10 @@ const createRow = (
     row.classList.remove(`workspace-${classKind}`);
     classKind = newKind;
     row.classList.add(`workspace-${classKind}`);
+  }
+
+  if (readOnly) {
+    row.classList.add('readonly');
   }
 
   const headerLine = document.createElement('div');
@@ -743,7 +751,7 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       settings.setActiveWorkspacePath(path);
       testModalExtras.shouldIgnoreChangeCallbacks = false;
     }
-    workspaceList.appendChild(createRow(workspace, { type: 'unsaved' }, 'Temp file (browser only)', unsavedFileKey, setActiveFile, workspace.env.performTypedRpc));
+    workspaceList.appendChild(createRow(workspace, { type: 'unsaved' }, 'Temp file (browser only)', false, unsavedFileKey, setActiveFile, workspace.env.performTypedRpc));
 
     const rootFileList = workspaceList.appendChild(document.createElement('div'));
     rootFileList.style.display = 'flex';
