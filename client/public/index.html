@@ -89,7 +89,8 @@
 
 <body onload="initCodeProber()" data-theme-light="false">
   <div id="root" style="display: none;">
-    <span id="workspace-header" style="display: none;">
+    <span id="workspace-header">
+      <button class="dim-button" id="workspace-hider" title="Hide workspace">«</button>
       <span>Workspace</span>
       <div>
         <button class="dim-button" id="workspace-find-file">Find File</button>
@@ -97,7 +98,10 @@
       </div>
     </span>
     <span id="input-header">
-      <span>Input</span>
+      <span id="workspace-header-open">
+        <button class="dim-button" id="workspace-revealer" title="Show workspace">Ⓦ</button>
+      </span>
+      <span>Program Under Analysis</span>
       <div style="display: flex; flex-direction: row;">
         <div id="minimized-probe-area"></div>
         <button class="dim-button" id="show-tests">Tests</button>
@@ -112,7 +116,7 @@
         <button class="dim-button" id="settings-revealer" title="Reveal settings panel">⚙</button>
       </span>
     </span>
-    <div id="workspace-wrapper" style="display: none;">
+    <div id="workspace-wrapper">
       <!-- <div class="workspace-row workspace-file"><div class="workspace-row-header"><span class="clickHighlightOnHover">Testing</span><span>✏️</span></div></div> -->
     </div>
     <div id="input-wrapper" style="width: 100%;">

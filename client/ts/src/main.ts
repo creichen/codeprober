@@ -536,6 +536,13 @@ const doMain = (wsPort: number
         settings.setShouldHideSettingsPanel(false);
       };
 
+      uiElements.workspaceHider.onclick = () => {
+        document.body.classList.remove('workspace-visible');
+      };
+      uiElements.workspaceRevealer.onclick = () => {
+        document.body.classList.add('workspace-visible');
+      };
+
       const syntaxHighlightingSelector = uiElements.syntaxHighlightingSelector;
       syntaxHighlightingSelector.innerHTML = '';
       getAvailableLanguages().forEach(({ id, alias }) => {

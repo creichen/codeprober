@@ -696,8 +696,8 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       return null;
     }
     document.body.classList.add('workspace-visible');
-    uiElements.workspaceHeaderLabel.style.display = 'flex';
-    workspaceList.style.display = 'flex';
+    //uiElements.workspaceHeaderLabel.style.display = 'flex';
+    //workspaceList.style.display = 'flex';
 
     const setActiveStyling = (activePath: string) => {
       document.querySelectorAll('.workspace-row').forEach(elem => {
