@@ -215,6 +215,17 @@ body.workspace-visible #workspace-header       { display: flex }
 body.workspace-visible #workspace-wrapper      { display: flex }
 body.workspace-visible #workspace-header-open  { display: none }
 
+
+/* Mostly-useless and very-confusing config options disabled: */
+#config-control-customize-file-suffix      { display: none }
+#config-control-position-recovery-strategy { display: none }
+#config-ast-cache-strategy                 { display: none }
+#config-syntax-highlighting                { display: none }
+#config-location-style                     { display: none }
+#config-control-read-only-mode             { display: none }
+#config-control-should-override-main-args  { display: none }
+#config-textprobe-style                    { display: none }
+
 #workspace-header {
   display: flex;
   flex-direction: row;
