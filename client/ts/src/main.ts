@@ -399,7 +399,8 @@ const doMain = (wsPort: number
             }
           }
           tealInit(editorType);
-          const res = init(settings.getEditorContents() ?? `// Hello World!\n// Write some code in this field, then right click and select 'Create Probe' to get started\n\n`, onChange, settings.getSyntaxHighlighting());
+          const res = init(settings.getEditorContents() ?? `// Welcome to EDAP15!\n// Here, you can try your analysis on your own Teal code, then right-click to create a CodeProber probe.\n\n`,
+                           onChange, settings.getSyntaxHighlighting());
           setLocalState = res.setLocalState || setLocalState;
           getLocalState = res.getLocalState || getLocalState;
           updateSpanHighlight = res.updateSpanHighlight || updateSpanHighlight;
