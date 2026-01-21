@@ -31,10 +31,8 @@ public class AttrsInNode {
 		for (Method m : node.underlyingAstNode.getClass().getMethods()) { // getMethods() rather than
 																			// getDeclaredMethods() to only get public
 																			// methods
-			System.err.println("  - name is: '" + m.getName() + "'");
 			if (!includeAll && (!MethodKindDetector.looksLikeAUserAccessibleJastaddRelatedMethod(m)
 					    || blocklistFilter.contains(m.getName()))) {
-				System.err.println("  => blocked");
 				continue;
 			}
 			final List<PropertyArg> args = CreateType.fromParameters(info, m.getParameters());
