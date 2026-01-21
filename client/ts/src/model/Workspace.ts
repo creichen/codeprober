@@ -42,6 +42,7 @@ type CachedEntries<T> = { [path: string]: T };
 
 interface WorkspaceSettings {
   defaultFile?: string,
+  preOpened? : string[],
   defaultProbes?: string[],
 }
 
@@ -736,15 +737,31 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       } catch (e) {
         console.log('ill-formed workspace settings:', e, '\n"', settingsSpec.content, '"');
       }
+
+      // Process settings
+      if (workspace.wsSettings) {
+        // pre-opened directories
+        workspace.wsSettings.preOpened?.forEach( (path) => {
+          const parts = path.split('/');
+          parts.forEach((_segment, idx) => {
+            const subPath = parts.slice(0, idx + 1).join('/');
+            workspace.preOpenedFiles[subPath] = true;
+            workspace.visibleRows[subPath]?.clickIfClosedDir();
+          });
+        });
+      }
     }
   }
 
   {
-    const fromSettings = settings.getActiveWorkspacePath();
-    if (fromSettings !== null && fromSettings !== unsavedFileKey) {
-      if ((await treeManager.lookup(fromSettings))?.type === 'file') {
-        activeFile = fromSettings;
-        const parts = fromSettings.split('/');
+    let initialFile = settings.getActiveWorkspacePath();
+    if (initialFile === null && typeof workspace.wsSettings.defaultFile === 'string') {
+      initialFile = workspace.wsSettings.defaultFile;
+    }
+    if (initialFile !== null && initialFile !== unsavedFileKey) {
+      if ((await treeManager.lookup(initialFile))?.type === 'file') {
+        activeFile = initialFile;
+        const parts = initialFile.split('/');
         for (let i = 0; i < parts.length - 1; ++i) {
           workspace.preOpenedFiles[parts.slice(0, i + 1).join('/')] = true;
         }
