@@ -1,7 +1,7 @@
 import { assertUnreachable } from './hacks';
 import { getAppropriateFileSuffix } from "./model/syntaxHighlighting";
 import { TextProbeStyle } from './model/TextProbeManager';
-import WindowState from './model/WindowState';
+import { WindowState, isBespokeProbe } from './model/WindowState';
 import { TextSpanStyle } from "./ui/create/createTextSpanIndicator";
 import UIElements from './ui/UIElements';
 
@@ -157,13 +157,14 @@ const settings = {
             locator: (item as any).locator, // as any to access previously typed data
             property: (item as any).property, // as any to access previously typed data
             nested: {},
+            isDefault: false,
           }
         };
       }
       return item;
     });
   },
-  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(), probeWindowStates }),
+  setProbeWindowStates: (probeWindowStates: WindowState[]) => settings.set({ ...settings.get(), probeWindowStates: probeWindowStates.filter(isBespokeProbe) }),
 
   getSyntaxHighlighting: () => settings.get().syntaxHighlighting ?? 'teal',
   setSyntaxHighlighting: (syntaxHighlighting: SyntaxHighlightingLanguageId) => settings.set({ ...settings.get(), syntaxHighlighting }),

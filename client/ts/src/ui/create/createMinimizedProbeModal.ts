@@ -19,6 +19,7 @@ const createMinimizedProbeModal = (
   env: ModalEnv,
   locator: NodeLocator,
   property: Property,
+  isDefault: boolean,
   nestedWindows: NestedWindows,
   optionalArgs: OptionalArgs = {}
 ) => {
@@ -139,7 +140,8 @@ const createMinimizedProbeModal = (
                     type: 'probe',
                     locator: nestedLocator,
                     property: { name: propName },
-                    nested: {}
+                    nested: {},
+                    isDefault: false
                   }));
                 }
               }
@@ -231,6 +233,7 @@ const createMinimizedProbeModal = (
           property,
           nested: nestedWindows,
           showDiagnostics,
+          isDefault,
         }
       },
     });
@@ -261,6 +264,7 @@ const createMinimizedProbeModal = (
       null,
       createMutableLocator(locator),
       property,
+      isDefault,
       nestedWindows,
       { showDiagnostics }
     );

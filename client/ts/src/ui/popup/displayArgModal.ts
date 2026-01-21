@@ -105,7 +105,7 @@ const displayArgModal = (env: ModalEnv, modalPos: ModalPosition, locator: Updata
         displayProbeModal(env, popup.getPos(), locator, {
           name: attr.name,
           args: attr.args?.map((arg, argIdx) => argValues[argIdx]),
-        }, nested);
+        }, false, nested);
       }
 
       args.forEach((arg, argIdx) => {

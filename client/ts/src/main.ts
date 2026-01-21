@@ -23,7 +23,7 @@ import displayWorkerStatus from './ui/popup/displayWorkerStatus';
 import { AsyncRpcUpdate, BackingFileUpdated, CompleteReq, CompleteRes, Diagnostic, HoverReq, HoverRes, InitInfo, ParsingRequestData, PutWorkspaceContentReq, PutWorkspaceContentRes, PutWorkspaceMetadataReq, PutWorkspaceMetadataRes, Refresh, TALStep, WorkspacePathsUpdated } from './protocol';
 import showWindow from './ui/create/showWindow';
 import { createMutableLocator } from './model/UpdatableNodeLocator';
-import WindowState from './model/WindowState';
+import { WindowState, isBespokeProbe } from './model/WindowState';
 import { assertUnreachable } from './hacks';
 import createMinimizedProbeModal from './ui/create/createMinimizedProbeModal';
 import getEditorDefinitionPlace from './model/getEditorDefinitionPlace';
@@ -265,6 +265,7 @@ const doMain = (wsPort: number
             state.modalPos,
             createMutableLocator(data.locator),
             data.property,
+            data.isDefault,
             data.nested,
             { showDiagnostics: data.showDiagnostics, stickyHighlight: data.stickyHighlight },
           );
@@ -684,7 +685,7 @@ const doMain = (wsPort: number
                 const metaReq: PutWorkspaceMetadataReq = {
                   type: 'PutWorkspaceMetadata',
                   path,
-                  metadata: { windowStates: windows },
+                  metadata: { windowStates: windows.filter(isBespokeProbe) },
                 };
                 const metaRes: PutWorkspaceContentRes = await wsHandler.sendRpc(metaReq);
                 if (!metaRes.ok) {
@@ -737,7 +738,7 @@ const doMain = (wsPort: number
         createJobId,
         getGlobalModalEnv: () => modalEnv,
         minimize: (data) => {
-          const miniProbe = createMinimizedProbeModal(modalEnv, data.locator, data.property, data.nested, {
+          const miniProbe = createMinimizedProbeModal(modalEnv, data.locator, data.property, data.isDefault, data.nested, {
             showDiagnostics: data.showDiagnostics
           });
           uiElements.minimizedProbeArea.appendChild(miniProbe.ui);

@@ -34,6 +34,7 @@ const displayProbeModal = (
   modalPos: ModalPosition | null,
   locator: UpdatableNodeLocator,
   property: Property,
+  isDefault: boolean,
   nestedWindows: NestedWindows,
   optionalArgs: OptionalArgs = {},
 ) => {
@@ -57,6 +58,7 @@ const displayProbeModal = (
       type: 'probe',
       locator: locator.get(),
       property,
+      isDefault,
       nested: inlineWindowManager.getWindowStates(),
       showDiagnostics: showDiagnostics && undefined, // Only include if necessary to reduce serialized form size
       stickyHighlight: stickyController.getActiveColor(),
@@ -168,7 +170,7 @@ const displayProbeModal = (
                   const pos = queryWindow.getPos();
                   displayProbeModal(env,
                     { x: pos.x + 10, y: pos.y + 10 },
-                    locator.createMutableClone(), property, inlineWindowManager.getWindowStates(),
+                    locator.createMutableClone(), property, isDefault, inlineWindowManager.getWindowStates(),
                     { showDiagnostics, stickyHighlight: stickyController.getActiveColor(), }
                     );
                 },
@@ -186,7 +188,7 @@ const displayProbeModal = (
               invoke: () => {
                 const states = inlineWindowManager.getWindowStates();
                 cleanup();
-                displayProbeModal(env.getGlobalModalEnv(), null, locator.createMutableClone(), property, states, { showDiagnostics, stickyHighlight: stickyController.getActiveColor(), });
+                displayProbeModal(env.getGlobalModalEnv(), null, locator.createMutableClone(), property, isDefault, states, { showDiagnostics, stickyHighlight: stickyController.getActiveColor(), });
               },
             }]
         ),
@@ -528,7 +530,7 @@ const displayProbeModal = (
                       switch (nest.data.type) {
                         case 'probe': {
                           const dat = nest.data;
-                          displayProbeModal(nestedEnv, null, immutLoc, dat.property, dat.nested, { stickyHighlight: nest.data.stickyHighlight });
+                          displayProbeModal(nestedEnv, null, immutLoc, dat.property, dat.isDefault, dat.nested, { stickyHighlight: nest.data.stickyHighlight });
                           break;
                         }
                         case 'ast': {
@@ -542,7 +544,7 @@ const displayProbeModal = (
                   if (isFresh && property.name === searchProbePropertyName) {
                     const nestedPropName = property.args?.[0]?.value as string;
                     if (nestedPropName !== '' && !nests?.some((nest) => nest.data.type === 'probe' && nest.data.property.name === nestedPropName)) {
-                      displayProbeModal(nestedEnv , null, createImmutableLocator(updLocator), { name: nestedPropName }, {});
+                      displayProbeModal(nestedEnv , null, createImmutableLocator(updLocator), { name: nestedPropName }, isDefault, {});
                     }
                   }
                 },

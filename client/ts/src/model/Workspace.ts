@@ -39,17 +39,25 @@ type WorkspaceDirectory = Directory<CachedFileEntry>
 type WorkspaceTextFile = TextFile<CachedFileEntry>
 
 type CachedEntries<T> = { [path: string]: T };
+
+interface WorkspaceSettings {
+  defaultFile?: string,
+  defaultProbes?: string[],
+}
+
 interface Workspace {
   env: ModalEnv;
   visibleRows: CachedEntries<VisibleRow>;
   knownTestResults: CachedEntries<TextProbeCheckResults>;
   preOpenedFiles: { [path: string]: boolean };
+  wsSettings: WorkspaceSettings;
   getActiveFile: () => string;
   activeFileIsTempFile: () => boolean;
   onActiveFileChange: (contents: string, states: WindowState[]) => void;
   onActiveFileChecked: (results: TextProbeCheckResults) => void;
   onServerNotifyPathsChanged: (paths: string[]) => void;
   setActiveWorkspacePath: (path: string) => void;
+  getDefaultProbes: () => WindowState[];
 }
 
 interface WorkspaceInstance extends Workspace {
@@ -574,6 +582,7 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
   let setActiveFile = (path: string, data: CachedFileEntry, readOnly: boolean) => { }
   const mostRecentPutFileRequestContents: { [path: string]: string } = {};
   const ignoreWindowUpdatesForPath: { [path: string]: boolean } = {};
+
   const treeManager = setupFileTreeManager<CachedFileEntry>({
     getFileContent: async path => {
       const fresh = await workspace.env.performTypedRpc<GetWorkspaceFileReq, GetWorkspaceFileRes>({ type: 'GetWorkspaceFile', path, loadMeta: !ignoreWindowUpdatesForPath[path] });
@@ -587,6 +596,7 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       } else if (workspace.clientSideMetadataCache[path]) {
         ret.windows = workspace.clientSideMetadataCache[path];
       }
+
       return ret;
     },
     listDirectory: async path => {
@@ -605,12 +615,13 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       return fresh.entries;
     },
   })
-  const workspace: WorkspaceInstance = {
+  let workspace: WorkspaceInstance = {
     env: args.env,
     preOpenedFiles: {},
     visibleRows: {},
     knownTestResults: {},
     treeManager,
+    wsSettings: {},
     getActiveFile: () => activeFile,
     activeFileIsTempFile: () => activeFile === unsavedFileKey,
     onActiveFileChange: (contents, newStates) => {
@@ -672,8 +683,61 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
         }
       });
     },
+    getDefaultProbes: () => {
+      if (workspace.wsSettings.defaultProbes === undefined) {
+        return []
+      } else {
+        return workspace.wsSettings.defaultProbes?.map( (specStr) => {
+          const spec = specStr.split(':');
+          const probeASTNodeType = spec[0];
+          const probeProperty = spec[1];
+          const showDiagnostics = spec.length < 3 || spec[2] !== '-';
+
+          return {
+            modalPos: /* ModalPosition */ { x: 0, y: 0 },
+            data: /* WindowStateDataMinimized */ {
+              type: 'minimized-probe',
+              data: /* WindowStateDataProbe */ {
+                type: 'probe',
+                locator: /* NodeLocation */ {
+                  steps: [],
+                  result: /* TALStep */ {
+                    type: probeASTNodeType,
+                    start: 0,
+                    end: 0,
+                    depth: 0,
+                    external: false,
+                  }
+                },
+                property: /* Property */ {
+                  name: probeProperty,
+                },
+                nested: {},
+                showDiagnostics: true,
+                isDefault: true,
+              }
+            }
+          } as WindowState;
+        });
+      }},
     clientSideMetadataCache: {},
   };
+
+  {
+    // Load workspace settings file, if present
+    const settingsSpec = await workspace.env.performTypedRpc<GetWorkspaceFileReq, GetWorkspaceFileRes>({ type: 'GetWorkspaceFile', path: '.settings', loadMeta: false });
+
+    if (typeof settingsSpec?.content !== 'string') {
+      console.log('No ".settings" file found');
+    } else {
+      try {
+        workspace.wsSettings = JSON.parse(settingsSpec.content) as WorkspaceSettings;
+        console.log('Loaded settings: ', workspace.wsSettings);
+      } catch (e) {
+        console.log('ill-formed workspace settings:', e, '\n"', settingsSpec.content, '"');
+      }
+    }
+  }
 
   {
     const fromSettings = settings.getActiveWorkspacePath();
@@ -722,9 +786,10 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
       workspace.clientSideMetadataCache[path] = data.windows;
       testModalExtras.shouldIgnoreChangeCallbacks = true;
       const currentWindows = args.getCurrentWindows();
+      const expectedWindows = data.windows.concat(workspace.getDefaultProbes());
       if (ignoreWindowUpdatesForPath[path]) {
         // Ignore
-      } else if (isUpdateWithinCurrentFile && deepEqual(currentWindows, data.windows, { ignoreUndefinedDiff: true })) {
+      } else if (isUpdateWithinCurrentFile && deepEqual(currentWindows, expectedWindows, { ignoreUndefinedDiff: true })) {
         // Ignore window update, no change
       } else {
         document.querySelectorAll('.auto-click-on-workspace-switch').forEach(btn => {
@@ -734,7 +799,7 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
             (btn as HTMLElement).click();
           }
         });
-        setTimeout(() => args.setLocalWindows(data.windows), 1);
+        setTimeout(() => args.setLocalWindows(expectedWindows), 1);
         // Ignore future updates for windows in this file. We don't expect the windows to be updated outside CodeProber anyway.
         // IF two people connect to the same CodeProber instance then the windows can be externally modified.
         // However, that seems unlikely. Also, they can just reload to see eachothers updated windows.

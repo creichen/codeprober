@@ -24,6 +24,7 @@ const displayAttributeModal = (
   locator: UpdatableNodeLocator,
   optionalArgs: OptionalArgs = {},
 ) => {
+  const isDefault = false;
   const queryId = `attr-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
   let filter: string = optionalArgs.initialFilter ?? '';
   let state: { type: 'attrs', attrs: Property[] } | { type: 'err', body: RpcBodyLine[] } | null = null;
@@ -94,7 +95,7 @@ const displayAttributeModal = (
             title: 'Pretty Print',
             invoke: () => {
               cleanup();
-              displayProbeModal(env, popup.getPos(), locator, { name: prettyPrintProbePropertyName }, {});
+              displayProbeModal(env, popup.getPos(), locator, { name: prettyPrintProbePropertyName }, isDefault, {});
             }
           },
         ],
@@ -237,11 +238,11 @@ const displayAttributeModal = (
             cleanup();
 
             if (!attr.args || attr.args.length === 0) {
-              displayProbeModal(env, popup.getPos(), locator, { name: attr.name }, {});
+              displayProbeModal(env, popup.getPos(), locator, { name: attr.name }, isDefault, {});
             } else {
               if (attr.args.every(arg => arg.type ==='outputstream')) {
                 // Shortcut directly to probe since there is nothing for user to add in arg modal
-                displayProbeModal(env, popup.getPos(), locator, attr, {});
+                displayProbeModal(env, popup.getPos(), locator, attr, isDefault, {});
               } else {
                 displayArgModal(env, popup.getPos(), locator, attr, {});
               }
@@ -353,7 +354,7 @@ const displayAttributeModal = (
               }
               const prop: Property = { name: searchProbePropertyName, args };
               cleanup();
-              displayProbeModal(env, popup.getPos(), locator, prop, {});
+              displayProbeModal(env, popup.getPos(), locator, prop, isDefault, {});
             };
             const sep = document.createElement('div');
             sep.classList.add('search-list-separator')

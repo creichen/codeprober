@@ -26,6 +26,7 @@ const displayTestDiffModal = (
   modalPos: ModalPosition | null,
   locator: NodeLocator,
   property: Property,
+  isDefault: boolean,
   testCategory: string,
   testCaseName: string,
   // testCase: TestCase,
@@ -537,6 +538,7 @@ const displayTestDiffModal = (
                         type: 'probe',
                         locator: testCase.locator,
                         property: test.property,
+                        isDefault,
                         nested: inner,
                       };
                     }
@@ -565,7 +567,7 @@ const displayTestDiffModal = (
                     //   // })
 
                     //   })
-                    displayProbeModal(env, null, createMutableLocator(locator), property, nestedTestToProbeData({
+                    displayProbeModal(env, null, createMutableLocator(locator), property, isDefault, nestedTestToProbeData({
                       path: [],
                       expectedOutput: testCase.expectedOutput,
                       nestedProperties: testCase.nestedProperties,
@@ -754,6 +756,7 @@ const displayTestDiffModal = (
           type: 'probe',
           locator,
           property,
+          isDefault,
           nested: {},
         },
       });

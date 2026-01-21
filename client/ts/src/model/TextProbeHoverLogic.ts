@@ -133,7 +133,7 @@ const createProbeHoverLogic = (args: CreateProbeHoverLogicArgs): TextProbeHoverL
               if (chainAttrIdx > 0) {
                 let newNest: NestedWindows = {};
                 nestTarget[prevStepWasArr ? '[0,0]' : '[0]'] = [
-                  { data: { type: 'probe', locator, property: { name: chainAttr }, nested: newNest } },
+                  { data: { type: 'probe', isDefault: false, locator, property: { name: chainAttr }, nested: newNest } },
                 ];
                 nestTarget = newNest;
               }
@@ -148,6 +148,7 @@ const createProbeHoverLogic = (args: CreateProbeHoverLogicArgs): TextProbeHoverL
               { x: lastKnownMousePos.x + offset.x, y: lastKnownMousePos.y + offset.y },
               createMutableLocator(locator),
               { name: m.attrNames[0] },
+              false,
               nestedWindows
             );
           }

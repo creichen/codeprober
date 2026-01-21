@@ -9,6 +9,7 @@ const displayTestSuiteModal = (
   env: ModalEnv,
   category: string,
 ) => {
+  const isDefault = false;
   const queryId = `ts-${Math.floor(Number.MAX_SAFE_INTEGER * Math.random())}`;
 
   const cleanup = () => {
@@ -142,7 +143,7 @@ const displayTestSuiteModal = (
           icons.appendChild(status);
 
           row.onclick = () => {
-            displayTestDiffModal(env, null, tc.locator, tc.property, category, tc.name);
+            displayTestDiffModal(env, null, tc.locator, tc.property, isDefault, category, tc.name);
           };
 
           rowList.appendChild(row);
