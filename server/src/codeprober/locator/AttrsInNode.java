@@ -16,23 +16,25 @@ import codeprober.protocol.data.PropertyArg;
 
 public class AttrsInNode {
 
-	public static List<Property> getTyped(AstInfo info, AstNode node, List<String> whitelistFilter,
+	public static List<Property> getTyped(AstInfo info, AstNode node, List<String> blocklistFilter,
 			boolean includeAll) {
 		final List<Property> ret = new ArrayList<>();
-		if (whitelistFilter == null) {
-			whitelistFilter = new ArrayList<>();
+		if (blocklistFilter == null) {
+			blocklistFilter = new ArrayList<>();
 		} else {
-			whitelistFilter = new ArrayList<>(whitelistFilter);
+			blocklistFilter = new ArrayList<>(blocklistFilter);
 		}
-		whitelistFilter
+		blocklistFilter
 				.addAll(Arrays.asList(new String[] { "getChild", "getParent", "getNumChild", "toString", "dumpTree" }));
 //		final Pattern illegalNamePattern = Pattern.compile(".*(\\$|_).*");
 
 		for (Method m : node.underlyingAstNode.getClass().getMethods()) { // getMethods() rather than
 																			// getDeclaredMethods() to only get public
 																			// methods
-			if (!includeAll && !MethodKindDetector.looksLikeAUserAccessibleJastaddRelatedMethod(m)
-					&& !whitelistFilter.contains(m.getName())) {
+			System.err.println("  - name is: '" + m.getName() + "'");
+			if (!includeAll && (!MethodKindDetector.looksLikeAUserAccessibleJastaddRelatedMethod(m)
+					    || blocklistFilter.contains(m.getName()))) {
+				System.err.println("  => blocked");
 				continue;
 			}
 			final List<PropertyArg> args = CreateType.fromParameters(info, m.getParameters());
@@ -46,7 +48,7 @@ public class AttrsInNode {
 		}
     final boolean canDescribeChildNames = info.hasOverride1(node.underlyingAstNode.getClass(), "cpr_lGetChildName", String.class);
     final boolean canDescribeLabeledProperties = info.hasOverride1(node.underlyingAstNode.getClass(), "cpr_lGetAspectName", String.class);
-		for (String filter : whitelistFilter) {
+		for (String filter : blocklistFilter) {
 			if (filter.startsWith("l:")) {
 				// Special "label-invoke" method, always add it
         String childName = null;
@@ -86,7 +88,7 @@ public class AttrsInNode {
 	}
 
 	public static List<String> extractFilter(AstInfo info, AstNode node) {
-		final String mth = "cpr_propertyListShow";
+		final String mth = "cpr_propertyListHide";
 		if (!info.hasOverride0(node.underlyingAstNode.getClass(), mth)) {
 			return null;
 		}
