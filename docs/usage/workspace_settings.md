@@ -1,6 +1,6 @@
 # Workspace Settings
 
-The `.settings` file in the workspace root may contain JSON data such as:
+The `.cpr-settings` file in the workspace root may contain JSON data such as:
 
 ```
 {

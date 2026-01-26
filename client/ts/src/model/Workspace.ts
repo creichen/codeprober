@@ -726,10 +726,10 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
 
   {
     // Load workspace settings file, if present
-    const settingsSpec = await workspace.env.performTypedRpc<GetWorkspaceFileReq, GetWorkspaceFileRes>({ type: 'GetWorkspaceFile', path: '.settings', loadMeta: false });
+    const settingsSpec = await workspace.env.performTypedRpc<GetWorkspaceFileReq, GetWorkspaceFileRes>({ type: 'GetWorkspaceFile', path: '.cpr-settings', loadMeta: false });
 
     if (typeof settingsSpec?.content !== 'string') {
-      console.log('No ".settings" file found');
+      console.log('No ".cpr-settings" file found');
     } else {
       try {
         workspace.wsSettings = JSON.parse(settingsSpec.content) as WorkspaceSettings;
