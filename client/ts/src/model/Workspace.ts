@@ -709,7 +709,7 @@ const initWorkspace = async (args: WorkspaceInitArgs): Promise<Workspace | null>
                   name: probeProperty,
                 },
                 nested: {},
-                showDiagnostics: true,
+                showDiagnostics,
                 isDefault: true,
               }
             }
