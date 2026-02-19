@@ -194,7 +194,7 @@ public class WebServer {
 	private static String guessMimeType(String path) {
 		switch (path.substring(path.lastIndexOf('.') + 1)) {
 		case "html":
-			return "text/html";
+			return "text/html;charset=utf-8";
 		case "js":
 			return "text/javascript";
 		case "css":
